@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>categoryName</key>
+	<array>
+		<string>bell</string>
+		<string>bottle</string>
+		<string>box</string>
+		<string>chair</string>
+		<string>coffeemaker</string>
+		<string>computer</string>
+		<string>foodbox</string>
+		<string>jar</string>
+		<string>mug</string>
+		<string>lemonsquezzer</string>
+	</array>
+	<key>thumbnail</key>
+	<array>
+		<string>images/categories/bell.jpg</string>
+		<string>images/categories/bottle.jpg</string>
+		<string>images/categories/box.jpg</string>
+		<string>images/categories/chair.jpg</string>
+		<string>images/categories/coffeemaker.jpg</string>
+		<string>images/categories/computer.jpg</string>
+		<string>images/categories/foodbox.jpg</string>
+		<string>images/categories/jar.jpg</string>
+		<string>images/categories/mug.jpg</string>
+		<string>images/categories/lemonsquezzer.jpg</string>
+	</array>
+	<key>description</key>
+	<array>
+		<string>a bell</string>
+		<string>a bootle</string>
+		<string>a box</string>
+		<string>a chair</string>
+		<string>a coffeemaker</string>
+		<string>a computer</string>
+		<string>a foodbox</string>
+		<string>a jar</string>
+		<string>a mug</string>
+		<string>a lemonsqueezer</string>
+	</array>
+</dict>
+</plist>

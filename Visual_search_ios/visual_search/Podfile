@@ -1,0 +1,9 @@
+source 'https://github.com/CocoaPods/Specs.git'
+platform :ios, '8.0'
+xcodeproj 'Visual_Search.xcodeproj'
+target 'Visual_Search' do
+pod 'AFNetworking', '~> 3.0'
+pod 'RETableViewManager'
+pod 'MRProgress'
+pod 'boost'
+end

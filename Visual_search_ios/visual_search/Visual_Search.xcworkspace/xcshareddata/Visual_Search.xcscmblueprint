@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "29BEC231DD9966061A177FFFB1DC3C0C73A5E28F",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "29BEC231DD9966061A177FFFB1DC3C0C73A5E28F" : 9223372036854775807,
+    "9FA95DEE4EB174E673372E30E3D25C64477F8D05" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "07F87752-237A-43BF-A686-BF327C0357D8",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "29BEC231DD9966061A177FFFB1DC3C0C73A5E28F" : "visual_search_alpha\/",
+    "9FA95DEE4EB174E673372E30E3D25C64477F8D05" : "visual_search_alpha\/visual_search\/frameworks\/boost\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Visual_Search",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "visual_search\/Visual_Search.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/bitbucket.org\/digiart_team\/semantics-extraction.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "29BEC231DD9966061A177FFFB1DC3C0C73A5E28F"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/danoli3\/ofxiOSBoost.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "9FA95DEE4EB174E673372E30E3D25C64477F8D05"
+    }
+  ]
+}

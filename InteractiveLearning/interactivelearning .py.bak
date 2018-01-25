@@ -1,0 +1,535 @@
+#!/usr/bin/env python3
+"""
+The script helps guide the users to quickly understand how to use
+libact by going through a simple active learning task with clear
+descriptions.
+"""
+
+import copy
+import math
+import os
+import sklearn.svm as svmscikit
+import sklearn.linear_model as lrscikit
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from sklearn.cross_validation import train_test_split
+from matplotlib.image import AxesImage
+
+# libact classes
+from libact.base.dataset import Dataset, import_libsvm_sparse
+from libact.models import *
+from libact.query_strategies import *
+from libact.labelers import IdealLabeler
+
+import argparse
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler,MinMaxScaler,Normalizer
+from sklearn.metrics import precision_score,average_precision_score
+import sklearn.datasets
+from sklearn.svm import SVR
+
+from tkinter import * 
+from PIL import Image, ImageTk
+import tkinter.filedialog
+import random
+from itertools import product
+import random
+
+view_path_file = "dataset_views_descriptor_esf.txt"
+dataset_descriptor = "dataset_descriptors_esf_binary_libsvmdatat.txt"
+E_out1 = []
+E_score1 = []
+_item_click_callback= set()
+
+def onpick(event):
+    if isinstance(event.artist, AxesImage):
+        artist = event.artist
+        im = artist
+        A = im.get_array()
+    else :
+        id_extract = [int(s) for s in  event.artist.get_text().split() if s.isdigit()]
+        print('id selected:', id_extract[0])
+        _item_click_callback.add(id_extract[0])
+
+
+
+#Take care of doing the split training/testing for the minist dataset
+def split_train_test_digit(n_classes):
+    from sklearn.datasets import load_digits
+
+    n_labeled = n_classes
+    digits = load_digits(n_class=n_classes)  # consider binary case
+    X = digits.data
+    y = digits.target
+    
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
+    #print(np.shape(X_train))
+    #print(np.shape(y_train))
+    #Create binary class between number 0 against the others number (1 2 3 4)
+    y_train_binary= [-1 if y == 0 else 1 for y in y_train]
+    #print("y: {} ".format(y_train_binary) )
+    
+    #Remove every label so that each number does not have label (none)
+    y_train_unlabeled = np.concatenate(
+        [y_train[:0], [None] * (len(y_train))])
+    trn_ds = Dataset(X_train, y_train_unlabeled)
+    print("[INFO] Nbr unlabeled: {} ".format(trn_ds.len_unlabeled()) )
+    print("[INFO] Nbr labeled: {} ".format(trn_ds.len_labeled()) )
+
+    tst_ds = Dataset(X_test, y_test)
+
+    return trn_ds, tst_ds, digits
+
+
+# I've only implemented the linear and rbf kernels
+def kernel(params, sv, X):
+    if params.kernel == 'linear':
+        return [np.dot(vi, X) for vi in sv]
+    elif params.kernel == 'rbf':
+        return [math.exp(-params.gamma * np.dot(vi - X, vi - X)) for vi in sv]
+
+# This replicates clf.decision_function(X)
+def decision_function(params, sv, nv, a, b, X):
+    # calculate the kernels
+    k = kernel(params, sv, X)
+
+    # define the start and end index for support vectors for each class
+    start = [sum(nv[:i]) for i in range(len(nv))]
+    end = [start[i] + nv[i] for i in range(len(nv))]
+
+    # calculate: sum(a_p * k(x_p, x)) between every 2 classes
+    c = [ sum(a[ i ][p] * k[p] for p in range(start[j], end[j])) +
+          sum(a[j-1][p] * k[p] for p in range(start[i], end[i]))
+                for i in range(len(nv)) for j in range(i+1,len(nv))]
+
+    # add the intercept
+    return [sum(x) for x in zip(c, b)]
+
+# This replicates clf.predict(X)
+def predict(params, sv, nv, a, b, cs, X):
+    ''' params = model parameters
+        sv = support vectors
+        nv = # of support vectors per class
+        a  = dual coefficients
+        b  = intercepts 
+        cs = list of class names
+        X  = feature to predict       
+    '''
+    decision = decision_function(params, sv, nv, a, b, X)
+    votes = [(i if decision[p] > 0 else j) for p,(i,j) in enumerate((i,j) 
+                                           for i in range(len(cs))
+                                           for j in range(i+1,len(cs)))]
+
+    return cs[max(set(votes), key=votes.count)]
+
+def getparameters_from_models(model):
+    if (isinstance(model,sklearn.linear_model.logistic.LogisticRegression)):
+        print("Ok logisitic")
+        
+    elif (isinstance(model,sklearn.svm.classes.SVC)):
+        # Get parameters from model
+        params = model.get_params()
+        #Support vectors.
+        sv = model.support_vectors
+        #Number of support vectors for each class.
+        nv = model.n_support_
+        #Coefficients of the support vector in the decision function
+        a  = model.dual_coef_
+        #Constants in decision function.
+        b  = model._intercept_
+        #List of class name
+        cs = model.classes_
+        
+    return params, sv, a, b, cs
+
+def display_data_init(dataset, number_to_display):
+    fig = plt.figure(figsize=(7, 10))
+    # gridspec inside gridspec
+    
+    outer_grid = gridspec.GridSpec(8, 5, wspace=1, hspace=0.5)
+    for i in range(number_to_display):
+        ax = plt.Subplot(fig, outer_grid[i])
+        feature = dataset[i][1].reshape(8, 8)
+        title = "ID {}".format(dataset[i][0])
+        ax.set_title(title, picker=True, bbox=dict(facecolor='blue'))
+        ax.imshow(feature, cmap=plt.cm.gray_r, interpolation='nearest', picker=True)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        fig.add_subplot(ax)
+
+    plt.show(block=False)
+    fig.canvas.mpl_connect('pick_event', onpick)
+
+def display_selected_data(whole_dataset, id_to_display):
+    plt.clf()
+    fig = plt.figure(figsize=(7, 10))
+    # gridspec inside gridspec
+    
+    outer_grid = gridspec.GridSpec(8, 5, wspace=1, hspace=0.5)
+    for i in range(len(id_to_display)):
+        ask_id = id_to_display[i]
+        ax = plt.Subplot(fig, outer_grid[i])
+        feature = whole_dataset.data[ask_id][0].reshape(8, 8)
+        title = "ID {}".format(ask_id)
+        ax.set_title(title, picker=True, bbox=dict(facecolor='blue'))
+        ax.imshow(feature, cmap=plt.cm.gray_r, interpolation='nearest', picker=True)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        fig.add_subplot(ax)
+
+    plt.show(block=False)
+    fig.canvas.mpl_connect('pick_event', onpick)
+
+
+def update_display():
+    plt.draw()
+
+
+
+def select_positive_example_onclick(id_unlabeled_selected):
+    banner = "Clicks ID to label as POSITIVE, then when you finish, write ok \n"
+    str_input = input(banner)
+    while (str_input != "ok"):
+        str_input = input(banner)
+        print("If you have finished, write ok")
+
+    positif_label = list()
+    for i in range(len(_item_click_callback)):
+        positif_label.append(1)
+    
+    positive_example = list(zip(_item_click_callback, positif_label))
+    #Remove items selected in the list
+    _item_click_callback.clear()
+
+    return positive_example
+
+
+def select_negative_example_onclick(id_unlabeled_selected):
+    banner = "Clicks ID to label as NEGATIVE then when you finish, write ok \n"
+    str_input = input(banner)
+    while (str_input != "ok"):
+        str_input = input(banner)
+        print("If you have finished, write ok")
+
+    negatif_label = list()
+    for i in range(len(_item_click_callback)):
+        negatif_label.append(-1)
+    
+    negative_example = list(zip(_item_click_callback, negatif_label))
+    #Remove items selected in the list
+    _item_click_callback.clear()
+    
+    return negative_example
+
+
+def select_positive_example(id_unlabeled_selected):
+     #First initialization where the user select the first image to annotate
+    banner = "Choose ID to label as POSITIVE (separate by a comma if multiple id to select) \n"
+    if id_unlabeled_selected is not None:
+            banner += str(id_unlabeled_selected) + ' '
+
+    lbl_positif_list_userselected = input(banner)
+    lbl_positif_list_userselected = lbl_positif_list_userselected.strip().split(",")
+    #print(lbl_positif_list_userselected)
+    positif_label = list()
+    #print(len(lbl_positif_list_userselected))
+    for i in range(len(lbl_positif_list_userselected)):
+        positif_label.append(1)
+
+    return list(zip(lbl_positif_list_userselected, positif_label))
+
+def select_negative_example(id_unlabeled_selected):
+     #First initialization where the user select the first image to annotate
+    banner = "Choose ID to label as NEGATIVE (separate by a comma if multiple id to select) "
+    if id_unlabeled_selected is not None:
+            banner += str(id_unlabeled_selected) + ' '
+
+    lbl_negatif_list_userselected = input(banner)
+    lbl_negatif_list_userselected = lbl_negatif_list_userselected.strip().split(",")
+    #print(lbl_positif_list_userselected)
+    negatif_label = list()
+    #print(len(lbl_positif_list_userselected))
+    for i in range(len(lbl_negatif_list_userselected)):
+        negatif_label.append(-1)
+    return list(zip(lbl_negatif_list_userselected, negatif_label))
+
+def format_sklearn(data):
+    X, y = zip(*data)
+    return np.array(X), np.array(y)
+
+
+
+def select_range_data(data_list,rank, range_m):
+    #Take the range_m element before the rank selected
+    #Max is used here in order to avoid out of range at the beginning of the list
+    inf = data_list[max((rank-range_m),0):rank]
+    #Take the range_m element after the rank selected
+    sup = data_list[rank:rank+range_m]
+
+    selected_data = inf + sup
+    return select_data
+
+
+def annotate_data(whole_dataset, id_to_display):
+
+    #id_selected_positif = select_positive_example(id_to_display)
+    #id_selected_negatif = select_negative_example(id_to_display)
+    id_selected_positif = select_positive_example_onclick(id_to_display)
+    id_selected_negatif = select_negative_example_onclick(id_to_display)
+
+    list1 = list()
+    list2 = list()
+    for id_l,label in id_selected_positif:
+        print("Ask ID  {} corresponds to label {} ".format(id_l, label) )
+        list1.append((id_l,label))
+        whole_dataset.update(int(id_l), label)
+    for id_l,label in id_selected_negatif:
+        print("Ask ID  {} corresponds to label {} ".format(id_l, label) )
+        list2.append((id_l,label))
+        whole_dataset.update(int(id_l), label)
+    
+    total_annotated_id_list = list1 + list2
+
+    
+    print("Update Nbr unlabeled: {} ".format(whole_dataset.len_unlabeled()) )
+    print("Update Nbr labeled : {} ".format(whole_dataset.len_labeled()) )
+    return total_annotated_id_list
+
+
+#Sort descending order (biggest to smallest)
+def sort_descending_order(data):
+    tmp = data
+    
+    #Sort sothat the firsts ID at the most certain and the last one the most uncertain
+    #As here here argsort give the indice of the n smallest element, we use a trick to get argsort sort in descending order (prbabilities more sure to probabilities most uncertain)
+    #return 1. indice of the biggest number, 2. the biggest number
+    return np.array(data).argsort()[::-1], sorted(tmp,reverse = True)
+
+#Sort ascending order (smallest to biggest)
+def sort_ascending_order(data):
+    tmp = data
+    
+    return np.array(data).argsort()[::1], sorted(tmp,reverse = False)
+
+
+def preselection(dataset, probabilities, m):
+    np.array(probabilities).argsort()[::-1]
+
+def correction(dataset,rank,model):
+    #Sort, return du plus sûr au moins certain
+    unlabeled_entry_ids, X_pool = zip(*dataset.get_unlabeled_entries())
+    #Get the probabilities for each sample to be either negative (-1) or positive (+1)
+    probabilities_samples = model.predict_proba(X_pool)
+    distance_result = model.decision_function(X_pool)
+    #Get the probabilities for the positive label
+    probabilities_label_positive = probabilities_samples[:,1]
+    #Get the furthers points to the hyperplane
+    indices_rank_decision_function_positif, distance_rank_decision_function_positif = sort_descending_order(distance_result)
+  
+
+    indices_rank_label_positive, probabilities_rank_label_positive = sort_descending_order(probabilities_label_positive)
+    indices_rank_decision_function_positif, distance_rank_decision_function_positif = sort_descending_order(distance_result)
+    normalisation_decision_function = MinMaxScaler(feature_range=(-1, 1)).fit_transform(distance_rank_decision_function_positif)
+
+    try:
+        v=indices_rank_label_positive[rank]
+    except IndexError:
+        rank = 0
+    #print(indices_rank_label_positive)
+    print("Distance at rank {} : {} ".format(rank,distance_rank_decision_function_positif[rank]))
+    print("Distance normalized at rank {} : {} ".format(rank,normalisation_decision_function[rank]))
+    print("CORRECTION : Remove {} to the decision function ".format(distance_rank_decision_function_positif[rank]))
+    number_to_remove = distance_rank_decision_function_positif[rank]
+    copy_tmp = model.decision_function(X_pool)[:]
+    new_decision_function = model.decision_function(X_pool)[:]
+    new_decision_function[:] = [x - number_to_remove for x in new_decision_function]
+    #for x in new_decision_function:
+     #    print("{} - {} = {}".format(x,distance_rank_decision_function_positif[rank],x-distance_rank_decision_function_positif[rank]))
+    #print("Before  {} ".format(copy_tmp))
+    #print("after  {} ".format(new_decision_function))
+    return new_decision_function
+
+
+
+
+def feedback(whole_dataset,current_rank,model, annotated_data_selecton):
+    #Have the score of the selected example
+    h = 0
+    new_rank = 0
+    #normalization range -1 1
+    
+    for idx,selection in enumerate(annotated_data_selecton):
+        print("h {} ".format(h))
+        ask_id = int(selection[0])
+        label = int(selection[1])
+        print("Label {} for id {} ".format(label, ask_id), )
+        print("Label user {} ".format(int(selection[1])))
+        #print(type(train_ds_unlabel.data[ask_id]))
+        X = whole_dataset.data[ask_id][0].reshape(1, -1)
+        y = whole_dataset.data[ask_id][1]
+        normali = MinMaxScaler(feature_range=(-1, 1)).fit_transform(model.predict_proba(X))
+        print("Score for current X {} ".format(model.predict_proba(X)))
+        print("Score normalization for current X {} ".format(normali))
+
+        h_current = label - model.predict_proba(X)[:,1]
+        print("h = yi - f =  {} ".format(h_current))
+        h = h + h_current
+    print("h final =  {} ".format(h))
+    new_rank = current_rank + h
+
+    return new_rank
+
+def feedback_decisionFunction(whole_dataset,current_rank,model, annotated_data_selection):
+    #Have the score of the selected example
+    h = 0
+    new_rank = 0
+    unlabeled_entry_ids, X_pool = zip(*whole_dataset.get_unlabeled_entries())
+    entry_id,test_xpool = zip(*[(idx, entry[0]) for idx, entry in enumerate(whole_dataset.data)])
+    decision_func = model.decision_function(X_pool)
+    decision_func_all =  model.decision_function(test_xpool)
+    #Get the furthers points to the hyperplane
+    indices_rank_decision_function_positif, distance_rank_decision_function_positif = sort_descending_order(decision_func_all)
+    #print(distance_rank_decision_function_positif)
+    normalisation_decision_function = MinMaxScaler(feature_range=(-1, 1)).fit_transform(decision_func_all)
+    #print("Decision function normalisation without sort {} ".format(normalisation_decision_function))
+    for idx,selection in enumerate(annotated_data_selection):
+        print("h {} ".format(h))
+        ask_id = int(selection[0])
+        label = int(selection[1])
+        print("Label {} for id {} ".format(label, ask_id), )
+        #print("Label user {} ".format(int(selection[1])))
+        #print(type(train_ds_unlabel.data[ask_id]))
+        #print(whole_dataset.data[ask_id])
+        X = whole_dataset.data[ask_id][0].reshape(1, -1)
+        y = whole_dataset.data[ask_id][1]
+        decision_norm = normalisation_decision_function[ask_id]
+        decision = model.decision_function(X)[0]
+        print("Decision function current X  (Norm: {}, no norm : {}) ".format(decision_norm,decision))
+        #h_current = label - model.decision_function(X)[0]
+        h_current = label - decision_norm
+        print("h = yi - f ({} - {})=  {} ".format(label,decision_norm,h_current))
+        h = h + h_current
+    print("h final =  {} ".format(h))
+    new_rank = current_rank + h
+
+    return int(round(new_rank))
+
+def training_data(training_dataset,test_dataset,model):
+    print("[INFO] Nbr unlabeled: {} ".format(training_dataset.len_unlabeled()) )
+    print("[INFO] Nbr labeled: {} ".format(training_dataset.len_labeled()) )
+    model.fit(*(training_dataset.format_sklearn()))
+    #print(type(model))
+    print("==> Score  {} ".format(model.score(*(test_dataset.format_sklearn()))*100))
+
+def preselection(data, m):
+    copy = data
+    copy[:] = [math.fabs(x) for x in copy]
+    indice_sorted = np.array(copy).argsort()[::-1]
+    value_sorted = sorted(copy,reverse = True)
+    return indice_sorted[:m],value_sorted[:m]
+
+def selection(whole_dataset,id_preselection,model, decision_function, annotations_users):
+    g = 0
+    y_true = list()
+    y_pred = list()
+    print(" indice selected user :   {} ".format(id_preselection))
+    print(" Annotation users :   {} ".format(annotations_users))
+    for i,annotation in enumerate(annotations_users):
+        idx = int(annotation[0])
+        label = int(annotation[1])
+        X = whole_dataset.data[idx][0].reshape(1, -1)
+        print(X)
+        print(" Label true current :   {} ".format(label))
+        y_true.append(label)
+        y_pred.append(model.predict_proba(X)[:,1][0])
+        print(" Label predicted current :   {} ".format(model.predict_proba(X)[:,1][0]))
+
+    for idx, id_current in enumerate(id_preselection):
+        precision = average_precision_score(y_true,y_pred)
+        print("average precision {} ".format(precision))
+
+    return g
+
+def main():
+    
+    rank = 0
+    n_classes = 5
+    nbre_data_selection = 40
+
+
+    train_ds_unlabel, test_ds, digit_whole_dataset = split_train_test_digit(n_classes)  
+
+    #Get all the entries
+    X, y = zip(*train_ds_unlabel.get_entries())
+    X_unlabeled = np.array(X)
+    y_unlabeled = np.array(y)
+    
+    new_unlabeled_list = list(train_ds_unlabel.get_unlabeled_entries())  
+    #shuffle_list = random.shuffle(new_unlabeled_list)
+    display_data_init(new_unlabeled_list,nbre_data_selection)
+    
+
+    ###########=====>>>> FIRST STEP INITIALIZATION
+    #Get only the ID that are displayed on the user screen
+    #feature[0] correspond to id
+    id_unlabeled_display_first=[id_feature for id_feature, feature in  enumerate(new_unlabeled_list[:nbre_data_selection])]
+    total_annotated_id_list = annotate_data(train_ds_unlabel,id_unlabeled_display_first)
+    #print(train_ds_unlabel.get_unlabeled_entries())
+    
+    #===> First training
+    model_learning = svmscikit.SVC(probability=True, class_weight='balanced', decision_function_shape='ovr')
+    #model_learning = lrscikit.LogisticRegression()
+    # Returns dataset in (X, y) format for use in scikit-learn.
+    #Unlabeled entries are ignored
+    training_data(train_ds_unlabel,test_ds,model_learning)
+
+    
+    ###Sort, return du plus sûr au moins certain
+
+    unlabeled_entry_ids, X_pool = zip(*train_ds_unlabel.get_unlabeled_entries())
+    #Get the probabilities for each sample to be either negative (-1) or positive (+1)
+    probabilities_samples = model_learning.predict_proba(X_pool)
+    #Get the probabilities for the positive label (Second column because the first one correspond to -1 negative label)
+    probabilities_label_positive = probabilities_samples[:,1]
+    #Get the Distance of the samples X to the separating hyperplane.
+    decision_func = model_learning.decision_function(X_pool)
+    #Get the furthers points to the hyperplane
+    indices_rank_decision_function_positif, distance_rank_decision_function_positif = sort_descending_order(decision_func)
+    #print(distance_rank_decision_function_positif)
+    normalisation_decision_function = MinMaxScaler(feature_range=(-1, 1)).fit_transform(distance_rank_decision_function_positif)
+    #print("Normalisation decision function  {} ".format(normalisation_decision_function))
+    #print("Decision function ranking  {} ".format(distance_rank_decision_function_positif[:nbre_data_selection]))
+    #print(probabilities_samples)
+    #print(probabilities_label_positive)
+    
+    #Get the most certain to the most uncertain
+    indices_rank_label_positive, probabilities_rank_label_positive = sort_descending_order(probabilities_label_positive)
+    print(indices_rank_label_positive[:nbre_data_selection])
+    indice_data_selection_prob = indices_rank_decision_function_positif[:nbre_data_selection]
+    indice_data_selection_decision = indices_rank_decision_function_positif[:nbre_data_selection]
+    print("Ranking most Certain label positive  {} ".format(indice_data_selection_prob))
+    print("Ranking most Certain label positive decision function  {} ".format(indice_data_selection_decision))
+    #print("Ranking most Certan distance  {} ".format(distance_rank_decision_function_positif[:nbre_data_selection]))
+    #print(probabilities_rank_label_positive)
+    display_selected_data(train_ds_unlabel,indice_data_selection_decision)
+    
+    ###########=====>>>> SECOND STEP UPDATE
+    total_annotated_id_list = annotate_data(train_ds_unlabel,indice_data_selection_decision)
+    while True :
+        #rank = feedback(train_ds_unlabel,rank,model_learning, total_annotated_id_list)
+        rank = feedback_decisionFunction(train_ds_unlabel,rank,model_learning, total_annotated_id_list)
+        print("Ranking value : {} ".format(rank))
+        training_data(train_ds_unlabel,test_ds,model_learning)
+        new_decision_function = correction(train_ds_unlabel,int(rank),model_learning)
+        indice_selected, value_selected = preselection(new_decision_function,nbre_data_selection)
+        print("Preselection decision {} ".format(value_selected))
+        #cost = selection(train_ds_unlabel,indice_selected,model_learning, new_decision_function, total_annotated_id_list)
+        display_selected_data(train_ds_unlabel,indice_selected)
+        total_annotated_id_list = annotate_data(train_ds_unlabel,indice_selected)
+
+
+if __name__ == '__main__':
+    main()
+

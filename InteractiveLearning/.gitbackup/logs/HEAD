@@ -1,0 +1,71 @@
+0000000000000000000000000000000000000000 2dccf52824743abd8cb208fd5720c8c12cda5a74 Lirone <lirone.samoun@gmail.com> 1496411471 +0200	commit (initial): First commit
+2dccf52824743abd8cb208fd5720c8c12cda5a74 5c28efa08e8433a9f55975869d3b7715c4fc964d Lirone <lirone.samoun@gmail.com> 1496751043 +0200	commit: Modification
+5c28efa08e8433a9f55975869d3b7715c4fc964d 5c28efa08e8433a9f55975869d3b7715c4fc964d Lirone <lirone.samoun@gmail.com> 1496755243 +0200	checkout: moving from master to devTest
+5c28efa08e8433a9f55975869d3b7715c4fc964d 218bd5974e8267d6261e986d960df677c0d3fee5 Lirone <lirone.samoun@gmail.com> 1496825479 +0200	commit: fonctionne
+218bd5974e8267d6261e986d960df677c0d3fee5 3b3736eb300335a623ccf3fb6ae95e4893cb8e36 Lirone <lirone.samoun@gmail.com> 1496920949 +0200	commit: Add basic interactive learning, without implementation paper
+3b3736eb300335a623ccf3fb6ae95e4893cb8e36 1abb44b19b0cfc6394b1a22992a8c20019384956 Lirone <lirone.samoun@gmail.com> 1496921158 +0200	commit: Add basic interactive learning, without implementation paper
+1abb44b19b0cfc6394b1a22992a8c20019384956 5e08aa6f63f81bfba953055f83f6b694ed5733b8 Lirone <lirone.samoun@gmail.com> 1496935914 +0200	commit: Improvement
+5e08aa6f63f81bfba953055f83f6b694ed5733b8 bc2f22ebf9cf86b697cb4f16ac01c719924c9987 Lirone <lirone.samoun@gmail.com> 1496991675 +0200	commit: Okey fonctionne
+bc2f22ebf9cf86b697cb4f16ac01c719924c9987 5c28efa08e8433a9f55975869d3b7715c4fc964d Lirone <lirone.samoun@gmail.com> 1496992547 +0200	checkout: moving from devTest to master
+5c28efa08e8433a9f55975869d3b7715c4fc964d bc2f22ebf9cf86b697cb4f16ac01c719924c9987 Lirone <lirone.samoun@gmail.com> 1496992562 +0200	merge devTest: Fast-forward
+bc2f22ebf9cf86b697cb4f16ac01c719924c9987 bc2f22ebf9cf86b697cb4f16ac01c719924c9987 Lirone <lirone.samoun@gmail.com> 1496993120 +0200	checkout: moving from master to fixAlgo
+bc2f22ebf9cf86b697cb4f16ac01c719924c9987 eedce12408293630df0a5e4a9176b65c4afdc9b9 Lirone <lirone.samoun@gmail.com> 1497003701 +0200	commit: change diversity function'
+eedce12408293630df0a5e4a9176b65c4afdc9b9 f20ba12eb2c23f97f3026546ce9b079acc7deb21 Lirone <lirone.samoun@gmail.com> 1497003866 +0200	commit: change diversity function algo3D
+f20ba12eb2c23f97f3026546ce9b079acc7deb21 59b8094ad11cc43b62f398700c547bbb2fbb78c7 Lirone <lirone.samoun@gmail.com> 1497003968 +0200	commit: change diversity function algo3D
+59b8094ad11cc43b62f398700c547bbb2fbb78c7 41c20d672cd3e5ec9de1bdb5ff8cf5f6b562d6c9 Lirone <lirone.samoun@gmail.com> 1497004052 +0200	commit: change diversity function algo3D
+41c20d672cd3e5ec9de1bdb5ff8cf5f6b562d6c9 bf3b5c1a1a97837fba5cf04eccd0c30a04cd9c80 Lirone <lirone.samoun@gmail.com> 1497004320 +0200	commit: change diversity function algo3D
+bf3b5c1a1a97837fba5cf04eccd0c30a04cd9c80 bc2f22ebf9cf86b697cb4f16ac01c719924c9987 Lirone <lirone.samoun@gmail.com> 1497004360 +0200	checkout: moving from fixAlgo to master
+bc2f22ebf9cf86b697cb4f16ac01c719924c9987 bf3b5c1a1a97837fba5cf04eccd0c30a04cd9c80 Lirone <lirone.samoun@gmail.com> 1497004367 +0200	merge fixAlgo: Fast-forward
+bf3b5c1a1a97837fba5cf04eccd0c30a04cd9c80 3652b2c7e9bf3c2d084ebdbec2cefd99aafa50f7 Lirone <lirone.samoun@gmail.com> 1497859985 +0200	commit: Add graphic for rank
+3652b2c7e9bf3c2d084ebdbec2cefd99aafa50f7 533c45e1268add3a612842e850731468c8346c45 Lirone <lirone.samoun@gmail.com> 1499418187 +0200	commit: InteractiveLearning3D manuel + SimilaritySearch
+533c45e1268add3a612842e850731468c8346c45 533c45e1268add3a612842e850731468c8346c45 Lirone <lirone.samoun@gmail.com> 1499433806 +0200	reset: moving to HEAD
+533c45e1268add3a612842e850731468c8346c45 533c45e1268add3a612842e850731468c8346c45 Lirone <lirone.samoun@gmail.com> 1499434000 +0200	reset: moving to HEAD
+533c45e1268add3a612842e850731468c8346c45 0962495e900ddc25b1e06bd5a8c5c7233d3be985 Lirone <lirone.samoun@gmail.com> 1499692367 +0200	commit: Add beginning of automation + similarity search ok
+0962495e900ddc25b1e06bd5a8c5c7233d3be985 5ef7435b4c4ede3e27cbdefeb6b2a0f180e751ad Lirone <lirone.samoun@gmail.com> 1499697214 +0200	commit: Avancement automation
+5ef7435b4c4ede3e27cbdefeb6b2a0f180e751ad bdc4cf362a93dc42e1a04719a022220875817560 Lirone <lirone.samoun@gmail.com> 1499756833 +0200	commit: before adding improvement
+bdc4cf362a93dc42e1a04719a022220875817560 02d1ab333f7dc28d4a29d85071c64a781580d0be Lirone <lirone.samoun@gmail.com> 1499765984 +0200	commit: Begin refactoring code
+02d1ab333f7dc28d4a29d85071c64a781580d0be 80b681f7e033b4b627b275cc869a5e939ee1b69f Lirone <lirone.samoun@gmail.com> 1499767222 +0200	commit: refactoring code
+80b681f7e033b4b627b275cc869a5e939ee1b69f 161028617c8060467a36df09a0dcbf62179435e6 Lirone <lirone.samoun@gmail.com> 1499783060 +0200	commit: refactorisation beginning
+161028617c8060467a36df09a0dcbf62179435e6 b4d78f3b7f4ac5004001e48467e3cfad9db20b45 Lirone <lirone.samoun@gmail.com> 1499848112 +0200	commit: add get random object from dataset function
+b4d78f3b7f4ac5004001e48467e3cfad9db20b45 bc712eba60c0766a3b3bd4fe739465d64268df41 Lirone <lirone.samoun@gmail.com> 1499848858 +0200	commit: Add function loop over descriptor and dataset
+bc712eba60c0766a3b3bd4fe739465d64268df41 a183c1788db4e3fa55064cb0e4c1b7b2727c9178 Lirone <lirone.samoun@gmail.com> 1499851669 +0200	commit: Add save graphic
+a183c1788db4e3fa55064cb0e4c1b7b2727c9178 96a7d7e3f5050055f1f41c72c7976cc48a3a0615 Lirone <lirone.samoun@gmail.com> 1499851947 +0200	commit: Add save graphic
+96a7d7e3f5050055f1f41c72c7976cc48a3a0615 96a7d7e3f5050055f1f41c72c7976cc48a3a0615 Lirone <lirone.samoun@gmail.com> 1499852356 +0200	checkout: moving from master to improvement
+96a7d7e3f5050055f1f41c72c7976cc48a3a0615 b45e6c3356bb5f1a24e24c9a3cdb111342bc08cb Lirone <lirone.samoun@gmail.com> 1499865243 +0200	commit: Add name view in UI
+b45e6c3356bb5f1a24e24c9a3cdb111342bc08cb 96a7d7e3f5050055f1f41c72c7976cc48a3a0615 Lirone <lirone.samoun@gmail.com> 1499865286 +0200	checkout: moving from improvement to master
+96a7d7e3f5050055f1f41c72c7976cc48a3a0615 b45e6c3356bb5f1a24e24c9a3cdb111342bc08cb Lirone <lirone.samoun@gmail.com> 1499865304 +0200	merge improvement: Fast-forward
+b45e6c3356bb5f1a24e24c9a3cdb111342bc08cb b45e6c3356bb5f1a24e24c9a3cdb111342bc08cb Lirone <lirone.samoun@gmail.com> 1499865370 +0200	checkout: moving from master to improvement
+b45e6c3356bb5f1a24e24c9a3cdb111342bc08cb e395adc9bd4282ee31f997b8a5b60331e40d887a Lirone <lirone.samoun@gmail.com> 1499868136 +0200	commit: add color green red similarity search result
+e395adc9bd4282ee31f997b8a5b60331e40d887a 290937231d44b191502d8f3154d0ac80ad5d7ac5 Lirone <lirone.samoun@gmail.com> 1499868338 +0200	commit: add color green red similarity search result
+290937231d44b191502d8f3154d0ac80ad5d7ac5 b45e6c3356bb5f1a24e24c9a3cdb111342bc08cb Lirone <lirone.samoun@gmail.com> 1499868347 +0200	checkout: moving from improvement to master
+b45e6c3356bb5f1a24e24c9a3cdb111342bc08cb 290937231d44b191502d8f3154d0ac80ad5d7ac5 Lirone <lirone.samoun@gmail.com> 1499868362 +0200	merge improvement: Fast-forward
+290937231d44b191502d8f3154d0ac80ad5d7ac5 290937231d44b191502d8f3154d0ac80ad5d7ac5 Lirone <lirone.samoun@gmail.com> 1499868376 +0200	checkout: moving from master to improvement
+290937231d44b191502d8f3154d0ac80ad5d7ac5 8d414db11127b251170f246c60e8570f792073b3 Lirone <lirone.samoun@gmail.com> 1499870846 +0200	commit: minor modif
+8d414db11127b251170f246c60e8570f792073b3 0fe4d4fb192548d09b456309c32ac92bee2e2d4a Lirone <lirone.samoun@gmail.com> 1500302777 +0200	commit: Automation almost finish - Need to add timer and correct bug
+0fe4d4fb192548d09b456309c32ac92bee2e2d4a 62dcbdb49f4e2fccde3446d7437753e42728224d Lirone <lirone.samoun@gmail.com> 1500369764 +0200	commit: improvement
+62dcbdb49f4e2fccde3446d7437753e42728224d afbc942417456a0ab7cc511fb7d523dca7e6e634 Lirone <lirone.samoun@gmail.com> 1500371321 +0200	commit: improvement
+afbc942417456a0ab7cc511fb7d523dca7e6e634 222b2aeb15ba83139810b9ca8b449f98fa5c6782 Lirone <lirone.samoun@gmail.com> 1500374601 +0200	commit: Automatisation finished
+222b2aeb15ba83139810b9ca8b449f98fa5c6782 e6c48e4d50013e1ff2a4b15db07b52d2e7c7b40b Lirone <lirone.samoun@gmail.com> 1500383915 +0200	commit: mprovement
+e6c48e4d50013e1ff2a4b15db07b52d2e7c7b40b 1e448824cea2036cf658261b79cfc4d9e56da7b2 Lirone <lirone.samoun@gmail.com> 1500551518 +0200	commit: improvement finish - Going to implement multi thread
+1e448824cea2036cf658261b79cfc4d9e56da7b2 a75bc12620809704f6b06f42beb480cc20f784d5 Lirone <lirone.samoun@gmail.com> 1500997450 +0200	commit: Add recall and precision
+a75bc12620809704f6b06f42beb480cc20f784d5 78f319c05fcc3d05501f501ecdf6cd030a8a3614 Lirone <lirone.samoun@gmail.com> 1501058381 +0200	commit: Add different curves metrics
+78f319c05fcc3d05501f501ecdf6cd030a8a3614 d7f06ebc19ac3fe195ed9e3ae4518404e01312f4 Lirone <lirone.samoun@gmail.com> 1501059187 +0200	commit: Add different curves metrics
+d7f06ebc19ac3fe195ed9e3ae4518404e01312f4 290937231d44b191502d8f3154d0ac80ad5d7ac5 Lirone <lirone.samoun@gmail.com> 1501059265 +0200	checkout: moving from improvement to master
+290937231d44b191502d8f3154d0ac80ad5d7ac5 d7f06ebc19ac3fe195ed9e3ae4518404e01312f4 Lirone <lirone.samoun@gmail.com> 1501059274 +0200	merge improvement: Fast-forward
+d7f06ebc19ac3fe195ed9e3ae4518404e01312f4 d7f06ebc19ac3fe195ed9e3ae4518404e01312f4 Lirone <lirone.samoun@gmail.com> 1501059376 +0200	checkout: moving from master to thread
+d7f06ebc19ac3fe195ed9e3ae4518404e01312f4 1371e3af4faaf203e698cdcb30f30e8fcc3afdce Lirone <lirone.samoun@gmail.com> 1501080001 +0200	commit: add multiprocessing
+1371e3af4faaf203e698cdcb30f30e8fcc3afdce 43c084b9941e3d4442c023cda691ba22a55eddea Lirone <lirone.samoun@gmail.com> 1501081628 +0200	commit: multi processing
+43c084b9941e3d4442c023cda691ba22a55eddea 586e2bd103a58c1379b943d68863f5fb5bc566d7 Lirone <lirone.samoun@gmail.com> 1501596744 +0200	commit: Ok
+586e2bd103a58c1379b943d68863f5fb5bc566d7 75d8581dc180a1270ad676aaa68a2bf0a1900859 Lirone <lirone.samoun@gmail.com> 1502112790 +0200	commit: commit
+75d8581dc180a1270ad676aaa68a2bf0a1900859 31efbde2c2ee4488da7f89d0d619b974bf0e173c Lirone <lirone.samoun@gmail.com> 1502286518 +0200	commit: Add plot bar
+31efbde2c2ee4488da7f89d0d619b974bf0e173c 1a14d78369d0636385d7c2cca8b2b8a439ad6e22 Lirone <lirone.samoun@gmail.com> 1502286534 +0200	commit: imrprovement
+1a14d78369d0636385d7c2cca8b2b8a439ad6e22 82c66658ba741d74958f93ff40febe57e661718f Lirone <lirone.samoun@gmail.com> 1502288585 +0200	commit: minor modif
+82c66658ba741d74958f93ff40febe57e661718f 6d8c939c0aef3394444e4342922eecbfd45648a6 Lirone <lirone.samoun@gmail.com> 1502447205 +0200	commit: final graphic
+6d8c939c0aef3394444e4342922eecbfd45648a6 2ca96d2f64de3099d3f604996659a46fb39f436a Lirone <lirone.samoun@gmail.com> 1503653592 +0200	commit: final
+2ca96d2f64de3099d3f604996659a46fb39f436a dd3c5ccde0df69103a78ca5801385bade65439d3 Lirone <lirone.samoun@gmail.com> 1503653629 +0200	commit: Minor modification
+dd3c5ccde0df69103a78ca5801385bade65439d3 0dbf190b27fc2d9c8c894e1811926d23240dca1c Lirone <lirone.samoun@gmail.com> 1503653641 +0200	commit: Minor modification
+0dbf190b27fc2d9c8c894e1811926d23240dca1c 39e66b37cdb182be3ee3fba87b1f9d3d44c08977 Lirone <lirone.samoun@gmail.com> 1504693650 +0200	commit: update
+39e66b37cdb182be3ee3fba87b1f9d3d44c08977 b1f03aa55ff51245d91fc60e0e3d92d605ca9ba3 Lirone <lirone.samoun@gmail.com> 1504693663 +0200	commit: update
+b1f03aa55ff51245d91fc60e0e3d92d605ca9ba3 185420b70c779b3521cc7f9c5c0969b07ae8ad05 Lirone <lirone.samoun@gmail.com> 1511509030 +0100	commit: new modif
+185420b70c779b3521cc7f9c5c0969b07ae8ad05 ad1e677b7d08aef25ff087ea149cfd168f96e9a3 Lirone <lirone.samoun@gmail.com> 1511770128 +0100	commit: final before modification
+ad1e677b7d08aef25ff087ea149cfd168f96e9a3 f45ba212fa69c03733f675824192d2f025725e36 Lirone <lirone.samoun@gmail.com> 1516780975 +0100	commit: update

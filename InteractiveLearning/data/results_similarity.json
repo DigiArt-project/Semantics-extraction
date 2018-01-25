@@ -1,0 +1,23 @@
+[ 
+{"Number" :0, "Category" :"bottle", "id":3485,"Distance":6.533014 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle1_2.pcd"}, 
+{"Number" :1, "Category" :"bottle", "id":3545,"Distance":7.734132 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle1_1.pcd"}, 
+{"Number" :2, "Category" :"bottle", "id":3879,"Distance":9.535639 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle71_2.pcd"}, 
+{"Number" :3, "Category" :"bottle", "id":3814,"Distance":10.445406 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle71_1.pcd"}, 
+{"Number" :4, "Category" :"bottle", "id":3684,"Distance":10.977640 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle23_1.pcd"}, 
+{"Number" :5, "Category" :"bottle", "id":3402,"Distance":11.245255 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle47_2.pcd"}, 
+{"Number" :6, "Category" :"bottle", "id":3650,"Distance":11.754909 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle44_2.pcd"}, 
+{"Number" :7, "Category" :"bottle", "id":3589,"Distance":11.983423 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle44_1.pcd"}, 
+{"Number" :8, "Category" :"bottle", "id":3740,"Distance":12.025981 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle23_2.pcd"}, 
+{"Number" :9, "Category" :"bottle", "id":3344,"Distance":12.096508 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle47_1.pcd"}, 
+{"Number" :10, "Category" :"bottle", "id":3503,"Distance":12.107053 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle39_2.pcd"}, 
+{"Number" :11, "Category" :"bottle", "id":3452,"Distance":12.502989 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle39_1.pcd"}, 
+{"Number" :12, "Category" :"bottle", "id":4129,"Distance":14.651046 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle28_1.pcd"}, 
+{"Number" :13, "Category" :"bottle", "id":3553,"Distance":15.093410 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle4_2.pcd"}, 
+{"Number" :14, "Category" :"bottle", "id":3335,"Distance":15.115915 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle67_4.pcd"}, 
+{"Number" :15, "Category" :"bottle", "id":3430,"Distance":15.228573 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle67_6.pcd"}, 
+{"Number" :16, "Category" :"bottle", "id":3396,"Distance":15.248057 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle19_1.pcd"}, 
+{"Number" :17, "Category" :"bottle", "id":3812,"Distance":15.713008 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle34_1.pcd"}, 
+{"Number" :18, "Category" :"bottle", "id":4188,"Distance":16.017178 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle28_2.pcd"}, 
+{"Number" :19, "Category" :"bottle", "id":3476,"Distance":16.101824 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle67_3.pcd"}, 
+{"Number" :20, "Category" :"bottle", "id":3476,"Distance":16.101824 , "metric":"L1" , "path":"../Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle67_3.pcd"} 
+] 

@@ -1,0 +1,11 @@
+[ 
+{"name" :"bell", "image" :"images/categories/bell.jpg", "description" :"a bell"}, 
+{"name" :"bottle", "image" :"images/categories/bottle.jpg", "description" :"a bottle"}, 
+{"name" :"box", "image" :"images/categories/box.jpg", "description" :"a box"}, 
+{"name" :"chair", "image" :"images/categories/chair.jpg", "description" :"a chair"}, 
+{"name" :"coffeemaker", "image" :"images/categories/coffeemaker.jpg", "description" :"a coffeemaker"}, 
+{"name" :"computer", "image" :"images/categories/computer.jpg", "description" :"a computer"}, 
+{"name" :"foodbox", "image" :"images/categories/foodbox.jpg", "description" :"a foodbox"},
+{"name" :"jar", "image" :"images/categories/jar.jpg", "description" :"a jar"}, 
+{"name" :"mug", "image" :"images/categories/mug.jpg", "description" :"a mug"}, 
+{"name" :"lemonsquezzer", "image" :"images/categories/lemonsquezzer.jpg", "description" :"a lemon squeezer"},] 

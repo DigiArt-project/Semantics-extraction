@@ -1,0 +1,58 @@
+<html lang="en" >
+<head>
+	<meta charset="utf-8" />
+	<title>3D object recognition</title>
+	<link href="css/main.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="js/script.js"></script>
+</head>
+<body>
+	<header>
+	<h2>Cloud recognition</h2>
+	</header>
+	<div class="container">
+		<div class="contr"><h2>Select a obj cloud and click on Upload button</h2></div>
+		<div class="upload_form_cont">
+			<form id="upload_form" enctype="multipart/form-data" method="post" action="/action_upload">
+				<div>
+					<div><label for="cloud">Please select a pcd/obj file</label></div>
+					<div><input type="file" name="cloud" id="cloud" onchange="fileSelected();" /></div>
+					<p><b>Choose descriptor:</b></p>
+					<div><input id="desc_id" type="radio" name="type_descriptor_selected" value="esf" checked="checked"> ESF <br></div>
+  					<div><input id="desc_id" type="radio" name="type_descriptor_selected" value="vfh"> VFH </div>
+  					<div><input id="desc_id" type="radio" name="type_descriptor_selected" value="cvfh"> CVFH </div>
+  					<div><input id="desc_id" type="radio" name="type_descriptor_selected" value="vfh"> OURCVFH </div>
+  					<p><b>Choose method:</b></p>
+  					<div><input id="method_id" type="radio" name="method_search_selected" value="svm" checked="checked" > SVM </div>
+  					<div><input id="method_id" type="radio" name="method_search_selected" value="similarity"> Similarity Search </div>
+				</div>
+				<div>
+					<input name="uploadFile" id="uploadFile" type="button" value="Upload" accept=".obj,.pcd"onclick="startUploading()" />
+				</div>
+				<div id="fileinfo">
+					<div id="filename"></div>
+					<div id="filesize"></div>
+					<div id="filetype"></div>
+					<div id="filedim"></div>
+				</div>
+				<div id="error">You should select valid cloud files only!</div>
+				<div id="error2">An error occurred while uploading the file</div>
+				<div id="abort">The upload has been canceled by the user or the browser dropped the connection</div>
+				<div id="warnsize">Your file is very big. We can't accept it. Please select more small file</div>
+				<div id="progress_info">
+					<div id="progress"></div>
+					<div id="progress_percent">&nbsp;</div>
+					<div class="clear_both"></div>
+					<div>
+						<div id="speed">&nbsp;</div>
+						<div id="remaining">&nbsp;</div>
+						<div id="b_transfered">&nbsp;</div>
+						<div class="clear_both"></div>
+					</div>
+					<div id="upload_response"></div>
+				</div>
+			</form>
+			<img id="preview" />
+		</div>
+	</div>
+</body>
+</html>
