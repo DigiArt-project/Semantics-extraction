@@ -1,0 +1,23 @@
+[ 
+{"Number" :0, "Category" :"bottle", "id":78,"Distance":18.553627 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/bottle/full/descriptors/esf/desc_bottle_10.pcd"}, 
+{"Number" :1, "Category" :"bottle", "id":80,"Distance":21.459455 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/bottle/full/descriptors/esf/desc_bottle_8.pcd"}, 
+{"Number" :2, "Category" :"coffeemaker", "id":6,"Distance":25.693998 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/coffeemaker/full/descriptors/esf/desc_coffeemaker_5.pcd"}, 
+{"Number" :3, "Category" :"box", "id":22,"Distance":27.263273 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/box/full/descriptors/esf/desc_box_4.pcd"}, 
+{"Number" :4, "Category" :"bottle", "id":81,"Distance":27.814026 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/bottle/full/descriptors/esf/desc_bottle_9.pcd"}, 
+{"Number" :5, "Category" :"bottle", "id":79,"Distance":28.079563 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/bottle/full/descriptors/esf/desc_bottle_11.pcd"}, 
+{"Number" :6, "Category" :"bottle", "id":82,"Distance":28.436861 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/bottle/full/descriptors/esf/desc_bottle_1.pcd"}, 
+{"Number" :7, "Category" :"bottle", "id":83,"Distance":28.571564 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/bottle/full/descriptors/esf/desc_bottle_0.pcd"}, 
+{"Number" :8, "Category" :"box", "id":23,"Distance":28.657011 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/box/full/descriptors/esf/desc_box_5.pcd"}, 
+{"Number" :9, "Category" :"jar", "id":30,"Distance":28.750946 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/jar/full/descriptors/esf/desc_jar_1.pcd"}, 
+{"Number" :10, "Category" :"bottle", "id":77,"Distance":28.778402 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/bottle/full/descriptors/esf/desc_bottle_12.pcd"}, 
+{"Number" :11, "Category" :"bottle", "id":86,"Distance":28.893843 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/bottle/full/descriptors/esf/desc_bottle_7.pcd"}, 
+{"Number" :12, "Category" :"jar", "id":29,"Distance":29.967821 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/jar/full/descriptors/esf/desc_jar_2.pcd"}, 
+{"Number" :13, "Category" :"chair", "id":35,"Distance":30.543776 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/chair/full/descriptors/esf/desc_chair_5.pcd"}, 
+{"Number" :14, "Category" :"coffeemaker", "id":9,"Distance":30.579557 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/coffeemaker/full/descriptors/esf/desc_coffeemaker_4.pcd"}, 
+{"Number" :15, "Category" :"chair", "id":37,"Distance":30.741575 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/chair/full/descriptors/esf/desc_chair_6.pcd"}, 
+{"Number" :16, "Category" :"box", "id":19,"Distance":31.004570 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/box/full/descriptors/esf/desc_box_3.pcd"}, 
+{"Number" :17, "Category" :"bottle", "id":87,"Distance":31.025545 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/bottle/full/descriptors/esf/desc_bottle_6.pcd"}, 
+{"Number" :18, "Category" :"bottle", "id":84,"Distance":31.223701 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/bottle/full/descriptors/esf/desc_bottle_2.pcd"}, 
+{"Number" :19, "Category" :"coffeemaker", "id":7,"Distance":31.405151 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/coffeemaker/full/descriptors/esf/desc_coffeemaker_14.pcd"}, 
+{"Number" :20, "Category" :"coffeemaker", "id":7,"Distance":31.405151 , "metric":"L1" , "path":"../Datasets/Dataset_structuresensor_normalized/coffeemaker/full/descriptors/esf/desc_coffeemaker_14.pcd"} 
+] 

@@ -142,64 +142,6 @@ void pointCloudTovtkPolyData (const pcl::PointCloud<pcl::PointXYZ>& cloud, vtkPo
         nr_points = j;
         points->SetNumberOfPoints (nr_points);
     }
-    
-    // Visualize
-    /*
-    // Create a polydata object
-    vtkSmartPointer<vtkPolyData> point =
-    vtkSmartPointer<vtkPolyData>::New();
-    // Create the topology of the point (a vertex)
-    vtkSmartPointer<vtkCellArray> vertices =
-    vtkSmartPointer<vtkCellArray>::New();
-    vtkIdType pid[1];
-    // Set the points and vertices we created as the geometry and topology of the polydata
-    for( size_t i = 0 ; i < nr_points ; i++ )
-    {
-        // Check if the point is invalid
-        if (pcl_isfinite (cloud[i].x) ||
-            pcl_isfinite (cloud[i].y) ||
-            pcl_isfinite (cloud[i].z)){
-            const float p[3] = {cloud[i].x, cloud[i].y, cloud[i].z};
-            std::cout << data[i] << std::endl;
-            pid[0] = points->InsertNextPoint(p);
-            vertices->InsertNextCell(1,pid);
-        }
-    }
-    
-    point->SetPoints(points);
-    point->SetVerts(vertices);
-    vtkSmartPointer<vtkPolyDataMapper> mapper =
-    vtkSmartPointer<vtkPolyDataMapper>::New();
-#if VTK_MAJOR_VERSION <= 5
-    mapper->SetInput(point);
-#else
-    mapper->SetInputData(point);
-#endif
-
-    vtkSmartPointer<vtkActor> actor =
-    vtkSmartPointer<vtkActor>::New();
-    actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(1);
-    
-    vtkSmartPointer<vtkRenderer> renderer =
-    vtkSmartPointer<vtkRenderer>::New();
-    vtkSmartPointer<vtkRenderWindow> renderWindow =
-    vtkSmartPointer<vtkRenderWindow>::New();
-    renderWindow->AddRenderer(renderer);
-    vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
-    vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    renderWindowInteractor->SetRenderWindow(renderWindow);
-    
-    renderer->AddActor(actor);
-    
-    renderWindow->Render();
-    renderWindowInteractor->Start();
-    */
-    
-    /*for( size_t i = 0 ; i < nr_points ; i++ )
-    {
-        std::cout << data[i] << std::endl;
-    }*/
     // Create a temporary PolyData and add the points to it
     vtkSmartPointer<vtkPolyData> temp_polydata = vtkSmartPointer<vtkPolyData>::New ();
     temp_polydata->SetPoints (points);
@@ -291,167 +233,7 @@ void pointCloudTovtkPolyData (const pcl::PointCloud<pcl::PointXYZ>& cloud, vtkPo
     
     pdata->DeepCopy (vertex_glyph_filter->GetOutput ());
     
-   /*
-    // Clean the polydata. This will remove duplicate points that may be
-    // present in the input data.
-    vtkSmartPointer<vtkCleanPolyData> cleaner =
-    vtkSmartPointer<vtkCleanPolyData>::New();
-    cleaner->SetInputData(temp_polydata);
-    
-    // Generate a tetrahedral mesh from the input points. By
-    // default, the generated volume is the convex hull of the points.
-    vtkSmartPointer<vtkDelaunay3D> delaunay3D =
-    vtkSmartPointer<vtkDelaunay3D>::New();
-    delaunay3D->SetInputConnection (cleaner->GetOutputPort());
-    
-    vtkSmartPointer<vtkDataSetMapper> delaunayMapper =
-    vtkSmartPointer<vtkDataSetMapper>::New();
-    delaunayMapper->SetInputConnection(delaunay3D->GetOutputPort());
-    
-    vtkSmartPointer<vtkActor> delaunayActor =
-    vtkSmartPointer<vtkActor>::New();
-    delaunayActor->SetMapper(delaunayMapper);
-    delaunayActor->GetProperty()->SetColor(1,0,0);
-    
-    // Generate a mesh from the input points. If Alpha is non-zero, then
-    // tetrahedra, triangles, edges and vertices that lie within the
-    // alpha radius are output.
-    vtkSmartPointer<vtkDelaunay3D> delaunay3DAlpha =
-    vtkSmartPointer<vtkDelaunay3D>::New();
-    delaunay3DAlpha->SetInputConnection (cleaner->GetOutputPort());
-    //delaunay3DAlpha->SetAlpha(0);
-    std::cout << "Tolerance : " << delaunay3DAlpha->GetTolerance() << std::endl;
-    std::cout << "Vertice : " << delaunay3DAlpha->GetAlphaVerts() << std::endl;
-    delaunay3DAlpha->SetTolerance (0.001);
-    delaunay3DAlpha->SetAlphaVerts (0.1);
-    
-    vtkSmartPointer<vtkDataSetMapper> delaunayAlphaMapper =
-    vtkSmartPointer<vtkDataSetMapper>::New();
-    delaunayAlphaMapper->SetInputConnection(delaunay3DAlpha->GetOutputPort());
-    
-    
-    vtkSmartPointer<vtkActor> delaunayAlphaActor =
-    vtkSmartPointer<vtkActor>::New();
-    delaunayAlphaActor->SetMapper(delaunayAlphaMapper);
-    delaunayAlphaActor->GetProperty()->SetColor(1,0,0);
-    
-    // Visualize
-    
-    // Define viewport ranges
-    // (xmin, ymin, xmax, ymax)
-    double centerViewport[4] = {0.33, 0.0, 0.66, 1.0};
-    double rightViewport[4] = {0.66, 0.0, 1.0, 1.0};
-    
-    // Create a renderer, render window, and interactor
-    vtkSmartPointer<vtkRenderer> delaunayRenderer =
-    vtkSmartPointer<vtkRenderer>::New();
-    vtkSmartPointer<vtkRenderer> delaunayAlphaRenderer =
-    vtkSmartPointer<vtkRenderer>::New();
-    
-    vtkSmartPointer<vtkRenderWindow> renderWindow =
-    vtkSmartPointer<vtkRenderWindow>::New();
-    renderWindow->SetSize(900,300);
-    
-    //renderWindow->AddRenderer(delaunayRenderer);
-    //delaunayRenderer->SetViewport(centerViewport);
-    renderWindow->AddRenderer(delaunayAlphaRenderer);
-    delaunayAlphaRenderer->SetViewport(rightViewport);
-    
-    vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
-    vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    renderWindowInteractor->SetRenderWindow(renderWindow);
-    
-    //originalRenderer->AddActor(originalActor);
-    //delaunayRenderer->AddActor(delaunayActor);
-    delaunayAlphaRenderer->AddActor(delaunayAlphaActor);
-    
-    //delaunayRenderer->SetBackground(.4, .6, .3);
-    delaunayAlphaRenderer->SetBackground(.5, .6, .3);
-    
-    // Render and interact
-    renderWindow->Render();
-    renderWindowInteractor->Start();
-    */
-    /* Visualise surface from points
-    // Construct the surface and create isosurface.
-    vtkSmartPointer<vtkSurfaceReconstructionFilter> surf =
-    vtkSmartPointer<vtkSurfaceReconstructionFilter>::New();
-#if VTK_MAJOR_VERSION <= 5
-    surf->SetInput(pdata);
-#else
-    surf->SetInputData(pdata);
-#endif
-    
-    vtkSmartPointer<vtkContourFilter> cf =
-    vtkSmartPointer<vtkContourFilter>::New();
-    cf->SetInputConnection(surf->GetOutputPort());
-    cf->SetValue(0, 0.0);
-    
-    // Sometimes the contouring algorithm can create a volume whose gradient
-    // vector and ordering of polygon (using the right hand rule) are
-    // inconsistent. vtkReverseSense cures this problem.
-    vtkSmartPointer<vtkReverseSense> reverse =
-    vtkSmartPointer<vtkReverseSense>::New();
-    reverse->SetInputConnection(cf->GetOutputPort());
-    reverse->ReverseCellsOn();
-    reverse->ReverseNormalsOn();
-    
-    vtkSmartPointer<vtkPolyDataMapper> map =
-    vtkSmartPointer<vtkPolyDataMapper>::New();
-    map->SetInputConnection(reverse->GetOutputPort());
-    map->ScalarVisibilityOff();
-    
-    vtkSmartPointer<vtkActor> surfaceActor =
-    vtkSmartPointer<vtkActor>::New();
-    surfaceActor->SetMapper(map);
-    
-    // Create the RenderWindow, Renderer and both Actors
-    vtkSmartPointer<vtkRenderer> ren =
-    vtkSmartPointer<vtkRenderer>::New();
-    vtkSmartPointer<vtkRenderWindow> renWin =
-    vtkSmartPointer<vtkRenderWindow>::New();
-    renWin->AddRenderer(ren);
-    vtkSmartPointer<vtkRenderWindowInteractor> iren =
-    vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    iren->SetRenderWindow(renWin);
-    
-    // Add the actors to the renderer, set the background and size
-    ren->AddActor(surfaceActor);
-    ren->SetBackground(.2, .3, .4);
-    
-    renWin->Render();
-    iren->Start();
-    */
-/*
-    // Create a mapper and actor
-    vtkSmartPointer<vtkPolyDataMapper> mapper =
-    vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputConnection(vertex_glyph_filter->GetOutputPort());
-    
-    vtkSmartPointer<vtkActor> actor =
-    vtkSmartPointer<vtkActor>::New();
-    actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(3);
-    
-    // Create a renderer, render window, and interactor
-    vtkSmartPointer<vtkRenderer> renderer =
-    vtkSmartPointer<vtkRenderer>::New();
-    vtkSmartPointer<vtkRenderWindow> renderWindow =
-    vtkSmartPointer<vtkRenderWindow>::New();
-    renderWindow->AddRenderer(renderer);
-    vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
-    vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    renderWindowInteractor->SetRenderWindow(renderWindow);
-    
-    // Add the actor to the scene
-    renderer->AddActor(actor);
-    renderer->SetBackground(.3, .6, .3); // Background color green
-    
-    // Render and interact
-    renderWindow->Render();
-    renderWindowInteractor->Start();
- */
-    
+
    
 }
 
@@ -482,6 +264,27 @@ bool containsNaNValues(std::vector<float> data){
         }
     }
     return ok;
+}
+void normalizePC(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud){
+    
+    pcl::PointXYZ centroid;
+    pcl::computeCentroid(*cloud, centroid);
+    std::cout<<"centroid :"<<centroid.x<<", "<<centroid.y<<", "<<centroid.z<<std::endl;
+    std::vector<int> indices;
+    std::vector<float> distances;
+    
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    kdtree.setInputCloud( cloud, NULL);
+    kdtree.nearestKSearch( centroid, cloud->size(), indices, distances);
+    std::cout<<"scale factor :"<<distances.back()<<std::endl;
+    Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+    
+    transform.translation() << -centroid.x/sqrt(distances.back()), -centroid.y/sqrt(distances.back()), -centroid.z/sqrt(distances.back());
+    transform.scale(1/sqrt(distances.back()));
+    
+    //pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
+    pcl::transformPointCloud (*cloud, *cloud, transform);
+    //pcl::io::savePLYFile( newFilePath, *transformed_cloud);
 }
 
 void normalizePointCloud(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud){
@@ -779,7 +582,7 @@ showHelp (char *filename)
     std::cout << "*                         Compute views and descriptors                   *" << std::endl;
     std::cout << "*                                                                         *" << std::endl;
     std::cout << "***************************************************************************" << std::endl << std::endl;
-    std::cout << "This program take a list of ply object point cloud and generate multiple views of each object. Then for each object, one or multiple global descriptors are computed (VFH, CVFH, ESF, OURCVFH, GSHOT, GRSD). Each view can be saved and every descriptors are saved." << std::endl;
+    std::cout << "This program take a list of ply objects point cloud, normalize them and generate multiple views of each object. Then for each object, one or multiple global descriptors are computed. Each view can be saved and every descriptors are saved.\n" << std::endl;
     std::cout << "\n Assumption 1 : the folder which contains categories txt file is the dataset folder " << std::endl;
     std::cout << "\n Assumption 2 : the structure of the dataset follows this structure : Dataset/categorie_i/object_j for i,j in [0...N] \n" << std::endl;
     std::cout << "Usage: " << filename << " config (config file cfg format) folder_result (folder where to save the descriptors)" << std::endl << std::endl;
@@ -941,41 +744,10 @@ main (int argc, char** argv)
                 if (readPointCloud( cloud_path,  cloud)==-1)
                     return -1;
   
-                normalizePointCloud(cloud);
+                //normalizePointCloud(cloud);
+                normalizePC(cloud);
                 
                 vtkSmartPointer<vtkPolyData> data = vtkSmartPointer<vtkPolyData>::New ();
-                
-                //pointCloudTovtkPolyData (*cloud,data);
-                
-                /*
-                vtkSmartPointer<vtkPolyDataMapper> mapper1 =
-                vtkSmartPointer<vtkPolyDataMapper>::New();
-#if VTK_MAJOR_VERSION <= 5
-                mapper1->SetInput(data);
-#else
-                mapper1->SetInputData(data);
-#endif
-                
-                vtkSmartPointer<vtkActor> actor =
-                vtkSmartPointer<vtkActor>::New();
-                actor->SetMapper(mapper1);
-                actor->GetProperty()->SetPointSize(1);
-                
-                vtkSmartPointer<vtkRenderer> renderer1 =
-                vtkSmartPointer<vtkRenderer>::New();
-                vtkSmartPointer<vtkRenderWindow> renderWindow =
-                vtkSmartPointer<vtkRenderWindow>::New();
-                renderWindow->AddRenderer(renderer1);
-                vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
-                vtkSmartPointer<vtkRenderWindowInteractor>::New();
-                renderWindowInteractor->SetRenderWindow(renderWindow);
-                
-                renderer1->AddActor(actor);
-                
-                renderWindow->Render();
-                renderWindowInteractor->Start();
-                 */
-            
                 
                 //Load PLY model and scale it
                 const float model_scale = cfg.m_computeViewsDescriptors.model_scale;
@@ -1557,7 +1329,9 @@ main (int argc, char** argv)
                 down.filter(completeModel);
                 //std::string complete_model_name = category_dir + "/complete_model_" + std::to_string(count_data)+ ".pcd";
                 std::string complete_model_name = category_dir + "/" + filename + ".pcd";
+                std::string complete_model_name_ply = category_dir + "/" + filename + ".ply";
                 pcl::io::savePCDFileBinary<pcl::PointXYZ>(complete_model_name, completeModel);
+                pcl::io::savePLYFileBinary<pcl::PointXYZ>(complete_model_name_ply, completeModel);
                 
                 VolumeEstimation<pcl::PointXYZ> volume_estimation;
                 

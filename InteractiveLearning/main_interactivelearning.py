@@ -20,16 +20,16 @@ import plotting
 
 ###### GLOBAL VARIABLE #######
 
-path_dataset = "/Users/lironesamoun/digiArt/Datasets/Dataset_cat10_normalized/"
+path_dataset = "/Users/lironesamoun/digiArt/Datasets/Dataset_structuresensor_normalized/"
 training_file_full = path_dataset + "train_full.txt"
 testing_file_full =  path_dataset + "test_full.txt"
 training_file_views =  path_dataset +"train_views.txt"
 testing_file_views =  path_dataset +"test_views.txt"
 #Perform interative learning on full or views object
-compute_full = "false"
+compute_full = "true"
 #Array of descriptors we want to test
 descriptors = ['esf','pointnet']
-name_dataset = 'cat10_views'
+name_dataset = 'structuresensor_full'
 #Location of the dataset directory where the txt file are located. The txt represents the list of all the descriptors and path to descriptors
 root_data = "data/"
 #View path file
@@ -78,9 +78,9 @@ repetition_experiment = 1
 #Number of top result for pourcentage computation
 nb_max_positif_display = 10
 #The number of objects we select randomly for each category inside the dataset
-number_object_to_select_randomly = 3
+number_object_to_select_randomly = 5
 #Either select full objects or views object for selecting randomly
-select_full_object = True
+select_full_object = False
 
 query_cloud = ""
 
@@ -253,8 +253,8 @@ def split_train_test_from_training_testing_data_similaritySearch_GT(dataset_file
     y_binary = [1 if y_v == int(category_label) else -1 for y_v in y]
     number_positif_label = y_binary.count(1)
     number_negatif_label = y_binary.count(-1)
-    print("[INFO]Number positif from libsvm data : {}".format(number_positif_label))
-    print("[INFO] Number negatif from libsvm data : {}".format(number_negatif_label))
+    #print("[INFO]Number positif from libsvm data : {}".format(number_positif_label))
+    #print("[INFO] Number negatif from libsvm data : {}".format(number_negatif_label))
 
     fully_dataset_labeled_binary = Dataset(X_dataset_with_path, y_binary)
 
@@ -273,7 +273,6 @@ def split_train_test_from_training_testing_data_similaritySearch_GT(dataset_file
         if not compute_full == "true":
                 name_X_desc = name_X_desc.replace('view_','')
         name_X_desc = name_X_desc.replace('desc_','')
-        print(name_X_desc)
         X_dataset_with_path_dict[name_X_desc] = X_dataset_with_path[idx][0]
 
     values = list(X_dataset_with_path_dict.values())
@@ -2344,7 +2343,7 @@ def automatic_interactiveLearning(result_jsonfile,number_to_annotate_first_step,
 Main function for interactive learning with similarity search - Automatic labelling (no user required) with as an input list of object
 """
 def automatic_interactiveLearning_objectlist(params,name_descriptor):
-    list_of_random_objects, trained_dataset, name_dataset = params
+    list_of_random_objects, trained_dataset, name_dataset,result_list_numberObjectsPerClass = params
 
     display_graphic_each_step = False
     save_figures = True
@@ -2387,7 +2386,7 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
     #Array which will contains the score and results of the results of the list of object (length is the number of categories) for the category
     final_results_error_category,final_results_score_category = [], []
     #Array which will contain the proportion of positifs results displayed to the users in comparaison of the number of negatif displayed for the category
-    final_percent_positif_displayed,final_percent_negatif_displayed = [],[]
+    final_percent_positif_displayed,final_percent_positif_displayed_NN,final_percent_positif_displayed_FT,final_percent_positif_displayed_ST,final_percent_negatif_displayed = [],[],[],[],[]
 
     final_average_precision, final_recall,final_precision, final_f1_score, final_recall_curve,final_precision_curve = [], [], [], [], [], []
 
@@ -2404,6 +2403,7 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
         score_current_object_list,error_current_object_list = [], []
         #Arrays which will contains the pourcentage of positif in the top 20 for the current object
         percent_positif_current_object_list, percent_negatif_current_object_list = [], []
+        percent_positif_current_object_list_NN, percent_positif_current_object_list_FT, percent_positif_current_object_list_ST = [],[], []
         #Arrays which contains informations about F1 score, precision and recall for the current object
         f1score_current_object_list, AP_current_object_list, precision_current_object_list, recall_current_object_list, report_classification_current_object_list, cnf_matrix_current_object_list = [], [], [], [], [], []
         recall_curve_object_list, precision_curve_object_list = [], []
@@ -2422,10 +2422,11 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
             #Current Nbre iteration per object         
             nb_iterations = 1
             #Store data score for displaying a graphic at the end of the experiment
-            E_in, E_out, score_pourcent, error_pourcent, rank_array, positif_display_pourcent, negatif_display_pourcent = [], [], [], [], [], [], []
+            E_in, E_out, score_pourcent, error_pourcent, rank_array = [], [], [], [], []
+            positif_display_pourcent,positif_display_pourcent_NN,positif_display_pourcent_FT,positif_display_pourcent_ST, negatif_display_pourcent = [], [], [], [], []
             f1score_array, AP_array, precision_array, recall_array, report_classification_array, cnf_matrix_array = [], [], [], [], [], []
 
-            print("\n ###### Processing current OBJECT : {} \n".format(obj))
+            
             logging.info("Processing current OBJECT : %s ",obj)
 
             #Check if "/" is at the end of the path. Otherwise add it            
@@ -2546,8 +2547,20 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
             indices_ranking_descending_order, distance_ranking_descending_order = utils.sort_descending_order(decision_function,False)
             idx_example_positif_selection = np.take(idx_unlabeled_data,indices_ranking_descending_order)[:nbre_data_selection]
 
+            nn_score = NN(result_list_numberObjectsPerClass[idx])
+            ft_score = FT(result_list_numberObjectsPerClass[idx])
+            st_score = ST(result_list_numberObjectsPerClass[idx])
+
+            pourcent_positif_displayed_NN,pourcent_negatif_displayed_NN = compute_pourcentage_results(train_dataset_binary_labeled,train_dataset_unlabeled,idx_example_positif_selection,nn_score)
+            pourcent_positif_displayed_FT,pourcent_negatif_displayed_FT = compute_pourcentage_results(train_dataset_binary_labeled,train_dataset_unlabeled,idx_example_positif_selection,ft_score)
+            pourcent_positif_displayed_ST,pourcent_negatif_displayed_ST = compute_pourcentage_results(train_dataset_binary_labeled,train_dataset_unlabeled,idx_example_positif_selection,st_score)
+
             pourcent_positif_displayed, pourcent_negatif_displayed = compute_pourcentage_results(train_dataset_binary_labeled,train_dataset_unlabeled,idx_example_positif_selection,nb_max_positif_display)
+            
             positif_display_pourcent = np.append(positif_display_pourcent,pourcent_positif_displayed)
+            positif_display_pourcent_NN = np.append(positif_display_pourcent_NN,pourcent_positif_displayed_NN)
+            positif_display_pourcent_FT = np.append(positif_display_pourcent_FT,pourcent_positif_displayed_FT)
+            positif_display_pourcent_ST = np.append(positif_display_pourcent_ST,pourcent_positif_displayed_ST)
             negatif_display_pourcent = np.append(negatif_display_pourcent,pourcent_negatif_displayed)
 
 
@@ -2571,6 +2584,7 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
             decision_func = copy.copy(decision_function)
             i = 0
 
+            
             while nb_iterations < nb_iterations_max :
                 nb_iterations = nb_iterations + 1
                 print("\n=====>Itération : ({}/{}) ".format(nb_iterations,nb_iterations_max))
@@ -2589,13 +2603,31 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
                 b  = model_learning._intercept_
                 cs = model_learning.classes_
 
+
+                nn_score = NN(result_list_numberObjectsPerClass[idx])
+                ft_score = FT(result_list_numberObjectsPerClass[idx])
+                st_score = ST(result_list_numberObjectsPerClass[idx])
+
+                #print("NN score : {}".format(nn_score))
+                #print("FT score : {}".format(ft_score))
+                #print("ST score : {}".format(st_score))
+
+                pourcent_positif_displayed_NN,pourcent_negatif_displayed_NN = compute_pourcentage_results(train_dataset_binary_labeled,train_dataset_unlabeled,idx_example_positif_selection,nn_score)
+                pourcent_positif_displayed_FT,pourcent_negatif_displayed_FT = compute_pourcentage_results(train_dataset_binary_labeled,train_dataset_unlabeled,idx_example_positif_selection,ft_score)
+                pourcent_positif_displayed_ST,pourcent_negatif_displayed_ST = compute_pourcentage_results(train_dataset_binary_labeled,train_dataset_unlabeled,idx_example_positif_selection,st_score)
+
+                #print("Pourcent positif NN score : {}".format(pourcent_positif_displayed_NN))
+                #print("Pourcent positif FT score : {}".format(pourcent_positif_displayed_FT))
+                #print("Pourcent positif ST score : {}".format(pourcent_positif_displayed_ST))
+
+               
                 pourcent_positif_displayed,pourcent_negatif_displayed = compute_pourcentage_results(train_dataset_binary_labeled,train_dataset_unlabeled,idx_example_positif_selection,nb_max_positif_display)
 
                 X_test, y_test_binary = zip(*test_dataset_binary_labeled.get_labeled_entries())
                 X_test =  np.array(X_test)
                 y_pred = model_learning.predict(X_test)
                 
-
+                #print("PRECISION : {}".format(precision_curve))
                 #Compute SCORE SVM
                 f1score, AP, precision, recall,precision_curve,recall_curve, report_classification, cnf_matrix = compute_scores_SVM(X_test,y_test_binary,y_pred,model_learning)
 
@@ -2611,11 +2643,16 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
                 error_pourcent = np.append(error_pourcent,score_error)
                 rank_array = np.append(rank_array, rank)
                 positif_display_pourcent = np.append(positif_display_pourcent,pourcent_positif_displayed)
+                positif_display_pourcent_NN = np.append(positif_display_pourcent_NN,pourcent_positif_displayed_NN)
+                positif_display_pourcent_FT = np.append(positif_display_pourcent_FT,pourcent_positif_displayed_FT)
+                positif_display_pourcent_ST = np.append(positif_display_pourcent_ST,pourcent_positif_displayed_ST)
                 negatif_display_pourcent = np.append(negatif_display_pourcent,pourcent_negatif_displayed)
                 precision_array = np.append(precision_array,precision)
                 recall_array = np.append(recall_array,recall)
                 f1score_array = np.append(f1score_array, f1score)
                 AP_array = np.append(AP_array, AP)
+
+
 
                 #print("==> F1 Score : {}".format(f1score))
                 #print("==> Precision : {}".format(precision))
@@ -2663,6 +2700,7 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
                 total_annotated_id_list = automatic_annotate_most_uncertain_second_step(train_dataset_binary_labeled, train_dataset_unlabeled, id_selection_diversification,7)
 
                 #plot confusion matrix
+                '''
                 if nb_iterations < nb_iterations_max - 1:
                     # Plot non-normalized confusion matrix
                     class_names = ['Positif','Negatif']
@@ -2672,23 +2710,26 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
                     title = "confusion_matrix_" + str(name_descriptor) + "_" + str(name_dataset) + "_" + str(name_object) +".png"
                     output_graphicals_result = "results_graphics"+name_dataset+"/" + str(title)
                     plot_conf.savefig(output_graphicals_result)
-
+                '''
                 i = i + 1
                 
             #After processing one object, put the results in another lists. So that, at the end we can perform a mean of each category
             score_current_object_list.append(score_pourcent)
             error_current_object_list.append(error_pourcent)
             percent_positif_current_object_list.append(positif_display_pourcent)
+            percent_positif_current_object_list_NN.append(positif_display_pourcent_NN)
+            percent_positif_current_object_list_FT.append(positif_display_pourcent_FT)
+            percent_positif_current_object_list_ST.append(positif_display_pourcent_ST)
+
             percent_negatif_current_object_list.append(negatif_display_pourcent)
             f1score_current_object_list.append(f1score_array)
             AP_current_object_list.append(AP)
             precision_current_object_list.append(precision_array)
             recall_current_object_list.append(recall_array)
-            recall_curve_object_list.append(recall_curve)
-            precision_curve_object_list.append(precision_curve)
+            #recall_curve_object_list.append(recall_curve)
+            #precision_curve_object_list.append(precision_curve)
              
-
-
+        #print("Precision curve object list : {}".format(precision_curve_object_list))
         end_total_category = time.time()
         time_experiment_category_elapsed = end_total_category - start_total_category
         
@@ -2701,19 +2742,26 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
         mean_score_objects_array = np.mean(score_current_object_list, axis = 0)
         mean_error_objects_array = np.mean(error_current_object_list, axis = 0)
         mean_positif_percent_array = np.mean(percent_positif_current_object_list, axis = 0)
+        mean_positif_percent_array_NN = np.mean(percent_positif_current_object_list_NN, axis = 0)
+        mean_positif_percent_array_FT = np.mean(percent_positif_current_object_list_FT, axis = 0)
+        mean_positif_percent_array_ST = np.mean(percent_positif_current_object_list_ST, axis = 0)
+
+
         mean_negatif_percent_array = np.mean(percent_negatif_current_object_list, axis = 0)
         mean_f1_score_objects_array = np.mean(f1score_current_object_list, axis = 0)
         mean_average_precision_objects_array = np.mean(AP_current_object_list, axis = 0)
         mean_precision_objects_array = np.mean(precision_current_object_list, axis = 0)
         mean_recall_objects_array = np.mean(recall_current_object_list, axis = 0)
         #As it may possible that the recall curve list and precision curve does not have the same length
-        mean_precision_curve_array =  [float(sum(l))/len(l) for l in zip(*precision_curve_object_list)]
-        mean_recall_curve_array =  [float(sum(l))/len(l) for l in zip(*recall_curve_object_list)]
+        #mean_precision_curve_array =  [float(sum(l))/len(l) for l in zip(*precision_curve_object_list)]
+        #mean_recall_curve_array =  [float(sum(l))/len(l) for l in zip(*recall_curve_object_list)]
 
+        '''
         if (len(mean_recall_curve_array) < number_object_to_select_randomly ):
             mean_recall_curve_array.append(0)
         if (len(mean_precision_curve_array) < number_object_to_select_randomly ):
             mean_precision_curve_array.append(1)
+        '''
 
         #Reshape if needed
         mean_score_objects_array =  np.reshape(mean_score_objects_array, (nb_iterations_max, -1))
@@ -2722,6 +2770,8 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
 
     
         ################ GRAPHICS DRAWING ###################
+        ####### GRAPHIC 1
+        
         name_category = object_list_category[0]
         title = "Mean score for category : " + str(name_category) + " and for descriptor : " + str(name_descriptor) +\
             "\nNumber of objects used : " + str(len(object_list_category[1])) + \
@@ -2740,17 +2790,73 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
         figure_subtitle = ['Score of SVM testing over iterations','Number of positif samples displayed to the user in the top 20']
         name_figure = ['score',"display"]
 
-        plotting.plot_curves_2(query_num,figure_data,figure_colour,figure_label,figure_subtitle,title,name_figure,name_dataset,name_category,name_descriptor,output_graphicals_result,save_figures)
-        plt.close('all')
-        title = "Average Precision Score for category : " + str(name_category) + " and for descriptor : " + str(name_descriptor)
-        plotting.plot_f1_precision_recall(query_num,mean_f1_score_objects_array,mean_precision_objects_array,mean_recall_objects_array,mean_recall_curve_array,mean_precision_curve_array,mean_average_precision_objects_array,name_dataset,name_category,name_descriptor,output_graphicals_result,title,save_figures)
-        plt.close('all')
+        #plotting.plot_curves_2(query_num,figure_data,figure_colour,figure_label,figure_subtitle,title,name_figure,name_dataset,name_category,name_descriptor,output_graphicals_result,save_figures)
+        #plt.close('all')
+        ###### GRAPHIC 2
+        title = "Mean score for category : " + str(name_dataset) + " and for descriptor : " + str(name_descriptor) +\
+        "\n NN, FT and ST"
+        
+        #print(mean_positif_percent_array_NN)
+        #print(mean_positif_percent_array_FT)
+        #print(mean_positif_percent_array_ST)
+
+
+        figure_colour=["g","g","g"]
+        figure_data_display = [mean_positif_percent_array_NN, mean_positif_percent_array_FT,mean_positif_percent_array_ST ]
+        figure_label = ['NN','FT', 'ST']
+        figure_subtitle = ['NN','FT','ST']
+        name_figure = ['NN','FT','ST']
+
+        fig2 = plt.figure(figsize=(11, 8))
+        plt.suptitle(title, fontsize=14, fontweight='bold')
+        ax = fig2.add_subplot(3, 1, 1)
+        p1, = ax.plot(query_num, mean_positif_percent_array_NN, lw=3, color='g')
+        #ax.set_xlabel('Number of steps')
+        ax.set_ylabel('Score')
+        ax.set_title("NN over iterations")
+        ax.set_ylim([0.0, 101.5])
+        ax.xaxis.set_major_locator(reg_interval_x)
+        #ax.set_title('Precision-Recall example: Average Precision Score AUC={0:0.2f}'.format(mean_average_precision))
+        lgd_ax = ax.legend(loc="lower left")
+        
+
+        ay = fig2.add_subplot(3, 1, 2)
+        p2, = ay.plot(query_num, mean_positif_percent_array_FT, 'g', label='FT', lw = 3)
+        ay.set_ylim([0.0, 101.5])
+        ay.xaxis.set_major_locator(reg_interval_x)
+        ay.set_title("FT over iterations")
+        #ay.set_xlabel('Number of steps ')
+        ay.set_ylabel('Score')
+        lgd_ay = ay.legend(loc="lower left")
+
+        az = fig2.add_subplot(3, 1, 3)
+        p3, = az.plot(query_num, mean_positif_percent_array_ST, 'g', label='ST', lw = 3)
+        az.set_ylim([0.0, 101.5])
+        az.xaxis.set_major_locator(reg_interval_x)
+        az.set_title("ST over iterations")
+        #ay.set_xlabel('Number of steps ')
+        az.set_ylabel('Score')
+        title_figure = name_dataset + "_" + name_category + "_" + name_descriptor + "_NN_FT_ST.png"
+        paht_to_save = output_graphicals_result + title_figure
+        #fig2.savefig(paht_to_save, bbox_inches='tight')
+        
+
+        ###### GRAPHIC 3
+        #title = "Average Precision Score for category : " + str(name_category) + " and for descriptor : " + str(name_descriptor)
+        #plotting.plot_f1_precision_recall(query_num,mean_f1_score_objects_array,mean_precision_objects_array,mean_recall_objects_array,mean_recall_curve_array,mean_precision_curve_array,mean_average_precision_objects_array,name_dataset,name_category,name_descriptor,output_graphicals_result,title,save_figures)
+        #plt.close('all')
+        
         #Save points
         for i in range(len(figure_data)):
             title_points = name_dataset + "_" + name_category + "_" + name_descriptor + "_mean_averageprecision.txt"
             path_to_save = output_graphicals_result + title_points
             utils.save_list_points(figure_data[i],path_to_save)
- 
+        
+        for i in range(len(figure_data_display)):
+            title_points = name_dataset + "_" + name_category + "_" + name_descriptor + "_mean_" + str(figure_label[i]) +".txt"
+            path_to_save = output_graphicals_result + title_points
+            utils.save_list_points(figure_data_display[i],path_to_save)
+        
         #plt.show(block = False)
         
         
@@ -2758,14 +2864,19 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
         final_results_error_category.append(mean_error_objects_array)
         final_results_score_category.append(mean_score_objects_array)
         final_percent_positif_displayed.append(mean_positif_percent_array)
+        final_percent_positif_displayed_NN.append(mean_positif_percent_array_NN)
+        final_percent_positif_displayed_FT.append(mean_positif_percent_array_FT)
+        final_percent_positif_displayed_ST.append(mean_positif_percent_array_ST)
+
         final_percent_negatif_displayed.append(mean_negatif_percent_array)
         final_f1_score.append(mean_f1_score_objects_array)
         final_average_precision.append(mean_average_precision_objects_array)
         final_recall.append(mean_recall_objects_array)
         final_precision.append(mean_precision_objects_array)
-        final_recall_curve.append(mean_recall_curve_array)
-        final_precision_curve.append(mean_precision_curve_array)
+        #final_recall_curve.append(mean_recall_curve_array)
+        #final_precision_curve.append(mean_precision_curve_array)
 
+    print("Final precision curve mean {}".format(final_precision_curve))
 
     ########################################### END COMPUTATION FOR ALL THE CATEGORY ###########################################
 
@@ -2775,48 +2886,59 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
     final_results_score_category = np.asarray(final_results_score_category)
     final_results_error_category = np.asarray(final_results_error_category)
     final_percent_positif_displayed = np.asarray(final_percent_positif_displayed)
+    final_percent_positif_displayed_NN = np.asarray(final_percent_positif_displayed_NN)
+    final_percent_positif_displayed_FT = np.asarray(final_percent_positif_displayed_FT)
+    final_percent_positif_displayed_ST = np.asarray(final_percent_positif_displayed_ST)
+
     final_percent_negatif_displayed = np.asarray(final_percent_negatif_displayed)
     final_f1_score = np.asarray(final_f1_score)
     final_average_precision = np.asarray(final_average_precision)
     final_recall = np.asarray(final_recall)
     final_precision = np.asarray(final_precision)
     final_f1_score = np.asarray(final_f1_score)
-    final_precision_curve = np.asarray(final_precision_curve)
-    final_recall_curve = np.asarray(final_recall_curve)
+    #final_precision_curve = np.asarray(final_precision_curve)
+    #final_recall_curve = np.asarray(final_recall_curve)
 
     #Reshape
     final_results_score_category =  np.reshape(final_results_score_category, (len_category_dataset, -1))
     final_results_error_category =  np.reshape(final_results_error_category, (len_category_dataset, -1))
     final_percent_positif_displayed =  np.reshape(final_percent_positif_displayed, (len_category_dataset, -1))
+    final_percent_positif_displayed_NN =  np.reshape(final_percent_positif_displayed_NN, (len_category_dataset, -1))
+    final_percent_positif_displayed_FT =  np.reshape(final_percent_positif_displayed_FT, (len_category_dataset, -1))
+    final_percent_positif_displayed_ST =  np.reshape(final_percent_positif_displayed_ST, (len_category_dataset, -1))
+
     final_percent_negatif_displayed =  np.reshape(final_percent_negatif_displayed, (len_category_dataset, -1))
     final_f1_score  = np.reshape(final_f1_score, (len_category_dataset, -1))
     final_average_precision  = np.reshape(final_average_precision, (len_category_dataset, -1))
     final_recall  = np.reshape(final_recall, (len_category_dataset, -1))
     final_precision = np.reshape(final_precision, (len_category_dataset, -1))
-    final_precision_curve = np.reshape(final_precision_curve, (len_category_dataset, -1))
-    final_recall_curve = np.reshape(final_recall_curve, (len_category_dataset, -1))
+    #final_precision_curve = np.reshape(final_precision_curve, (len_category_dataset, -1))
+    #final_recall_curve = np.reshape(final_recall_curve, (len_category_dataset, -1))
 
     #print(final_percent_positif_displayed.shape)
     #Compute the mean of each mean result of each category
     final_mean_score_results_category_mean = np.mean(final_results_score_category,axis = 0)
     final_mean_error_results_category_mean = np.mean(final_results_error_category,axis = 0)
     final_percent_positif_displayed_mean = np.mean(final_percent_positif_displayed,axis = 0)
+    final_percent_positif_displayed_mean_NN = np.mean(final_percent_positif_displayed_NN,axis = 0)
+    final_percent_positif_displayed_mean_FT = np.mean(final_percent_positif_displayed_FT,axis = 0)
+    final_percent_positif_displayed_mean_ST = np.mean(final_percent_positif_displayed_ST,axis = 0)
+
     final_percent_negatif_displayed_mean = np.mean(final_percent_negatif_displayed,axis = 0)
     final_f1_score_mean = np.mean(final_f1_score, axis = 0)
     final_average_precision_mean = np.mean(final_average_precision, axis = 0)
     final_recall_mean = np.mean(final_recall, axis = 0)
     final_precision_mean = np.mean(final_precision, axis = 0)
-    final_precision_curve_mean = np.mean(final_precision_curve, axis = 0)
-    final_recall_curve_mean = np.mean(final_recall_curve, axis = 0)
-
+    #final_precision_curve_mean = np.mean(final_precision_curve, axis = 0)
+    #final_recall_curve_mean = np.mean(final_recall_curve, axis = 0)
 
 
     end_total_experiment = time.time()
     time_experiment_elapsed = end_total_experiment - start_total_experiment
     logging.info('Dataset : %s | Time Elapsed : %s',name_dataset,time_experiment_elapsed)
-
+    '''
     ################ GRAPHICS DRAWING ###################
-
+    ###### FIGURE 1
     title = "Mean score for dataset : " + str(name_dataset) + " and for descriptor : " + str(name_descriptor) +\
             "\nNumber samples to select first step  : " + str(number_to_annotate_first_step) +\
             "\nNumber uncertain to select from second step  : " + str(number_to_annotate_second_step) +\
@@ -2840,6 +2962,22 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
 
     plotting.plot_curves_final(query_num,figure_data,figure_colour,figure_label,figure_subtitle,title,name_figure,name_dataset,name_descriptor,output_graphicals_result,save_figures)
 
+
+    ##### FIGURE 2
+    title = "Mean score for dataset : " + str(name_dataset) + " and for descriptor : " + str(name_descriptor) +\
+    "\n NN, FT and ST"
+    fig = plt.figure(figsize=(11,7))
+    plt.suptitle(title, fontsize=8, fontweight='bold')
+
+    figure_colour=["g","g","g"]
+    figure_data = [final_percent_positif_displayed_mean_NN, final_percent_positif_displayed_mean_FT,final_percent_positif_displayed_mean_ST ]
+    figure_label = ['NN','FT', 'ST']
+    figure_subtitle = ['NN','FT','ST']
+    name_figure = ['NN',"FT",'ST']
+
+    plotting.plot_curves_final(query_num,figure_data,figure_colour,figure_label,figure_subtitle,title,name_figure,name_dataset,name_descriptor,output_graphicals_result,save_figures)
+
+    ##### FIGURE 3
     title = "Average Precision Score for dataset : " + str(name_dataset) + " and for descriptor : " + str(name_descriptor)
     plotting.plot_f1_precision_recall_final(query_num,final_f1_score_mean,final_precision_mean,final_recall_mean,final_recall_curve_mean,final_precision_curve_mean,final_average_precision_mean[0],name_dataset,name_category,name_descriptor,output_graphicals_result,title,save_figures)
 
@@ -2848,9 +2986,30 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
     #display_selected_data_similarity_search_withGT(train_dataset_binary_labeled,train_dataset_unlabeled, path_list_train_views,idx_example_positif_selection,id_selection_diversification,save_figures)
     #plt.show(block = False)
     #print("Final result score : {}".format(final_results_score_category))
-    print("Finished for the category : {} and descriptor : {}".format(name_category, name_descriptor))
-    return (name_descriptor,final_results_score_category),(name_descriptor,final_percent_positif_displayed)
+    '''
 
+    #print("NN : {}".format(final_percent_positif_displayed_NN))
+    #print("FT : {}".format(final_percent_positif_displayed_FT))
+    #print("ST : {}".format(final_percent_positif_displayed_ST))
+    print("Finished for the category : {} and descriptor : {}".format(name_category, name_descriptor))
+    #print("Name descriptor {}".format(name_descriptor))
+    #print("final_results_score_category {}".format(final_results_score_category))
+    #print("final_percent_positif_displayed {}".format(final_percent_positif_displayed))
+    return (name_descriptor,final_results_score_category),(name_descriptor,final_percent_positif_displayed,final_percent_positif_displayed_NN,final_percent_positif_displayed_FT,final_percent_positif_displayed_ST)
+    #return (name_descriptor,final_results_score_category),(name_descriptor,final_percent_positif_displayed)
+    
+
+def NN(nb_objects_perclass):
+    k = 1
+    return k
+
+def FT(nb_objects_perclass):
+    k = abs(nb_objects_perclass) - 1
+    return k
+
+def ST(nb_objects_perclass):
+    k = 2*(abs(nb_objects_perclass) - 1)
+    return k
     
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -2889,7 +3048,7 @@ def main():
         similaritySearch_automatic_alltesting = 3
 
     #Choose here the option you want
-    current_option = option_interactiveLearning.similaritySearch_automatic_oneobject
+    current_option = option_interactiveLearning.similaritySearch_automatic_alltesting
 
 
     #Run basic interactive learning without similarity search
@@ -3016,7 +3175,10 @@ def main():
             print(path_dataset)
             print("Number to select randomly : {}".format(number_object_to_select_randomly))
             
-            list_of_random_objects,category_list_name_array = utils.get_random_objects_from_dataset(path_dataset,number_object_to_select_randomly,select_full_object,"ply")
+            #list_of_random_objects,category_list_name_array,result_list_numberObjectsPerClass =utils.get_all_objects_from_dataset(path_dataset,select_full_object,"ply")
+            #exit()
+            list_of_random_objects,category_list_name_array,result_list_numberObjectsPerClass = utils.get_random_objects_from_dataset(path_dataset,number_object_to_select_randomly,select_full_object,"ply")
+
 
             if (len(list_of_random_objects) == 0):
                 logging.error("List of objects is empty")
@@ -3024,10 +3186,10 @@ def main():
 
             if (use_multiprocessing):
                 #params = (list_of_random_objects, trained_dataset, name_dataset)
-                params = (list_of_random_objects, path_dataset, name_dataset)
+                params = (list_of_random_objects, path_dataset, name_dataset,result_list_numberObjectsPerClass)
                 func = partial(automatic_interactiveLearning_objectlist, params)
-                print(params)
-                print(descriptors)
+                #print(params)
+                #print(descriptors)
                 results_accuracy_score,results_positif_display = zip(*pool.map(func, descriptors))
 
                 #print("Completed....Going to draw final results...")
@@ -3037,10 +3199,21 @@ def main():
                 results_accuracy_score = list(results_accuracy_score)
                 results_positif_display = list(results_positif_display)
                  
-                print(results_accuracy_score)
-                print(len(results_accuracy_score))
+                 #print(results_accuracy_score)
                 score = results_accuracy_score[1][1]
                 positif_disp = results_positif_display[1][1]
+                
+                positif_disp_NN = results_positif_display[1][2]
+                positif_disp_FT = results_positif_display[1][3]
+                positif_disp_ST = results_positif_display[1][4]
+                
+
+                #print("NN : {}".format(positif_disp_NN))
+                #print("FT : {}".format(positif_disp_FT))
+                #print("ST : {}".format(positif_disp_ST))
+                
+                #exit()
+       
 
                 score_array = list()
                 for i in range(len(results_accuracy_score)):
@@ -3051,11 +3224,27 @@ def main():
 
                 #print("Score Array :  {}".format(score_array))
                 score_display_array = list()
+                score_display_array_NN = list()
+                score_display_array_FT = list()
+                score_display_array_ST = list()
                 for i in range(len(results_positif_display)):
                     item = results_positif_display[i]
                     score = item[1]
+                    
+                    score_NN = item[2]
+                    score_FT = item[3]
+                    score_ST = item[4]
                     score = score[:,score.shape[1]-1]
+                    score_NN = score_NN[:,score_NN.shape[1]-1]
+                    score_FT = score_FT[:,score_FT.shape[1]-1]
+                    score_ST = score_ST[:,score_ST.shape[1]-1]
+                    
                     score_display_array.append(score)
+                    
+                    score_display_array_NN.append(score_NN)
+                    score_display_array_FT.append(score_FT)
+                    score_display_array_ST.append(score_ST)
+                    
                 #print("Categories :  {}".format(category_list_name_array))
                 #print("Descriptors :  {}".format(descriptors))
                 title = "Score by categories | Number iterations : " + str(nb_iterations_max)
@@ -3064,24 +3253,48 @@ def main():
 
                 output_graphicals_result = "results_graphics"+name_dataset+"/"
 
+
                 name_save_figure = output_graphicals_result + name_dataset + "_score_accuracy_bar.png"
                 print("1.Saving to {}".format(name_save_figure))
                 figure.savefig(name_save_figure)
+                
                 #Save points
                 title_points = output_graphicals_result + name_dataset + "_score_accuracy_bar.txt"
                 utils.save_list_points(score_array,title_points)
 
-                title = "Positif display by categories | Number iterations : " + str(nb_iterations_max)
-                #figure1 = plotting.plot_bar(descriptors,category_list_name_array,score_display_array,title)
+                title = "Positif display by categories | Top : " + str(nb_max_positif_display)
+                title_NN = "Positif display NN by categories | Top : " + str(nb_max_positif_display)
+                title_FT = "Positif display FT by categories | Top : " + str(nb_max_positif_display)
+                title_ST = "Positif display FT by categories | Top : " + str(nb_max_positif_display)
+
                 figure1 = plotting.plot_points(descriptors,category_list_name_array,score_display_array,title)
+                figure2 = plotting.plot_points(descriptors,category_list_name_array,score_display_array_NN,title_NN)
+                figure3 = plotting.plot_points(descriptors,category_list_name_array,score_display_array_FT,title_FT)
+                figure4 = plotting.plot_points(descriptors,category_list_name_array,score_display_array_ST,title_ST)
+
+
                 name_save_figure = output_graphicals_result + name_dataset + "_score_display_bar.png"
+                name_save_figure_NN = output_graphicals_result + name_dataset + "_score_display_NN_bar.png"
+                name_save_figure_FT = output_graphicals_result + name_dataset + "_score_display_FT_bar.png"
+                name_save_figure_ST = output_graphicals_result + name_dataset + "_score_display_ST_bar.png"
 
                 #Save points
                 title_points = output_graphicals_result + name_dataset + "_score_display_bar.txt"
                 utils.save_list_points(score_display_array,title_points)
 
+                title_points_NN = output_graphicals_result + name_dataset + "_score_display_NN_bar.txt"
+                title_points_FT = output_graphicals_result + name_dataset + "_score_display_FT_bar.txt"
+                title_points_ST = output_graphicals_result + name_dataset + "_score_display_ST_bar.txt"
+                utils.save_list_points(score_display_array,title_points)
+                utils.save_list_points(score_display_array_NN,title_points_NN)
+                utils.save_list_points(score_display_array_FT,title_points_FT)
+                utils.save_list_points(score_display_array_ST,title_points_ST)
+
                 print("2.Saving to {}".format(name_save_figure))
                 figure1.savefig(name_save_figure)
+                figure2.savefig(name_save_figure_NN)
+                figure3.savefig(name_save_figure_FT)
+                figure4.savefig(name_save_figure_ST)
 
     else :
         logging.error('Invalid Interactive Learning Option')

@@ -146,14 +146,14 @@ def get_random_objects_from_dataset2(directory,number_object_to_select_randomly,
         if (not pattern.match(category) and not category.startswith('.') and category != "libsvmdata"):
             category_list.append(category)
             path = directory+ "/"+ category
-            print("path {}".format(path))
+            #print("path {}".format(path))
             if os.path.isdir(path):
                 #Print over category
                 filename_array = []
                 for filename in os.listdir(path):
                     extension = "."+extension
                     if filename.endswith(extension):
-                        print(os.path.join(path, filename))
+                        #print(os.path.join(path, filename))
                         filename_array.append(os.path.join(path, filename))
                 reduce_number = 1
                 if (number_object_to_select_randomly > len(filename_array)):
@@ -177,10 +177,11 @@ def get_random_objects_from_dataset2(directory,number_object_to_select_randomly,
     #print(type(result_list_object_random))
     return result_list_object_random,category_list
 
-def get_random_objects_from_dataset(path_dataset,number_object_to_select_randomly,full_object = True,extension = "pcd"):
+def get_all_objects_from_dataset(path_dataset,full_object = True,extension = "pcd"):
     #For each category inside the dataset
-    result_list_object_random = list()
+    result_list_object_all= list()
     result_list_categories = list()
+    result_list_numberObjectsPerClass = list()
     list_of_random_items = 0
     category_list = list()
     extension = "."+extension
@@ -202,6 +203,54 @@ def get_random_objects_from_dataset(path_dataset,number_object_to_select_randoml
                 #print(directory)
                 #Print over category
                 filename_array = []
+                numberOnlyFile = next(os.walk(directory))[2] #dir is your directory path as string
+                result_list_numberObjectsPerClass.append(len(numberOnlyFile))
+                for filename in os.listdir(directory):
+                    #print(filename)
+                    if filename.endswith(extension):
+                        #print(os.path.join(directory, filename))
+                        filename_array.append(os.path.join(directory, filename))
+                        #print(filename_array)
+                
+                result_list_object_all.append((name_category,filename_array))
+                
+          
+
+        #print("\n Random choice for category {} : {} ".format(category,list_of_random_items))
+        #logging.debug('\n Random choice for category %s : %s ',category,list_of_random_items )
+    #print(result_list_object_random)
+    #print(result_list_numberObjectsPerClass)
+    return result_list_object_all,category_list,result_list_numberObjectsPerClass
+
+
+def get_random_objects_from_dataset(path_dataset,number_object_to_select_randomly,full_object = True,extension = "pcd"):
+    #For each category inside the dataset
+    result_list_object_random = list()
+    result_list_categories = list()
+    result_list_numberObjectsPerClass = list()
+    list_of_random_items = 0
+    category_list = list()
+    extension = "."+extension
+    type_folder = ""
+    if full_object:
+        type_folder="/full"
+    else:
+        type_folder="/views"
+    for root, directories, filenames in os.walk(path_dataset):
+        for directory in directories:
+            directory = os.path.join(root, directory)
+            
+            parent_dir_category = os.path.abspath(os.path.join(directory, os.pardir))
+            name_category = basename(parent_dir_category)
+            
+            if type_folder in directory and not "/descriptors" in directory:
+                category_list.append(name_category)
+                #print(name_category)
+                #print(directory)
+                #Print over category
+                filename_array = []
+                numberOnlyFile = next(os.walk(directory))[2] #dir is your directory path as string
+                result_list_numberObjectsPerClass.append(len(numberOnlyFile))
                 for filename in os.listdir(directory):
                     #print(filename)
                     if filename.endswith(extension):
@@ -227,7 +276,8 @@ def get_random_objects_from_dataset(path_dataset,number_object_to_select_randoml
         #print("\n Random choice for category {} : {} ".format(category,list_of_random_items))
         #logging.debug('\n Random choice for category %s : %s ',category,list_of_random_items )
     #print(result_list_object_random)
-    return result_list_object_random,category_list
+    #print(result_list_numberObjectsPerClass)
+    return result_list_object_random,category_list,result_list_numberObjectsPerClass
 
 
 def countNumberLines(file):

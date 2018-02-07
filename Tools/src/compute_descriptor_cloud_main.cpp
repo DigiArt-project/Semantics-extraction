@@ -60,9 +60,9 @@ bool compute_all = true;
 //If views folder
 //std::string dataset_folder = "/Users/lironesamoun/digiArt/Tools/cat10_views_descriptors";
 //If no views folder
-std::string dataset_folder = "/Users/lironesamoun/digiArt/Datasets/Dataset_pelvis_normalized";
-bool onFull = true;
-std::string output_dataset_folder = "/Users/lironesamoun/digiArt/Tools/structuresensor_full_descriptors";
+std::string dataset_folder = "/Volumes/Lirone - OSX Backup/I3S/Datasets/Dataset_rgbd_normalized";
+bool onFull = false;
+std::string output_dataset_folder = "/Users/lironesamoun/digiArt/Semantics-extractions/Tools/structuresensor_full_descriptors";
 bool hasViewsFolder = true;
 std::string subfolder = "views";
 bool enable_filtering = true;
@@ -299,15 +299,15 @@ main (int argc, char** argv)
         std::cout << "COMPUTE ALL" << std::endl;
         //Activate the descriptor you want
         bool enable_esf = true;
-        bool enable_vfh = true;
-        bool enable_cvfh = true;
-        bool enable_ourcvfh = true;
-        bool enable_grsd = true;
+        bool enable_vfh = false;
+        bool enable_cvfh = false;
+        bool enable_ourcvfh = false;
+        bool enable_grsd = false;
         bool enable_gshot = true;
         bool enable_gshot_pyramid = false;
         bool enable_good = true;
-        bool enable_usc = true;
-        bool enable_sc3D = true;
+        bool enable_usc = false;
+        bool enable_sc3D = false;
         
         if (!boost::filesystem::exists (dataset_folder) && !boost::filesystem::is_directory (dataset_folder)){
             std::cerr << "Error with the directory" << std::endl;
