@@ -105,18 +105,6 @@ def compute_precision_k(sorted_top_results,category_number,max_k):
 
     return result_precision,result_precision_pourcent, rel_k
 
-def average_precision(n,k):
-    print("average precison")
-    #Map : average of average precsion
-
-
-
-
-
-    
-    
-
-
 
 def main(file,test_file):
     count = 0
@@ -164,26 +152,6 @@ def main(file,test_file):
     sorted_by_top_results = sorted(current_category_scores, key=lambda tup: tup[0], reverse=True)
     #print(sorted_by_top_results)
 
-    '''
-    max_k = 1900
-    AveragePrecision = 0
-    number_relevant_results = 0
-    for i in range(max_k):
-        current_k = i + 1
-        precision,result_precision_pourcent,rel_k = compute_precision_k(sorted_by_top_results,nb_category,current_k)
-        print("P({}) = {} | Rel({}) = {}".format(current_k,precision,current_k,rel_k))
-        if rel_k == 1:
-            number_relevant_results = number_relevant_results + 1
-        AveragePrecision = AveragePrecision + (precision * rel_k)
-            #print("Average Precision not divided : {}".format(AveragePrecision))
-    if not number_relevant_results == 0:
-        AveragePrecision = AveragePrecision/number_relevant_results   
-    else :
-        AveragePrecision = 0
-        
-    print("\nNumber relevant document: {}".format(number_relevant_results))
-    print("\nAverage Precision  = {} %".format(AveragePrecision*100))
-    '''
 
     #For all categories
     MeanAveragePrecision = 0
@@ -216,27 +184,6 @@ def main(file,test_file):
 
     print("\nMean Average Precision  = {} %".format(MeanAveragePrecision*100))
     
-
-
-    '''
-    average = 0
-    for i in range(0,10):
-        pourcent_result = query_category_score(lists_all_categories_score,i)
-        average = average + pourcent_result
-    
-    average = average/nb_class
-    print("{} %".format(average))
-    '''
-    
-
-    #load_category("categories.txt")
-    
-
-    #new_dict = dict(zip(lists_all_categories_score[0], list_label))
-    #print(len(list_label))
-    #print(len(lists_all_categories_score[0]))
-    #print(lists_all_categories_score[0])
-    #print(new_dict)
     
 
 if __name__ == '__main__':

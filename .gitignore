@@ -66,3 +66,7 @@ Tools/results_graphic*
 InteractiveLearning/Dataset_*
 InteractiveLearning/cat10_*
 __pycache__/*
+Tools/scripts/compute_retrieval.py
+Tools/scripts/script_plot.py
+Tools/scripts/plot_result_similarity.py
+Tools/scripts/remove_cloud_size.py

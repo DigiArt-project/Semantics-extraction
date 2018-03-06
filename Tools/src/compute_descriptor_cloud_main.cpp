@@ -57,14 +57,8 @@ bool scale_descriptor = true;
 bool normalize_cloud = false;
 //If instead of computing one point cloud, you want to compute inside folder
 bool compute_all = true;
-//If views folder
-//std::string dataset_folder = "/Users/lironesamoun/digiArt/Tools/cat10_views_descriptors";
-//If no views folder
 std::string dataset_folder = "/Users/lironesamoun/digiArt/Datasets/Dataset_PSB_normalized70";
 bool onFull = false;
-std::string output_dataset_folder = "/Users/lironesamoun/digiArt/Semantics-extractions/Tools/structuresensor_full_descriptors";
-bool hasViewsFolder = true;
-std::string subfolder = "views";
 bool enable_filtering = true;
 float leaf_size = 0.01f;
 
@@ -286,7 +280,6 @@ main (int argc, char** argv)
     GSHOTEstimation<PointT> gshot_estimation;
     GSHOTPyramidEstimation<PointT> gshot_pyramid_estimation;
     GOODEstimation<PointT> good_estimation;
-    //Normally the program is for only computing a descriptor for a specific point cloud. For convenience, add an option to activate manually if we want to compute descriptors for a series of specific folder (var. subfolder) inside a dataset (var. dataset_folder)
     
     if (compute_all){
         
@@ -313,10 +306,6 @@ main (int argc, char** argv)
             std::cerr << "Error with the directory" << std::endl;
             return -1;
         }
-        if (!boost::filesystem::exists (output_dataset_folder) && !boost::filesystem::is_directory (output_dataset_folder)){
-            boost::filesystem::create_directory(output_dataset_folder);
-        }
-        
         
         for(boost::filesystem::recursive_directory_iterator it(dataset_folder); it!=boost::filesystem::recursive_directory_iterator(); ++it)
         {
