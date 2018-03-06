@@ -5,9 +5,6 @@
 #include <fstream>
 #include <algorithm>
 
-//NANOFLANN
-//#include <nanoflann.hpp>
-
 // PCL
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
@@ -65,6 +62,7 @@
 #include "descriptor_estimation/volume_area_estimation.hpp"
 #include "descriptor_estimation/good_estimation.cpp"
 
+/// This program generates views from 3D point cloud and compute the associated descriptor
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(pcl::Histogram<90>,
                                   (float[90], histogram, histogram)
@@ -104,137 +102,6 @@ int readPointCloud(std::string object_path,  boost::shared_ptr<pcl::PointCloud<p
         return -1;
     }
     return 1;
-}
-
-void pointCloudTovtkPolyData (const pcl::PointCloud<pcl::PointXYZ>& cloud, vtkPolyData* pdata)
-{
-    // Get a list of all the fields available
-    std::vector<pcl::PCLPointField> fields;
-    pcl::for_each_type<typename pcl::traits::fieldList<pcl::PointXYZ>::type>(pcl::detail::FieldAdder<pcl::PointXYZ>(fields));
-    
-    // Coordinates (always must have coordinates)
-    vtkIdType nr_points = cloud.points.size ();
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New ();
-    points->SetNumberOfPoints (nr_points);
-    // Get a pointer to the beginning of the data array
-    float *data = (static_cast<vtkFloatArray*> (points->GetData ()))->GetPointer (0);
-    
-    // Set the points
-    if (cloud.is_dense)
-    {
-        for (vtkIdType i = 0; i < nr_points; ++i)
-            memcpy (&data[i * 3], &cloud[i].x, 12);    // sizeof (float) * 3
-    }
-    else
-    {
-        vtkIdType j = 0;    // true point index
-        for (vtkIdType i = 0; i < nr_points; ++i)
-        {
-            // Check if the point is invalid
-            if (!pcl_isfinite (cloud[i].x) ||
-                !pcl_isfinite (cloud[i].y) ||
-                !pcl_isfinite (cloud[i].z))
-                continue;
-            
-            memcpy (&data[j * 3], &cloud[i].x, 12);    // sizeof (float) * 3
-            j++;
-        }
-        nr_points = j;
-        points->SetNumberOfPoints (nr_points);
-    }
-    // Create a temporary PolyData and add the points to it
-    vtkSmartPointer<vtkPolyData> temp_polydata = vtkSmartPointer<vtkPolyData>::New ();
-    temp_polydata->SetPoints (points);
-    // Create the topology of the point (a vertex)
-    vtkSmartPointer<vtkCellArray> vertices =
-    vtkSmartPointer<vtkCellArray>::New();
-    vtkIdType pid[1];
-    // Set the points and vertices we created as the geometry and topology of the polydata
-    for( size_t i = 0 ; i < nr_points ; i++ )
-    {
-        // Check if the point is invalid
-        if (pcl_isfinite (cloud[i].x) ||
-            pcl_isfinite (cloud[i].y) ||
-            pcl_isfinite (cloud[i].z)){
-            const float p[3] = {cloud[i].x, cloud[i].y, cloud[i].z};
-            pid[0] = points->InsertNextPoint(p);
-            vertices->InsertNextCell(1,pid);
-        }
-    }
-    
-    temp_polydata->SetVerts(vertices);
-
-    
-    // Check if Normals are present
-    int normal_x_idx = -1, normal_y_idx = -1, normal_z_idx = -1;
-    for (size_t d = 0; d < fields.size (); ++d)
-    {
-        if (fields[d].name == "normal_x")
-            normal_x_idx = fields[d].offset;
-        else if (fields[d].name == "normal_y")
-            normal_y_idx = fields[d].offset;
-        else if (fields[d].name == "normal_z")
-            normal_z_idx = fields[d].offset;
-    }
-    if (normal_x_idx != -1 && normal_y_idx != -1 && normal_z_idx != -1)
-    {
-        vtkSmartPointer<vtkFloatArray> normals = vtkSmartPointer<vtkFloatArray>::New ();
-        normals->SetNumberOfComponents (3); //3d normals (ie x,y,z)
-        normals->SetNumberOfTuples (cloud.size ());
-        normals->SetName ("Normals");
-        
-        for (size_t i = 0; i < cloud.size (); ++i)
-        {
-            float normal[3];
-            pcl::getFieldValue<pcl::PointXYZ, float> (cloud[i], normal_x_idx, normal[0]);
-            pcl::getFieldValue<pcl::PointXYZ, float> (cloud[i], normal_y_idx, normal[1]);
-            pcl::getFieldValue<pcl::PointXYZ, float> (cloud[i], normal_z_idx, normal[2]);
-            normals->SetTypedTuple (i, normal);
-        }
-        temp_polydata->GetPointData ()->SetNormals (normals);
-    }
-    
-    // Colors (optional)
-    int rgb_idx = -1;
-    for (size_t d = 0; d < fields.size (); ++d)
-    {
-        if (fields[d].name == "rgb" || fields[d].name == "rgba")
-        {
-            rgb_idx = fields[d].offset;
-            break;
-        }
-    }
-    if (rgb_idx != -1)
-    {
-        vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New ();
-        colors->SetNumberOfComponents (3);
-        colors->SetNumberOfTuples (cloud.size ());
-        colors->SetName ("RGB");
-        
-        for (size_t i = 0; i < cloud.size (); ++i)
-        {
-            unsigned char color[3];
-            pcl::RGB rgb;
-            pcl::getFieldValue<pcl::PointXYZ, uint32_t> (cloud[i], rgb_idx, rgb.rgba);
-            color[0] = rgb.r; color[1] = rgb.g; color[2] = rgb.b;
-            colors->SetTypedTuple (i, color);
-        }
-        temp_polydata->GetPointData ()->SetScalars (colors);
-    }
-    
-    // Add 0D topology to every point
-    vtkSmartPointer<vtkVertexGlyphFilter> vertex_glyph_filter = vtkSmartPointer<vtkVertexGlyphFilter>::New ();
-#if VTK_MAJOR_VERSION < 6
-    vertex_glyph_filter->AddInputConnection (temp_polydata->GetProducerPort ());
-#else
-    vertex_glyph_filter->SetInputData (temp_polydata);
-#endif
-    vertex_glyph_filter->Update ();
-    
-    pdata->DeepCopy (vertex_glyph_filter->GetOutput ());
-    
-
-   
 }
 
 
@@ -287,6 +154,7 @@ void normalizePC(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud){
     //pcl::io::savePLYFile( newFilePath, *transformed_cloud);
 }
 
+/*
 void normalizePointCloud(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud){
     //Compute Centroid
     Eigen::Vector4f centroid;
@@ -326,8 +194,6 @@ void normalizePointCloud(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud){
         
     }
     cloud = cloud_demean;
-    
-    
 }
 
 void normalizePointCloud(pcl::PointCloud<pcl::PointXYZ> cloud){
@@ -370,8 +236,8 @@ void normalizePointCloud(pcl::PointCloud<pcl::PointXYZ> cloud){
     }
     cloud = cloud_demean;
     
-    
 }
+ */
 
 double
 compute_resolution(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & cloud){
@@ -802,7 +668,7 @@ main (int argc, char** argv)
                     pcl::transformPointCloud<pcl::PointXYZ>(views[i], transformed_view, pose_inverse);
                     completeModel += transformed_view;
                     
-                        pcl::PointCloud<pcl::PointXYZ>::Ptr view_i_ptr(new pcl::PointCloud<pcl::PointXYZ>(views[i]));
+                    pcl::PointCloud<pcl::PointXYZ>::Ptr view_i_ptr(new pcl::PointCloud<pcl::PointXYZ>(views[i]));
                     normalizePC(view_i_ptr);
 
                     //Downsample cloud to given resolution
@@ -1330,7 +1196,6 @@ main (int argc, char** argv)
         }
     }
 }
-
 */
 
 void
@@ -1504,7 +1369,6 @@ main (int argc, char** argv)
                 if (readPointCloud( cloud_path,  cloud)==-1)
                     return -1;
 
-                //normalizePointCloud(cloud);
                 normalizePC(cloud);
 
                 vtkSmartPointer<vtkPolyData> data = vtkSmartPointer<vtkPolyData>::New ();
@@ -1573,10 +1437,13 @@ main (int argc, char** argv)
                     pcl::PointCloud<pcl::PointXYZ> transformed_view;
                     pcl::transformPointCloud<pcl::PointXYZ>(views[i], transformed_view, pose_inverse);
                     completeModel += transformed_view;
+ 
+                    pcl::PointCloud<pcl::PointXYZ>::Ptr view_i_ptr(new pcl::PointCloud<pcl::PointXYZ>(views[i]));
+                    normalizePC(view_i_ptr);
 
-                    normalizePointCloud(views[i]);
+                    //normalizePointCloud(views[i]);
 
-                    /*save the view, pose, enthropy, and descriptor to the disk*/
+                    //save the view, pose, enthropy, and descriptor to the disk
                     if (cfg.m_computeViewsDescriptors.enable_resolution){
                         std::cout << "INFO : using leaf resolution  : " << leaf << std::endl;
                         int size_original = views[i].size();
@@ -1590,8 +1457,6 @@ main (int argc, char** argv)
                         float resolution_after = compute_resolution(views[i].makeShared());
                         std::cout << "Resolution before : " << resolution_original << "| Resolution after : " << resolution_after << std::endl;
                         std::cout << "Size before : " << size_original << "| Size after : " << size_after << std::endl;
-
-
 
                     }
 
@@ -2137,7 +2002,7 @@ main (int argc, char** argv)
                 }
 
                 float leaf = cfg.m_computeViewsDescriptors.leaf_resolution;
-                /*save the view, pose, enthropy, and descriptor to the disk*/
+                //save the view, pose, enthropy, and descriptor to the disk
                 if (cfg.m_computeViewsDescriptors.enable_resolution){
                     //down sample the current view
                     pcl::VoxelGrid<pcl::PointXYZ> down;
@@ -2537,8 +2402,6 @@ main (int argc, char** argv)
                             spinImage.points[0].histogram[j] = value_descriptor_scaled.at(j);
                         }
                     }
-
-
                     //Check NANValue
                     bool containNANValues = false;
                     for (size_t i = 0; i <pcl::Histogram<153>::descriptorSize(); i++)
@@ -2548,7 +2411,6 @@ main (int argc, char** argv)
                             //std::cout << "NAAAAAN VALUE" << std::endl;
                         }
                     }
-
                     if (!containNANValues){
                         //std::string descriptor_name = spin_dir + "/desc_" + std::to_string(count_data) + std::to_string(i) + ".pcd";
 
@@ -2566,16 +2428,12 @@ main (int argc, char** argv)
                         //all_descriptors_pairs.push_back(descriptor_pair);
                     }
                     }
-
-
                 }
                 count_data++;
-
             }
 
         }
     }
-
 }
 
 

@@ -463,8 +463,6 @@ def train_test_split_according_to_categories(X, y,categorie_array_results,test_s
     y_train = list(y[:size_train_data])
     y_test = list(y[size_train_data:])
 
-    #print("[INFO] Size X_train before : {}".format(len(X_train)))
-    #print("[INFO]  Size X_test before : {}".format(len(X_test)))
 
     logging.debug('[INFO] Size X_train before : %s  ', len(X_train))
     logging.debug('[INFO] Size X_test before : %s  ', len(X_test))
@@ -495,14 +493,6 @@ def train_test_split_according_to_categories(X, y,categorie_array_results,test_s
                     #Remove from test set
                     del X_test[idx2]
                     del y_test[idx2]
-
-    #print(X_train)
-    logging.debug('[INFO] Size X_train after : %s  ', len(X_train))
-    logging.debug('[INFO] Size X_test after : %s  ', len(X_test))
-    #print("[INFO] Size X_train after : {}".format(len(X_train)))
-    #print("[INFO]  Size X_test after : {}".format(len(X_test)))
-    #print("TEST")
-    #print(X_test)
 
     
     return np.asarray(X_train), np.asarray(X_test), np.asarray(y_train), np.asarray(y_test)

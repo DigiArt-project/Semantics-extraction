@@ -2360,6 +2360,7 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
 
     display_graphic_each_step = False
     save_figures = True
+
     #For multiple Thread
     output_json_result = "data/results_similarity_"+name_dataset+"_"+name_descriptor+".json"
     view_file_to_analyse = root_data + name_dataset + "/dataset_descriptor_" + name_descriptor + ".txt"
@@ -2539,13 +2540,6 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
             logging.info("==> Recall : %s ",recall)
             logging.info("==> SCORE: %s ",score_ok)
 
-
-            #print("==> F1 Score : {}".format(f1score))
-            #print("==> Precision : {}".format(precision))
-            #print("==> Recall : {}".format(recall))
-            #print("==> SCORE : {}".format(score_ok))
-
-         
             if (use_norm):
                 decision_function = MinMaxScaler(feature_range=(-1, 1)).fit_transform(decision_function)
 
@@ -2738,7 +2732,6 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
             #recall_curve_object_list.append(recall_curve)
             #precision_curve_object_list.append(precision_curve)
              
-        #print("Precision curve object list : {}".format(precision_curve_object_list))
         end_total_category = time.time()
         time_experiment_category_elapsed = end_total_category - start_total_category
         
@@ -2804,11 +2797,6 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
         ###### GRAPHIC 2
         title = "Mean score for category : " + str(name_dataset) + " and for descriptor : " + str(name_descriptor) +\
         "\n NN, FT and ST"
-        
-        #print(mean_positif_percent_array_NN)
-        #print(mean_positif_percent_array_FT)
-        #print(mean_positif_percent_array_ST)
-
 
         figure_colour=["g","g","g"]
         figure_data_display = [mean_positif_percent_array_NN, mean_positif_percent_array_FT,mean_positif_percent_array_ST ]
@@ -3002,9 +2990,6 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
     #print("FT : {}".format(final_percent_positif_displayed_FT))
     #print("ST : {}".format(final_percent_positif_displayed_ST))
     print("Finished for the category : {} and descriptor : {}".format(name_category, name_descriptor))
-    #print("Name descriptor {}".format(name_descriptor))
-    #print("final_results_score_category {}".format(final_results_score_category))
-    #print("final_percent_positif_displayed {}".format(final_percent_positif_displayed))
     return (name_descriptor,final_results_score_category),(name_descriptor,final_percent_positif_displayed,final_percent_positif_displayed_NN,final_percent_positif_displayed_FT,final_percent_positif_displayed_ST)
     #return (name_descriptor,final_results_score_category),(name_descriptor,final_percent_positif_displayed)
     
