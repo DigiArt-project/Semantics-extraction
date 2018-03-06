@@ -40,8 +40,6 @@ typedef pcl::PointCloud<LocalDescriptor> LocalDescriptors;
 typedef pcl::PointCloud<LocalDescriptor>::Ptr LocalDescriptorsPtr;
 typedef pcl::PointCloud<LocalDescriptor>::ConstPtr LocalDescriptorsConstPtr;
 
-
-
 // Define "GlobalDescriptors" to be a pcl::PointCloud of pcl::VFHSignature308 points
 typedef pcl::VFHSignature308 GlobalDescriptor;
 typedef pcl::PointCloud<GlobalDescriptor> GlobalDescriptors;

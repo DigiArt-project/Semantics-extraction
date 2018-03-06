@@ -239,7 +239,6 @@ def get_random_objects_from_dataset(path_dataset,number_object_to_select_randoml
     for root, directories, filenames in os.walk(path_dataset):
         for directory in directories:
             directory = os.path.join(root, directory)
-            
             parent_dir_category = os.path.abspath(os.path.join(directory, os.pardir))
             name_category = basename(parent_dir_category)
             
@@ -508,7 +507,18 @@ def train_test_split_according_to_categories(X, y,categorie_array_results,test_s
     
     return np.asarray(X_train), np.asarray(X_test), np.asarray(y_train), np.asarray(y_test)
 
-
+"""
+Utility function. Given A dataset object, print informations of the dataset
+"""
+def check_info_database(database):
+    unlabeled_entry_ids, X_pool_unlabeled = zip(*database.get_unlabeled_entries())
+    if database.len_labeled() > 0 :
+        labeled_entry_ids, X_pool_labeled = zip(*database.get_labeled_entries())
+        logging.debug('Entries labled data: %s  ', labeled_entry_ids)
+    entry_id,all_xpool = zip(*[(idx, entry[0]) for idx, entry in enumerate(database.data)])
+    logging.debug('Entries unlabled data : %s  ', unlabeled_entry_ids)
+    logging.debug('Nbr unlabeled : %s  ', database.len_unlabeled())
+    logging.debug('Nbr labeled : %s  ', database.len_labeled())
 
 
 def get_testDataset_binary(X_test,y_test,view_path_file):

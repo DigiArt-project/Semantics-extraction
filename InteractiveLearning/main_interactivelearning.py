@@ -9,33 +9,28 @@ descriptions.
 #Matplotlib
 import matplotlib
 #Activate on the server or when using multi thread
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 
 
-import utils 
+import utils
 from importing_modules import *
 import plotting
 
 
 
 ###### GLOBAL VARIABLE #######
-
-path_dataset = "/Users/lironesamoun/digiArt/Datasets/Dataset_structuresensor_normalized/"
+path_dataset = "/Users/lironesamoun/digiArt/Datasets/Dataset_cat10_normalized/"
 training_file_full = path_dataset + "train_full.txt"
 testing_file_full =  path_dataset + "test_full.txt"
 training_file_views =  path_dataset +"train_views.txt"
 testing_file_views =  path_dataset +"test_views.txt"
 #Perform interative learning on full or views object
-compute_full = "true"
+compute_full = "false"
 #Array of descriptors we want to test
 descriptors = ['esf','pointnet']
-name_dataset = 'structuresensor_full'
+name_dataset = 'cat10_views'
 #Location of the dataset directory where the txt file are located. The txt represents the list of all the descriptors and path to descriptors
 root_data = "data/"
-#View path file
-view_path_file = "data/cat10_views/dataset_descriptor_esf.txt"
-#descriptor path file
-dataset_descriptor = "data/cat10_views/descriptors_esf.txt"
 
 
 #Where to save the graphics
@@ -67,6 +62,8 @@ k = 20
 leaf_resolution = 0.01
 #Defaut descriptor to use for similarity search (only VFH, ESF, CVFH and OURCVFH are available) 
 descriptor_similaritySearch = "esf"
+#Defaut descriptor to use for Interactive Leaning 
+descriptor_interactiveLearning = "esf"
 #Number samples to select at the first step (if number = 6, will take the first three and the last three)
 number_to_annotate_first_step = 6
 #Number uncertain samples to select at the second step (if = 5, will take the first 5 uncertains)
@@ -78,17 +75,26 @@ repetition_experiment = 1
 #Number of top result for pourcentage computation
 nb_max_positif_display = 10
 #The number of objects we select randomly for each category inside the dataset
-number_object_to_select_randomly = 5
+number_object_to_select_randomly = 3
 #Either select full objects or views object for selecting randomly
-select_full_object = False
+select_full_object = True
 
 query_cloud = ""
-
+view_path_file = ""
+dataset_descriptor = ""
 
 _item_click_callback= set()
 _item_all_label_data = list()
 
 use_norm = True
+
+#View path file
+#view_path_file = "data/cat10_full/dataset_descriptor_esf.txt"
+
+#descriptor path file
+#dataset_descriptor = "data/cat10_full/descriptors_esf.txt"
+
+
 
 
 """
@@ -169,8 +175,6 @@ def display_data_init_similarity_search_classic(list_idx,fully_labeled_train_dat
     fig.canvas.mpl_connect('pick_event', onpick)
     
     plt.show(block=False)
-
-
 
 
 """
@@ -353,8 +357,6 @@ def split_train_test_from_training_testing_data_similaritySearch_GT(dataset_file
     y_train_unlabeled = np.concatenate([y_train[:0], [None] * (len(y_train))])
     train_dataset_unlabeled = Dataset(feature_train, y_train_unlabeled)
     
-    #HAs been changed
-    #fully_labeled_trn_ds = Dataset(X_train, y_train)
     test_dataset_GT = Dataset(feature_test, y_test)
 
     #return unlabeled train dataset, test dataset, y label train, labeled train dataset, path to views training, path to views testing
@@ -673,20 +675,6 @@ def annotate_data(whole_dataset, id_to_display):
 
     return total_annotated_id_list
 
-"""
-Utility function. Given A dataset object, print informations of the dataset
-"""
-def check_info_database(database):
-    unlabeled_entry_ids, X_pool_unlabeled = zip(*database.get_unlabeled_entries())
-    if database.len_labeled() > 0 :
-        labeled_entry_ids, X_pool_labeled = zip(*database.get_labeled_entries())
-        logging.debug('Entries labled data: %s  ', labeled_entry_ids)
-    entry_id,all_xpool = zip(*[(idx, entry[0]) for idx, entry in enumerate(database.data)])
-    logging.debug('Entries unlabled data : %s  ', unlabeled_entry_ids)
-    logging.debug('Nbr unlabeled : %s  ', database.len_unlabeled())
-    logging.debug('Nbr labeled : %s  ', database.len_labeled())
-
-
 
 """
 Discounted cumulative gain (DCG) at rank K.
@@ -930,7 +918,6 @@ def compute_pourcentage_results(fully_labeled_train_dataset,train_dataset,id_to_
     count_negatif = 0
     count_total = 0
     #Count posiitve and negative display to the user
-    logging.debug("ID to daisplya : %s ",id_to_display)
     for i in range(len(id_to_display)):
         ask_id = id_to_display[i]
         #print("ASK ID {}".format(ask_id))
@@ -1281,7 +1268,18 @@ def compute_scores_SVM(X_test,y_test,y_pred,model_learning,plot_PR_curve = False
 """
 Interactive learning without similarity search. Basic test
 """
-def basic_interactiveLearning3DStart():
+def basic_interactiveLearning3DStart(params):
+    global compute_full
+    global view_path_file
+    global dataset_descriptor
+
+    descriptor_interactiveLearning = params
+
+    view_file_to_analyse = root_data + name_dataset + "/dataset_descriptor_" + descriptor_interactiveLearning + ".txt"
+    descriptor_file_to_analyse = root_data + name_dataset + "/descriptors_"+ descriptor_interactiveLearning + ".txt"
+    view_path_file = view_file_to_analyse
+    dataset_descriptor = descriptor_file_to_analyse
+    
     E_in, E_out, rank_array = [], [], []
     nb_iterations = 1
     
@@ -1289,6 +1287,7 @@ def basic_interactiveLearning3DStart():
     dataset_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), dataset_descriptor)
     fully_dataset,train_dataset, X_test,y_test, y_train_gt, fully_labeled_train_dataset,path_list_train_views,path_list_test_views = utils.split_train_test_from_libsvm_data(dataset_filepath,view_path_file, test_size)
     unlabeled_entry_list = list(train_dataset.get_unlabeled_entries())
+
 
     #Initialization rank
     rank = len(unlabeled_entry_list)/2
@@ -1470,20 +1469,34 @@ def basic_interactiveLearning3DStart():
 """
 Main function for interactive learning with similarity search
 """
-def similarity_search_interactiveLearning(result_jsonfile):
+def similarity_search_interactiveLearning(params):
     global compute_full
+    global view_path_file
+    global dataset_descriptor
+    global output_graphicals_result
+    global category_label
+
+    descriptor_interactiveLearning,result_jsonfile,save_figure = params
+
     categorie_array_results = utils.extract_names_objects_from_result_json(result_jsonfile)
 
-    display_color = True
+    view_file_to_analyse = root_data + name_dataset + "/dataset_descriptor_" + descriptor_interactiveLearning + ".txt"
+    output_graphicals_result = "results_graphics"+name_dataset+"/"
+    descriptor_file_to_analyse = root_data + name_dataset + "/descriptors_"+ descriptor_interactiveLearning + ".txt"
+    view_path_file = view_file_to_analyse
+    dataset_descriptor = descriptor_file_to_analyse
+
+
+    display_color_label = True
     plot_PR_curve = False
     plot_cnf_matrix = False
     plot_clf_report = False
+
     #score of SVM for displaying data
     E_in, E_out, rank_array = [], [], []
 
     nb_iterations = 0
 
-    category_label = 3
     dataset_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), dataset_descriptor)
 
 
@@ -1506,8 +1519,7 @@ def similarity_search_interactiveLearning(result_jsonfile):
     print("\nItération : {} ".format(nb_iterations))
     list_idx_result = select_data_similaritySearch(train_dataset_binary_labeled,categorie_array_results)
 
-    display_color = True
-    display_data_init_similarity_search_classic(list_idx_result,train_dataset_binary_labeled,display_color)
+    display_data_init_similarity_search_classic(list_idx_result,train_dataset_binary_labeled,display_color_label)
 
     #Annotate first data
     id_unlabeled_display_first = [id_feature for id_feature, feature in enumerate(unlabeled_entry_list[:nbre_data_selection])]
@@ -1535,7 +1547,6 @@ def similarity_search_interactiveLearning(result_jsonfile):
     #Get the probabilities result and decision function of all the data
     probabilities_samples_unlabeled = model_learning.predict_proba(X_pool_all)
     decision_function = model_learning.decision_function(X_pool_all)
-
 
     X_test, y = zip(*test_dataset_binary_labeled.get_labeled_entries())
     X_test =  np.array(X_test)
@@ -1613,8 +1624,8 @@ def similarity_search_interactiveLearning(result_jsonfile):
 
     total_id_annotation = list(itertools.chain(idx_example_positif_selection, ids_example_close_margin))
     #display_selected_data(train_dataset,path_list_train_views,idx_example_positif_selection, ids_example_close_margin[:nbre_data_margins_selection_uncertainty_display])
-    save_figure = False
-    display_selected_data_similarity_search_withGT(train_dataset_binary_labeled,train_dataset_unlabeled, path_list_train_views,idx_example_positif_selection,ids_example_close_margin[:nbre_data_margins_selection_uncertainty_display],display_color,save_figure)
+    
+    display_selected_data_similarity_search_withGT(train_dataset_binary_labeled,train_dataset_unlabeled, path_list_train_views,idx_example_positif_selection,ids_example_close_margin[:nbre_data_margins_selection_uncertainty_display],display_color_label,save_figure)
 
 
     ###########=====>>>> SECOND STEP UPDATE  ###########
@@ -1724,7 +1735,7 @@ def similarity_search_interactiveLearning(result_jsonfile):
 
         save_figure = False
 
-        display_selected_data_similarity_search_withGT(train_dataset_binary_labeled,train_dataset_unlabeled, path_list_train_views,idx_example_positif_selection,id_selection_diversification,display_color,save_figure)
+        display_selected_data_similarity_search_withGT(train_dataset_binary_labeled,train_dataset_unlabeled, path_list_train_views,idx_example_positif_selection,id_selection_diversification,display_color_label,save_figure)
         #display_selected_data(train_dataset_unlabeled,path_list_train_views,idx_example_positif_selection,id_selection_diversification)
         total_id_annotation = list(itertools.chain(idx_example_positif_selection, id_selection_diversification))
         total_annotated_id_list = annotate_data(train_dataset_unlabeled,total_id_annotation)
@@ -2013,11 +2024,21 @@ def automatic_annotate_most_uncertain_second_step(fully_labeled_train_dataset,tr
 """
 Main function for interactive learning with similarity search - Automatic labelling (no user required)
 """
-def automatic_interactiveLearning(result_jsonfile,number_to_annotate_first_step,number_to_annotate_uncertain,nb_iterations_max,repetition_experiment = 1,save_figures = True):
+def automatic_interactiveLearning(params,save_figures = True):
 
+    descriptor_interactiveLearning,result_jsonfile,number_to_annotate_first_step,number_to_annotate_uncertain,nb_iterations_max,repetition_experiment = params    
     global category_label
+    global view_path_file
+    global dataset_descriptor
+    global output_graphicals_result
+    global compute_full
     categorie_array_results = utils.extract_names_objects_from_result_json(result_jsonfile)
 
+    view_file_to_analyse = root_data + name_dataset + "/dataset_descriptor_" + descriptor_interactiveLearning + ".txt"
+    output_graphicals_result = "results_graphics"+name_dataset+"/"
+    descriptor_file_to_analyse = root_data + name_dataset + "/descriptors_"+ descriptor_interactiveLearning + ".txt"
+    view_path_file = view_file_to_analyse
+    dataset_descriptor = descriptor_file_to_analyse
 
     #score of SVM for displaying data
     E_in, E_out, score_pourcent, error_pourcent, rank_array, positif_display_pourcent, negatif_display_pourcent = [], [], [], [], [], [], []
@@ -2028,7 +2049,9 @@ def automatic_interactiveLearning(result_jsonfile,number_to_annotate_first_step,
 
     nb_iterations = 1
 
+
     display_graphic_each_step = True
+    displayColor = True
     plot_PR_curve = False
     plot_cnf_matrix = False
     plot_clf_report = False
@@ -2066,24 +2089,20 @@ def automatic_interactiveLearning(result_jsonfile,number_to_annotate_first_step,
         
 
         if display_graphic_each_step:
-            displayColor = True
             automatic_display_data_init_similarity_search(list_idx_result,train_dataset_binary_labeled,displayColor)
-            #list_idx_result = display_data_init_similarity_search_test(train_dataset_binary_labeled,categorie_array_results, nbre_data_selection)
 
         #Annotate first data
         id_unlabeled_display_first = [id_feature for id_feature, feature in enumerate(unlabeled_entry_list[:nbre_data_selection])]
         
         #total_annotated_id_list = automatic_annotate_first_step_long(train_dataset_binary_labeled,train_dataset_unlabeled,list_idx_result,number_to_annotate_first_step)
         total_annotated_id_list = automatic_annotate_first_step(train_dataset_binary_labeled,train_dataset_unlabeled,list_idx_candidate,query_cloud)
-
-        #total_annotated_id_list = annotate_data(train_dataset_unlabeled,id_unlabeled_display_first)
         
         ################ FIRST TRAINING ###################
         model_learning = svm.SVC(kernel=kernel_svm,C=C, gamma = gam, class_weight = 'balanced',probability = True)
 
         training_data(train_dataset_unlabeled,model_learning)
 
-            #Get parameters from the svm model
+        #Get parameters from the svm model
         params = model_learning.get_params()
         sv = model_learning.support_vectors_
         nv = model_learning.n_support_
@@ -2104,7 +2123,6 @@ def automatic_interactiveLearning(result_jsonfile,number_to_annotate_first_step,
         X_test, y_test_binary = zip(*test_dataset_binary_labeled.get_labeled_entries())
         X_test =  np.array(X_test)
         y_pred = model_learning.predict(X_test)
-        #y_pred = model_learning.decision_function(X_test)
         f1score, AP, precision, recall, precision_curve,recall_curve,report_classification, cnf_matrix = compute_scores_SVM(X_test,y_test_binary,y_pred,model_learning)
 
         ################ Score ###################
@@ -2120,12 +2138,7 @@ def automatic_interactiveLearning(result_jsonfile,number_to_annotate_first_step,
         precision_array = np.append(precision_array,precision)
         recall_array = np.append(recall_array,recall)
 
-
-
-
         if display_graphic_each_step:
-            #title = "Score Success : " + str(score_ok)  + " Score Error : " + str(score_error) + " \n Rank : " + str(rank)
-
             query_num = np.arange(0, 1)
             fig = plt.figure(figsize=(5, 5))
             ax = fig.add_subplot(2, 1, 1)
@@ -2143,8 +2156,7 @@ def automatic_interactiveLearning(result_jsonfile,number_to_annotate_first_step,
             ay.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
                        shadow=True, ncol=5)
 
-  
-  #fig.suptitle(title, fontsize=8, fontweight='bold')
+
             if plot_PR_curve:
                 plotting.plot_precision_recall(recall,precision,AP)
 
@@ -2155,7 +2167,6 @@ def automatic_interactiveLearning(result_jsonfile,number_to_annotate_first_step,
                 plot_conf = plotting.plot_confusion_matrix(cnf_matrix, classes=class_names,title='Confusion matrix, without normalization')
                 title = "confusion_matrix_" + str(category_label) + ".png"
                 plot_conf.savefig(title)
-                #plotting.plot_classification_report(report_classification)
 
             plt.show(block = True)
 
@@ -2271,7 +2282,7 @@ def automatic_interactiveLearning(result_jsonfile,number_to_annotate_first_step,
             if display_graphic_each_step:
                 save_figure = False
                 display_color = True
-                print("IDX example positif selection {}".format(idx_example_positif_selection))
+                #print("IDX example positif selection {}".format(idx_example_positif_selection))
                 display_selected_data_similarity_search_withGT(train_dataset_binary_labeled,train_dataset_unlabeled, path_list_train_views,idx_example_positif_selection,id_selection_diversification,display_color,save_figure)
 
                 quota = nb_iterations - 1
@@ -2306,9 +2317,7 @@ def automatic_interactiveLearning(result_jsonfile,number_to_annotate_first_step,
 
 
             i = i + 1
-            
-        
-        #print("SCORE POURCENT : {} ".format(score_pourcent))
+
         results_error.append(error_pourcent.tolist())
         results_score.append(score_pourcent.tolist())
 
@@ -2333,7 +2342,6 @@ def automatic_interactiveLearning(result_jsonfile,number_to_annotate_first_step,
     plotting.plot_curves(query_num,figure_data,figure_colour,figure_label,figure_subtitle,"Curves results",save_figures)
     plotting.plot_curves_precision_recall(query_num,recall_array,precision_array,recall_curve,precision_curve,AP,save_figures)
         
-    
     display_selected_data_similarity_search_withGT(train_dataset_binary_labeled,train_dataset_unlabeled, path_list_train_views,idx_example_positif_selection,id_selection_diversification,True,save_figures)
     plt.show(block = True)
 
@@ -2345,12 +2353,13 @@ Main function for interactive learning with similarity search - Automatic labell
 def automatic_interactiveLearning_objectlist(params,name_descriptor):
     list_of_random_objects, trained_dataset, name_dataset,result_list_numberObjectsPerClass = params
 
-    display_graphic_each_step = False
-    save_figures = True
     global view_path_file
     global dataset_descriptor
     global output_graphicals_result
     global compute_full
+
+    display_graphic_each_step = False
+    save_figures = True
     #For multiple Thread
     output_json_result = "data/results_similarity_"+name_dataset+"_"+name_descriptor+".json"
     view_file_to_analyse = root_data + name_dataset + "/dataset_descriptor_" + name_descriptor + ".txt"
@@ -2360,9 +2369,7 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
         os.makedirs(output_graphicals_result)
 
     descriptor_file_to_analyse = root_data + name_dataset + "/descriptors_"+ name_descriptor + ".txt"
-
     view_path_file = view_file_to_analyse
-
     dataset_descriptor = descriptor_file_to_analyse
 
 
@@ -2608,9 +2615,9 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
                 ft_score = FT(result_list_numberObjectsPerClass[idx])
                 st_score = ST(result_list_numberObjectsPerClass[idx])
 
-                #print("NN score : {}".format(nn_score))
-                #print("FT score : {}".format(ft_score))
-                #print("ST score : {}".format(st_score))
+                print("NN score : {}".format(nn_score))
+                print("FT score : {}".format(ft_score))
+                print("ST score : {}".format(st_score))
 
                 pourcent_positif_displayed_NN,pourcent_negatif_displayed_NN = compute_pourcentage_results(train_dataset_binary_labeled,train_dataset_unlabeled,idx_example_positif_selection,nn_score)
                 pourcent_positif_displayed_FT,pourcent_negatif_displayed_FT = compute_pourcentage_results(train_dataset_binary_labeled,train_dataset_unlabeled,idx_example_positif_selection,ft_score)
@@ -2720,7 +2727,9 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
             percent_positif_current_object_list_NN.append(positif_display_pourcent_NN)
             percent_positif_current_object_list_FT.append(positif_display_pourcent_FT)
             percent_positif_current_object_list_ST.append(positif_display_pourcent_ST)
-
+            #print("PERCENT NN score : {}".format(percent_positif_current_object_list_NN))
+            #print("PERCENT FT score : {}".format(percent_positif_current_object_list_FT))
+            #print("PERCENT ST score : {}".format(percent_positif_current_object_list_ST))
             percent_negatif_current_object_list.append(negatif_display_pourcent)
             f1score_current_object_list.append(f1score_array)
             AP_current_object_list.append(AP)
@@ -2890,6 +2899,7 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
     final_percent_positif_displayed_FT = np.asarray(final_percent_positif_displayed_FT)
     final_percent_positif_displayed_ST = np.asarray(final_percent_positif_displayed_ST)
 
+
     final_percent_negatif_displayed = np.asarray(final_percent_negatif_displayed)
     final_f1_score = np.asarray(final_f1_score)
     final_average_precision = np.asarray(final_average_precision)
@@ -3023,11 +3033,14 @@ def str2bool(v):
 
 def main():
     print('The scikit-learn version is {}.'.format(sklearn.__version__))
-    global nb_iterations_max, descriptor_similaritySearch,k, leaf_resolution, output_graphicals_result,select_full_object,descriptors,name_dataset
+    if not (sklearn.__version__ == '0.18'):
+        print("You need yo use Scikit-learn 0.18")
+        exit()
+
+    global nb_iterations_max, descriptor_similaritySearch,descriptor_interactiveLearning,k, leaf_resolution, output_graphicals_result,select_full_object,descriptors,name_dataset
     #Ignore deprecation warninf from python
     warnings.filterwarnings("ignore", category=DeprecationWarning) 
     #Log 
-    #logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s | %(message)s',datefmt='%H:%M:%S',)
     logging.basicConfig(filename = log_file,filemode='a',level=logging.DEBUG, format='%(asctime)s - %(levelname)s | %(message)s',datefmt='%H:%M:%S',)
 
     #Where to save the json results of similarity search programm
@@ -3048,13 +3061,22 @@ def main():
         similaritySearch_automatic_alltesting = 3
 
     #Choose here the option you want
-    current_option = option_interactiveLearning.similaritySearch_automatic_alltesting
+    current_option = option_interactiveLearning.without_similaritySearch
 
 
     #Run basic interactive learning without similarity search
     if current_option == option_interactiveLearning.without_similaritySearch:
         print("\n [INFO] Please wait...")
-        basic_interactiveLearning3DStart()
+
+        ap = argparse.ArgumentParser()
+        ap.add_argument("-descriptorInteractive", "--descriptorInteractive", required=False, help="Descriptor for interactive learning. Per default : esf")
+        args = vars(ap.parse_args())
+
+        if args["descriptorInteractive"] is not None:
+            descriptor_interactiveLearning = args["descriptorInteractive"]
+        
+        params = (descriptor_interactiveLearning)
+        basic_interactiveLearning3DStart(params)
 
     #Run interactive learning with similarity search
     elif current_option == option_interactiveLearning.similaritySearch_manuel:
@@ -3068,7 +3090,8 @@ def main():
             ap = argparse.ArgumentParser()
             ap.add_argument("-query", "--query", required=True, help="The query point cloud (in PCD)")
             ap.add_argument("-trained", "--trained", required=True, help="The trained dataset where the index of similarity search is located")
-            ap.add_argument("-descriptor", "--descriptor", required=False, help="change descriptor. Available : esf, vfh, cvfh, ourcvfh, gshot, usc, grsd. Per default : esf")
+            ap.add_argument("-descriptorSimilarity", "--descriptorSimilarity", required=False, help="Descriptor for similarity Search. Per default : esf")
+            ap.add_argument("-descriptorInteractive", "--descriptorInteractive", required=False, help="Descriptor for interactive learning. Per default : esf")
             ap.add_argument("-output", "--output", required=False, help="where to save the json results file. Per default : results.json")
             ap.add_argument("-leaf_resolution", "--resolution", required=False, help="For cloud resolution invariance,. Per defaut : 0.01")
             ap.add_argument("-k", "--k", required=False, help="number of results to find. Per defaut : 10")
@@ -3079,8 +3102,10 @@ def main():
 
             query_cloud = args["query"]
             trained_dataset = args["trained"]
-            if args["descriptor"] is not None:
-                descriptor_similaritySearch = args["descriptor"]
+            if args["descriptorSimilarity"] is not None:
+                descriptor_similaritySearch = args["descriptorSimilarity"]
+            if args["descriptorInteractive"] is not None:
+                descriptor_interactiveLearning = args["descriptorInteractive"]
             if args["output"] is not None:
                 output_json_result = args["output"]
             if args["resolution"] is not None:
@@ -3095,8 +3120,9 @@ def main():
 
             print("\n [INFO] Please wait...")
             logging.info("\n [INFO] Please wait...")
-
-            similarity_search_interactiveLearning(output_json_result)
+            save_figure = False
+            params = (descriptor_interactiveLearning,output_json_result,save_figure)
+            similarity_search_interactiveLearning(params)
 
     #Run automatic interactive learning with similarity search and by sumbittming one point cloud
     elif current_option == option_interactiveLearning.similaritySearch_automatic_oneobject:
@@ -3110,7 +3136,8 @@ def main():
             ap = argparse.ArgumentParser()
             ap.add_argument("-query", "--query", required=True, help="The query point cloud (in PCD)")
             ap.add_argument("-trained", "--trained", required=True, help="The trained dataset where the index of similarity search is located")
-            ap.add_argument("-descriptor", "--descriptor", required=False, help="change descriptor. Available : esf, vfh, cvfh, ourcvfh, gshot, usc, grsd. Per default : esf")
+            ap.add_argument("-descriptorSimilarity", "--descriptorSimilarity", required=False, help="Descriptor for similarity Search. Per default : esf")
+            ap.add_argument("-descriptorInteractive", "--descriptorInteractive", required=False, help="Descriptor for interactive learning. Per default : esf")
             ap.add_argument("-output", "--output", required=False, help="where to save the json results file. Per default : results.json")
             ap.add_argument("-leaf_resolution", "--resolution", required=False, help="For cloud resolution invariance,. Per defaut : 0.01")
             ap.add_argument("-k", "--k", required=False, help="number of results to find. Per defaut : 10")
@@ -3121,8 +3148,10 @@ def main():
 
             query_cloud = args["query"]
             trained_dataset = args["trained"]
-            if args["descriptor"] is not None:
-                descriptor_similaritySearch = args["descriptor"]
+            if args["descriptorSimilarity"] is not None:
+                descriptor_similaritySearch = args["descriptorSimilarity"]
+            if args["descriptorInteractive"] is not None:
+                descriptor_interactiveLearning = args["descriptorInteractive"]
             if args["output"] is not None:
                 output_json_result = args["output"]
             if args["resolution"] is not None:
@@ -3141,23 +3170,24 @@ def main():
             print("\n [INFO] Please wait...")
             logging.info("\n [INFO] Please wait...")
       
-            automatic_interactiveLearning(output_json_result,number_to_annotate_first_step,number_to_annotate_second_step,nb_iterations_max,repetition_experiment,True)
+            params = (descriptor_interactiveLearning,output_json_result,number_to_annotate_first_step,number_to_annotate_second_step,nb_iterations_max,repetition_experiment)
+            automatic_interactiveLearning(params,True)
 
     elif current_option == option_interactiveLearning.similaritySearch_automatic_alltesting:
-        use_multiprocessing = False
+        use_multiprocessing = True
         num_cores = mp.cpu_count() 
 
         ap = argparse.ArgumentParser()
         ap.add_argument("-nbiterations", "--iterations", required=False, help="Number of iterations max for each interactive learning session (Per defaut : 20)")
-        ap.add_argument("-multiprocessing", "--multiprocessing", type=str2bool, required=False, help="If run the program in one cpu or multiple (Per defaut : True)")
+        #ap.add_argument("-multiprocessing", "--multiprocessing", type=str2bool, required=False, help="If run the program in one cpu or multiple (Per defaut : True)")
         ap.add_argument("-cores", "--numcores", required=False, help="Number of cores to use (Per defaut : cpu_count()) ")
        
         args = vars(ap.parse_args())
 
         if args["iterations"] is not None:
             nb_iterations_max = int(args["iterations"])
-        if args["multiprocessing"] is not None:
-            use_multiprocessing = args["multiprocessing"]
+        #if args["multiprocessing"] is not None:
+        #    use_multiprocessing = args["multiprocessing"]
         if args["numcores"] is not None:
             num_cores = int(args["numcores"])
         
@@ -3172,7 +3202,6 @@ def main():
             pool = mp.Pool(processes=num_cores) 
 
             path_dataset = os.path.abspath(os.path.join(training_file_full, os.pardir))
-            print(path_dataset)
             print("Number to select randomly : {}".format(number_object_to_select_randomly))
             
             #list_of_random_objects,category_list_name_array,result_list_numberObjectsPerClass =utils.get_all_objects_from_dataset(path_dataset,select_full_object,"ply")
@@ -3207,13 +3236,6 @@ def main():
                 positif_disp_FT = results_positif_display[1][3]
                 positif_disp_ST = results_positif_display[1][4]
                 
-
-                #print("NN : {}".format(positif_disp_NN))
-                #print("FT : {}".format(positif_disp_FT))
-                #print("ST : {}".format(positif_disp_ST))
-                
-                #exit()
-       
 
                 score_array = list()
                 for i in range(len(results_accuracy_score)):

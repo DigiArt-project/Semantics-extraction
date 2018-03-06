@@ -1306,19 +1306,20 @@ void RetrievalSimilaritySearchDatabase<PointT, DescriptorT, DistT>::globalMatchi
     std::vector<std::string> string_split;
     boost::split(string_split, queryCloud, boost::is_any_of("/"));
     //For rgbd dataset, put 7 instead of 5
-    std::string category_query = string_split.at(5);
+    //std::string category_query = string_split.at(5);
+    //std::cout << "Category : " << category_query << std::endl;
   
     
-    std::vector<std::string> strs;
+   /* std::vector<std::string> strs;
     for (int i = 0; i < models.size(); ++i){
         
         boost::split(strs, models.at (i).first, boost::is_any_of("/"));
         //std::cout << strs.at(3) << std::endl;
          //std::cout <<  models.at (i).first << std::endl;
         
-    }
-    std::cout << queryCloud << std::endl;
-    std::cout << category_query << std::endl;
+    }*/
+    //std::cout << queryCloud << std::endl;
+    //std::cout << category_query << std::endl;
 
     for (int i = 0; i < k; ++i){
    //std::cout <<models.at (k_indices[0][i]).first<<std::endl;
@@ -1326,18 +1327,13 @@ void RetrievalSimilaritySearchDatabase<PointT, DescriptorT, DistT>::globalMatchi
             
             std::vector<std::string> strs;
             boost::split(strs, models.at (k_indices[0][i]).first, boost::is_any_of("/"));
-            //std::cout <<strs.at(3)<<std::endl;
-            if (strs.at(3) == categories.at(j)) {
-            //if (models.at (k_indices[0][i]).first.find(categories.at(j)) != std::string::npos) {
-                //std::cout << models.at (k_indices[0][i]).second << std::endl;
+            if (models.at (k_indices[0][i]).first.find(categories.at(j)) != string::npos) {
+            //if (strs.at(3) == categories.at(j)) {
 
                 std::cout << i << " - " << categories.at(j) << " (" << k_indices[0][i] <<")"<< " with a distance of: " << k_distances[0][i] << "\n";
                 std::cout << models.at (k_indices[0][i]).first << std::endl;
                 
-                
-                //Fill the map vector of results
-                // m_result_cloudRecognition.insert( std::pair<std::string,float>(models.at (k_indices[0][i]).first.c_str (), k_distances[0][i]) );
-                //m_result_cloudRecogni( std::make_pair(models.at (k_indices[0][i]).first.c_str (), k_distances[0][i]) );
+            
                 m_resultsdetectionJSONformat += "{" + "Number"_quoted + " :" + std::to_string(i) + ", " + "Category"_quoted + " :" + "\"" + categories.at(j) + "\"" +", " + "id"_quoted + ":" + std::to_string(k_indices[0][i]) + "," + "Distance"_quoted + ":" + std::to_string(k_distances[0][i]) + " , " + "metric"_quoted + ":" +"\""+ distance+"\""  + " , " + "path"_quoted + ":" + "\""+models.at (k_indices[0][i]).first+"\""+ "}, \n";
                 
                 if (i == k-1){
@@ -1348,7 +1344,7 @@ void RetrievalSimilaritySearchDatabase<PointT, DescriptorT, DistT>::globalMatchi
         }
     }
     m_resultsdetectionJSONformat += "] \n";
-    
+    /*
     double k_array[5] = {1, 5, 10, 15, 20};
     //Compute precision and recall
     int TP = 0, FP = 0, FN = 0;
@@ -1369,7 +1365,8 @@ void RetrievalSimilaritySearchDatabase<PointT, DescriptorT, DistT>::globalMatchi
         //std::cout << "FALSE POSITIVE : " << FP << std::endl;
         float precision = computePrecision(TP,FP);
         std::cout << "PRECISION : " << precision << "% \n"<< std::endl;
-    }
+   
+    }*/
     
 }
 

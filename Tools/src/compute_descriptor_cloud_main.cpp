@@ -60,7 +60,7 @@ bool compute_all = true;
 //If views folder
 //std::string dataset_folder = "/Users/lironesamoun/digiArt/Tools/cat10_views_descriptors";
 //If no views folder
-std::string dataset_folder = "/Volumes/Lirone - OSX Backup/I3S/Datasets/Dataset_rgbd_normalized";
+std::string dataset_folder = "/Users/lironesamoun/digiArt/Datasets/Dataset_PSB_normalized70";
 bool onFull = false;
 std::string output_dataset_folder = "/Users/lironesamoun/digiArt/Semantics-extractions/Tools/structuresensor_full_descriptors";
 bool hasViewsFolder = true;
@@ -303,9 +303,9 @@ main (int argc, char** argv)
         bool enable_cvfh = false;
         bool enable_ourcvfh = false;
         bool enable_grsd = false;
-        bool enable_gshot = true;
+        bool enable_gshot = false;
         bool enable_gshot_pyramid = false;
-        bool enable_good = true;
+        bool enable_good = false;
         bool enable_usc = false;
         bool enable_sc3D = false;
         

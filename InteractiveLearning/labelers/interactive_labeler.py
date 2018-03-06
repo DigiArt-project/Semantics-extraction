@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from six.moves import input
 
-from libact.base.interfaces import Labeler
-from libact.utils import inherit_docstring_from
+from base.interfaces import Labeler
 
 
 class InteractiveLabeler(Labeler):
@@ -29,7 +28,6 @@ class InteractiveLabeler(Labeler):
     def __init__(self, **kwargs):
         self.label_name = kwargs.pop('label_name', None)
 
-    @inherit_docstring_from(Labeler)
     def label(self, feature):
         plt.imshow(feature, cmap=plt.cm.gray_r, interpolation='nearest')
         plt.draw()

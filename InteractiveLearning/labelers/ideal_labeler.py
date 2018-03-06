@@ -5,7 +5,6 @@ Ideal/Noiseless labeler that returns true label
 import numpy as np
 
 from base.interfaces import Labeler
-#from utils import inherit_docstring_from
 
 
 class IdealLabeler(Labeler):

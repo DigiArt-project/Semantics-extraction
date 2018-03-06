@@ -45,7 +45,8 @@ cmake_install.cmake
 .lock
 .xcworkspace
 *.git_backup
-
+*.json
+*.pyc
 
 # Folder #
 ######################
@@ -62,3 +63,6 @@ structuresensor_descriptors
 structuresensor_descriptors2
 InteractiveLearning/others/
 Tools/results_graphic*
+InteractiveLearning/Dataset_*
+InteractiveLearning/cat10_*
+__pycache__/*
