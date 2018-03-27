@@ -19,7 +19,7 @@ import plotting
 
 
 ###### GLOBAL VARIABLE #######
-path_dataset = "/Users/lironesamoun/digiArt/Datasets/Dataset_cat10_normalized/"
+path_dataset = "/Users/lironesamoun/digiArt/Datasets/Dataset_potterymix_normalized/"
 training_file_full = path_dataset + "train_full.txt"
 testing_file_full =  path_dataset + "test_full.txt"
 training_file_views =  path_dataset +"train_views.txt"
@@ -27,8 +27,8 @@ testing_file_views =  path_dataset +"test_views.txt"
 #Perform interative learning on full or views object
 compute_full = "false"
 #Array of descriptors we want to test
-descriptors = ['esf','pointnet']
-name_dataset = 'cat10_views'
+descriptors = ['esf','vfh']
+name_dataset = 'potterymix_views'
 #Location of the dataset directory where the txt file are located. The txt represents the list of all the descriptors and path to descriptors
 root_data = "data/"
 
@@ -38,8 +38,8 @@ output_graphicals_result = "results_graphics/"
 #Log file
 log_file = "interactive_learning_log.txt"
 
-#Category label to change for option automatic interactive learning
-category_label = 3
+#Category label to change for option similarity search interactive learning
+category_label = 5
 #Positive example ranking for display i.e the number of samples ranked from positive to negative, to display to the user 
 nbre_data_selection = 20 #defaut 48
 #Number of uncertain examples close to the margin to choose 
@@ -51,8 +51,8 @@ nbre_data_final_selection = 7
 # the percentage of samples in the dataset that will be randomly selected and assigned to the test set
 test_size = 0.35
 #SVM parameters
-C = 100 
-gam = 0.001
+C = 120 #100
+gam = 0.0078125 #0.001
 kernel_svm = "rbf" #rbf, linear, poly, sigmoid
 
     
@@ -77,7 +77,7 @@ nb_max_positif_display = 10
 #The number of objects we select randomly for each category inside the dataset
 number_object_to_select_randomly = 3
 #Either select full objects or views object for selecting randomly
-select_full_object = True
+select_full_object = False
 
 query_cloud = ""
 view_path_file = ""
@@ -117,13 +117,13 @@ Display the first data to anotate for the classic interactive learning
 def display_data_init(dataset, path_list_train_views, number_to_display):
     if 'fig' in locals():
         plt.close(fig)
-    fig = plt.figure(1,figsize=(9, 8))
+    fig = plt.figure(1,figsize=(11, 10))
     fig.canvas.set_window_title('Results')
     # gridspec inside gridspec
-    outer_grid = gridspec.GridSpec(8, 8, wspace=1, hspace=0.5)
+    outer_grid = gridspec.GridSpec(8, 6, wspace=1, hspace=0.8)
     for i in range(number_to_display):        
         ax = plt.Subplot(fig, outer_grid[i])
-        filename = utils.get_filename_descriptor_from_path(path_list_train_views[i],9)
+        filename = utils.get_filename_descriptor_from_path(path_list_train_views[i],10)
         
         #feature = path_list_train_views[i].decode("utf-8").split("/")[7]
         ax.text(0.1, 0.5, str(filename),
@@ -149,14 +149,14 @@ def display_data_init_similarity_search_classic(list_idx,fully_labeled_train_dat
     idealLabels = IdealLabeler(fully_labeled_train_dataset)
     X, _ = zip(*fully_labeled_train_dataset.data)
     outer_grid = gridspec.GridSpec(8, 6, wspace=1, hspace=0.8)
-
     count = 0
     for idx,id_value in enumerate(list_idx):
         lb = idealLabels.label(X[id_value])
         ax = plt.Subplot(fig, outer_grid[count])    
-
-        filename = utils.get_filename_descriptor_from_path(fully_labeled_train_dataset.data[id_value][0][1],9)
-
+        #filename_test = utils.get_filename_descriptor_from_path(fully_labeled_train_dataset.data[id_value][0][1],1)
+        #print(filename_test)
+        #exit()
+        filename = utils.get_filename_descriptor_from_path(fully_labeled_train_dataset.data[id_value][0][1],10)
         ax.text(0.1, 0.5, str(filename),size=7)
         title = "ID {}".format(id_value)
         if display_color:
@@ -200,7 +200,7 @@ def automatic_display_data_init_similarity_search(list_idx,fully_labeled_train_d
         lb = idealLabels.label(X[id_value])
         ax = plt.Subplot(fig, outer_grid[count])    
 
-        filename = utils.get_filename_descriptor_from_path(fully_labeled_train_dataset.data[id_value][0][1],9)
+        filename = utils.get_filename_descriptor_from_path(fully_labeled_train_dataset.data[id_value][0][1],10)
 
         ax.text(0.1, 0.4, str(filename),size=8)
         title = "ID {}".format(id_value)
@@ -219,7 +219,7 @@ def automatic_display_data_init_similarity_search(list_idx,fully_labeled_train_d
 
     fig.canvas.mpl_connect('pick_event', onpick)
     
-    plt.show(block=True)
+    plt.show(block=False)
 
 
 """
@@ -230,9 +230,11 @@ def split_train_test_from_training_testing_data_similaritySearch_GT(dataset_file
     global compute_full
 
     print("[INFO] Dataset filepath : {}".format(dataset_filepath))
+    print("[INFO] Training file : {}".format(training_file))
+    print("[INFO] Testing file : {}".format(testing_file))
     logging.debug('Dataset filepath : %s', dataset_filepath)
     X, y = import_libsvm_sparse(dataset_filepath).format_sklearn()
-    X = MinMaxScaler().fit_transform(X)
+    X = MinMaxScaler(feature_range=(0,1)).fit_transform(X)
 
     test = ""
 
@@ -301,7 +303,8 @@ def split_train_test_from_training_testing_data_similaritySearch_GT(dataset_file
 
     X_train = np.asarray(X_train)
     y_train = np.asarray(y_train)
-
+    #print(y_train)
+    #exit()
     #testing file
     with open(testing_file, "r") as trfile:
         for line in trfile:
@@ -378,7 +381,7 @@ def split_train_test_from_libsvm_data_similaritySearch_GT(dataset_filepath, test
 
     logging.debug('Dataset filepath : %s', dataset_filepath)
     X, y = import_libsvm_sparse(dataset_filepath).format_sklearn()
-    X = MinMaxScaler().fit_transform(X)
+    X = MinMaxScaler(feature_range=(0, 1)).fit_transform(X)
 
     test = ""
     with open(view_path_file, "r") as ins:
@@ -459,21 +462,22 @@ After the first step, display data :
 def display_selected_data(dataset, path_list_train_views,id_to_display,id_close_margins):
     plt.close(plt.figure(1))
     plt.close(plt.figure(3))
-    fig = plt.figure(1,figsize=(9, 8))
-    fig1 = plt.figure(3,figsize=(7, 5))
+    fig = plt.figure(1,figsize=(9, 7))
+    fig1 = plt.figure(3,figsize=(9, 7))
     fig.canvas.set_window_title('Results')
     fig1.canvas.set_window_title('Most uncertain + diversity example')
     labeled_entry_ids, X_pool_labeled = zip(*dataset.get_labeled_entries())
     # gridspec inside gridspec
     
-    outer_grid = gridspec.GridSpec(8, 8, wspace=1, hspace=0.5)
-    outer_grid1 = gridspec.GridSpec(4, 8, wspace=1, hspace=0.5)
+    
+    outer_grid = gridspec.GridSpec(5, 6, wspace=1, hspace=0.5)
+    outer_grid1 = gridspec.GridSpec(5, 6, wspace=1, hspace=0.5)
     #The most certain one
     for i in range(len(id_to_display)):
         ask_id = id_to_display[i]
         ax = plt.Subplot(fig, outer_grid[i])
 
-        filename = utils.get_filename_descriptor_from_path(path_list_train_views[ask_id],9)
+        filename = utils.get_filename_descriptor_from_path(path_list_train_views[ask_id],10)
 
         ax.text(0.1, 0.5, str(filename),size=7)
         title = "ID {}".format(ask_id)
@@ -488,7 +492,7 @@ def display_selected_data(dataset, path_list_train_views,id_to_display,id_close_
         if not ask_id in np.array(labeled_entry_ids):
             ax = plt.Subplot(fig1, outer_grid1[i])
        
-            filename = utils.get_filename_descriptor_from_path(path_list_train_views[ask_id],9)
+            filename = utils.get_filename_descriptor_from_path(path_list_train_views[ask_id],10)
 
             ax.text(0.1, 0.5, str(filename),
                             size=7)
@@ -540,7 +544,7 @@ def display_selected_data_similarity_search_withGT(fully_labeled_train_dataset,t
         ask_id = id_to_display[i]
         ax = plt.Subplot(fig, outer_grid[i])
 
-        filename = utils.get_filename_descriptor_from_path(path_list_train_views[ask_id],9)
+        filename = utils.get_filename_descriptor_from_path(path_list_train_views[ask_id],10)
 
         lb = idealLabels.label(X[ask_id])
 
@@ -569,7 +573,7 @@ def display_selected_data_similarity_search_withGT(fully_labeled_train_dataset,t
         if not ask_id in np.array(labeled_entry_ids):
             ax = plt.Subplot(fig1, outer_grid1[i])
        
-            filename = utils.get_filename_descriptor_from_path(path_list_train_views[ask_id],9)
+            filename = utils.get_filename_descriptor_from_path(path_list_train_views[ask_id],10)
 
             lb = idealLabels.label(X[ask_id])
             ax.text(0.1, 0.4, str(filename),
@@ -672,6 +676,54 @@ def annotate_data(whole_dataset, id_to_display):
     logging.debug('[INFO] ====== All label data %s  ', _item_all_label_data)
     logging.debug('Update Nbr unlabeled: %s  ', whole_dataset.len_unlabeled())
     logging.debug('Update Nbr labeled: %s  ', whole_dataset.len_labeled())
+
+    return total_annotated_id_list
+
+"""
+    Ask user to annotate positive and negative label
+    Return list of positive and negatives label
+    """
+def annotate_data_similarity(fully_labeled_train_dataset,whole_dataset_unlabeled, id_to_display):
+    id_selected_positif = select_positive_example_onclick(id_to_display)
+    id_selected_negatif = select_negative_example_onclick(id_to_display)
+    
+    idealLabels = IdealLabeler(fully_labeled_train_dataset)
+    X, y = zip(*fully_labeled_train_dataset.data)
+    
+    while (len(id_selected_negatif) == 0):
+        print("Select one random negatif")
+        id_random = random.randint(0, len(X)-1)
+        feature_random = X[id_random]
+        lb = idealLabels.label(feature_random)
+        if (lb == - 1):
+            id_selected_negatif.append((id_random,lb))
+            _item_all_label_data.append((id_random,lb))
+    
+    while (len(id_selected_positif) == 0):
+        print("Select one random positif")
+        id_random = random.randint(0, len(X)-1)
+        feature_random = X[id_random]
+                
+        lb = idealLabels.label(feature_random)
+        if (lb == 1):
+            count_annotate_positif = count_annotate_positif + 1
+            id_selected_positif.append((id_random,lb))
+            _item_all_label_data.append((id_random,lb))
+    
+    list1 = list()
+    list2 = list()
+    for id_l,label in id_selected_positif:
+        logging.debug('ID : %s corresponds to label : %s  ', id_l, label)
+        list1.append((id_l,label))
+        whole_dataset_unlabeled.update(int(id_l), label)
+        _item_all_label_data.append((id_l,label))
+    for id_l,label in id_selected_negatif:
+        logging.debug('ID : %s corresponds to label : %s  ', id_l, label)
+        list2.append((id_l,label))
+        whole_dataset_unlabeled.update(int(id_l), label)
+        _item_all_label_data.append((id_l,label))
+    total_annotated_id_list = list1 + list2
+
 
     return total_annotated_id_list
 
@@ -1180,8 +1232,7 @@ def select_data_similaritySearch(fully_labeled_train_dataset,categorie_array_res
     X, _ = zip(*fully_labeled_train_dataset.data)
     count = 0
     list_idx_result = list()
-
-    for idx1,path1 in enumerate(categorie_array_results[:20]):
+    for idx1,path1 in enumerate(categorie_array_results[:25]):
         for idx2, path2 in enumerate(fully_labeled_train_dataset.data):
             filename = os.path.basename(path2[0][1])
 
@@ -1189,14 +1240,16 @@ def select_data_similaritySearch(fully_labeled_train_dataset,categorie_array_res
             filename = filename.split('_',1)[1]
             #Remove extension
             filename = os.path.splitext(filename)[0]
+
     
             if (path1 == filename):
-                #print(filename)
+                
                 if idx2 not in list_idx_result:
                     list_idx_result.append(idx2)
 
                     lb = idealLabels.label(X[idx2])
                     count = count + 1
+
 
     return list_idx_result
 
@@ -1279,6 +1332,7 @@ def basic_interactiveLearning3DStart(params):
     descriptor_file_to_analyse = root_data + name_dataset + "/descriptors_"+ descriptor_interactiveLearning + ".txt"
     view_path_file = view_file_to_analyse
     dataset_descriptor = descriptor_file_to_analyse
+    
     
     E_in, E_out, rank_array = [], [], []
     nb_iterations = 1
@@ -1479,13 +1533,14 @@ def similarity_search_interactiveLearning(params):
     descriptor_interactiveLearning,result_jsonfile,save_figure = params
 
     categorie_array_results = utils.extract_names_objects_from_result_json(result_jsonfile)
+    print(len(categorie_array_results))
+
 
     view_file_to_analyse = root_data + name_dataset + "/dataset_descriptor_" + descriptor_interactiveLearning + ".txt"
     output_graphicals_result = "results_graphics"+name_dataset+"/"
     descriptor_file_to_analyse = root_data + name_dataset + "/descriptors_"+ descriptor_interactiveLearning + ".txt"
     view_path_file = view_file_to_analyse
     dataset_descriptor = descriptor_file_to_analyse
-
 
     display_color_label = True
     plot_PR_curve = False
@@ -1517,14 +1572,17 @@ def similarity_search_interactiveLearning(params):
     #Initialization rank
     rank = len(unlabeled_entry_list)/2
     print("\nItération : {} ".format(nb_iterations))
-    list_idx_result = select_data_similaritySearch(train_dataset_binary_labeled,categorie_array_results)
 
+    list_idx_result = select_data_similaritySearch(train_dataset_binary_labeled,categorie_array_results)
+    if (len(list_idx_result) == 0):
+        print("[ERROR] List IDX empty")
+        exit()
     display_data_init_similarity_search_classic(list_idx_result,train_dataset_binary_labeled,display_color_label)
 
     #Annotate first data
     id_unlabeled_display_first = [id_feature for id_feature, feature in enumerate(unlabeled_entry_list[:nbre_data_selection])]
 
-    total_annotated_id_list = annotate_data(train_dataset_unlabeled,id_unlabeled_display_first)
+    total_annotated_id_list = annotate_data_similarity(train_dataset_binary_labeled,train_dataset_unlabeled,id_unlabeled_display_first)
     
     ################ FIRST TRAINING ###################
     model_learning = svm.SVC(kernel=kernel_svm,C = C, gamma = gam, class_weight = 'balanced', probability = True)
@@ -1545,8 +1603,8 @@ def similarity_search_interactiveLearning(params):
     idx_all_data, X_pool_all =  zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset_unlabeled.data)])
 
     #Get the probabilities result and decision function of all the data
-    probabilities_samples_unlabeled = model_learning.predict_proba(X_pool_all)
-    decision_function = model_learning.decision_function(X_pool_all)
+    probabilities_samples_unlabeled = model_learning.predict_proba(X_pool_unlabeled)
+    decision_function = model_learning.decision_function(X_pool_unlabeled)
 
     X_test, y = zip(*test_dataset_binary_labeled.get_labeled_entries())
     X_test =  np.array(X_test)
@@ -1613,7 +1671,7 @@ def similarity_search_interactiveLearning(params):
 
     #Sort the result in descending order so that we get the most certains results, i.e further point in the positive side
     indices_ranking_descending_order, distance_ranking_descending_order = utils.sort_descending_order(decision_function,False)
-    idx_example_positif_selection = np.take(idx_all_data,indices_ranking_descending_order)[:nbre_data_selection]
+    idx_example_positif_selection = np.take(idx_unlabeled_data,indices_ranking_descending_order)[:nbre_data_selection]
 
 
     ################ SELECTION UNCERTAINTY ###################
@@ -1632,7 +1690,7 @@ def similarity_search_interactiveLearning(params):
     total_annotated_id_list = annotate_data(train_dataset_unlabeled,total_id_annotation)
     idx_unlabeled_data, X_pool_unlabeled = zip(*train_dataset_unlabeled.get_unlabeled_entries())
     idx_all_data, X_pool_all =  zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset_unlabeled.data)])
-    decision_function = model_learning.decision_function(X_pool_all)
+    decision_function = model_learning.decision_function(X_pool_unlabeled)
     decision_function_custom = decision_function_vector(params, sv, nv, a, b, X_pool_unlabeled)
     #print("[INFO]Decision function classic: {} ".format(decision_function))
     decision_func = copy.copy(decision_function)
@@ -1708,16 +1766,16 @@ def similarity_search_interactiveLearning(params):
 
         idx_unlabeled_data, X_pool_unlabeled = zip(*train_dataset_unlabeled.get_unlabeled_entries())
         idx_all_data, X_pool_all =  zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset_unlabeled.data)])
-        probabilities_samples_unlabeled = model_learning.predict_proba(X_pool_all)
-        decision_function = model_learning.decision_function(X_pool_all)
+        probabilities_samples_unlabeled = model_learning.predict_proba(X_pool_unlabeled)
+        decision_function = model_learning.decision_function(X_pool_unlabeled)
 
         indices_rank_decision_function_positif_without_correction, _ = utils.sort_descending_order(decision_function,True)
-        idx_example_positif_selection_without_correction = np.take(idx_all_data,indices_rank_decision_function_positif_without_correction)[:nbre_data_selection]
+        idx_example_positif_selection_without_correction = np.take(idx_unlabeled_data,indices_rank_decision_function_positif_without_correction)[:nbre_data_selection]
 
         ################ 2. CORRECTION ###################
         decision_function, number_to_remove = correction(train_dataset_unlabeled, model_learning, rank)
         indices_rank_new_decision_function_positif, distance_rank_decision_function_positif = utils.sort_descending_order(decision_function,True)
-        idx_example_positif_selection = np.take(idx_all_data,indices_rank_new_decision_function_positif)[:nbre_data_selection]
+        idx_example_positif_selection = np.take(idx_unlabeled_data,indices_rank_new_decision_function_positif)[:nbre_data_selection]
 
         ################ 3. PRESELECTION ###################
         ids_example_close_margin_correction = select_queries_uncertainty_decision_function(train_dataset_unlabeled, model_learning, nbre_data_margins_selection_uncertainty,number_to_remove)
@@ -2481,7 +2539,7 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
             list_idx_candidate = list_idx_result_first_three + list_idx_result_last_three
 
             if display_graphic_each_step:
-                automatic_display_data_init_similarity_search(list_idx_result,train_dataset_binary_labeled,True)
+                automatic_display_data_init_similarity_search(list_idx_candidate,train_dataset_binary_labeled,True)
                 #list_idx_result = display_data_init_similarity_search_test(train_dataset_binary_labeled,categorie_array_results, nbre_data_selection)
 
             #Annotate first data
@@ -2835,13 +2893,15 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
         az.set_ylabel('Score')
         title_figure = name_dataset + "_" + name_category + "_" + name_descriptor + "_NN_FT_ST.png"
         paht_to_save = output_graphicals_result + title_figure
-        #fig2.savefig(paht_to_save, bbox_inches='tight')
+        fig2.savefig(paht_to_save, bbox_inches='tight')
         
 
         ###### GRAPHIC 3
         #title = "Average Precision Score for category : " + str(name_category) + " and for descriptor : " + str(name_descriptor)
         #plotting.plot_f1_precision_recall(query_num,mean_f1_score_objects_array,mean_precision_objects_array,mean_recall_objects_array,mean_recall_curve_array,mean_precision_curve_array,mean_average_precision_objects_array,name_dataset,name_category,name_descriptor,output_graphicals_result,title,save_figures)
-        #plt.close('all')
+        
+        #plt.show(block = True)
+        plt.close('all')
         
         #Save points
         for i in range(len(figure_data)):
@@ -2854,7 +2914,7 @@ def automatic_interactiveLearning_objectlist(params,name_descriptor):
             path_to_save = output_graphicals_result + title_points
             utils.save_list_points(figure_data_display[i],path_to_save)
         
-        #plt.show(block = False)
+        
         
         
         #Add mean result of category to the list which will contain the results of all categories
@@ -3046,7 +3106,7 @@ def main():
         similaritySearch_automatic_alltesting = 3
 
     #Choose here the option you want
-    current_option = option_interactiveLearning.without_similaritySearch
+    current_option = option_interactiveLearning.similaritySearch_manuel
 
 
     #Run basic interactive learning without similarity search
@@ -3302,6 +3362,11 @@ def main():
                 figure2.savefig(name_save_figure_NN)
                 figure3.savefig(name_save_figure_FT)
                 figure4.savefig(name_save_figure_ST)
+
+            else:
+                params = (list_of_random_objects, path_dataset, name_dataset,result_list_numberObjectsPerClass)
+                for desc in descriptors:
+                    automatic_interactiveLearning_objectlist(params,desc)
 
     else :
         logging.error('Invalid Interactive Learning Option')

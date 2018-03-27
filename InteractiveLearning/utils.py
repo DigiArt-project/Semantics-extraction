@@ -110,6 +110,10 @@ we want to get only the name : car0_8 i.e car0, view 8
 def get_filename_descriptor_from_path(path,number_to_split = 9):
     #print(path)
     filename = path.split("/")[number_to_split]
+    filename_test = path.split("/")
+    #print(filename)
+    #print(filename_test)
+    
     filename = filename.split('_',1)[1]
     filename = filename.rsplit('_',1)[0]
     #Remove extension
