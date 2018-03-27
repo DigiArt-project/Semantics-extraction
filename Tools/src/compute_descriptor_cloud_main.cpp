@@ -53,12 +53,12 @@ typedef pcl::PointXYZ PointT;
 
 std::string output = "descriptor.pcd";
 //If want to scale descriptor between 0 and 1
-bool scale_descriptor = true;
+bool scale_descriptor = false;
 bool normalize_cloud = false;
 //If instead of computing one point cloud, you want to compute inside folder
 bool compute_all = true;
-std::string dataset_folder = "/Users/lironesamoun/digiArt/Datasets/Dataset_PSB_normalized70";
-bool onFull = false;
+std::string dataset_folder = "/Users/lironesamoun/digiArt/Datasets/dataset_potterymix_normalized";
+bool onFull = true;
 bool enable_filtering = true;
 float leaf_size = 0.01f;
 
@@ -292,13 +292,13 @@ main (int argc, char** argv)
         std::cout << "COMPUTE ALL" << std::endl;
         //Activate the descriptor you want
         bool enable_esf = true;
-        bool enable_vfh = false;
+        bool enable_vfh = true;
         bool enable_cvfh = false;
-        bool enable_ourcvfh = false;
+        bool enable_ourcvfh = true;
         bool enable_grsd = false;
-        bool enable_gshot = false;
+        bool enable_gshot = true;
         bool enable_gshot_pyramid = false;
-        bool enable_good = false;
+        bool enable_good = true;
         bool enable_usc = false;
         bool enable_sc3D = false;
         

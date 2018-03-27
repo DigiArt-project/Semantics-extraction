@@ -1265,7 +1265,7 @@ main (int argc, char** argv)
 
     //Choose the option for cacatenation of descriptors
     int choice_concatenation = cfg.m_computeViewsDescriptors.concatenation_descriptors  ;
-    bool scale_descriptor = true;
+    bool scale_descriptor = false;
     std::cout << "Save view : " << cfg.m_computeViewsDescriptors.save_view << std::endl;
     std::cout << "Compute good : " << cfg.m_computeViewsDescriptors.enable_good << std::endl;
     std::cout << "Compute esf : " << cfg.m_computeViewsDescriptors.enable_esf << std::endl;
@@ -1370,34 +1370,35 @@ main (int argc, char** argv)
                     return -1;
 
                 normalizePC(cloud);
-
+                
                 vtkSmartPointer<vtkPolyData> data = vtkSmartPointer<vtkPolyData>::New ();
 
                 //Load PLY model and scale it
                 const float model_scale = cfg.m_computeViewsDescriptors.model_scale;
 
                 readerQuery->SetFileName (path_to_ply.c_str());
+                /*
                 vtkSmartPointer<vtkTransform> trans = vtkSmartPointer<vtkTransform>::New ();
                 trans->Scale (model_scale, model_scale, model_scale);
                 trans->Modified ();
                 trans->Update ();
-
-                vtkSmartPointer<vtkTransformPolyDataFilter> filter_scale = vtkSmartPointer<vtkTransformPolyDataFilter>::New ();
+                 */
+                /*vtkSmartPointer<vtkTransformPolyDataFilter> filter_scale = vtkSmartPointer<vtkTransformPolyDataFilter>::New ();
                 filter_scale->SetTransform (trans);
                 filter_scale->SetInputConnection (readerQuery->GetOutputPort ());
                 //filter_scale->SetInputData(data);
-                filter_scale->Update ();
-
-                vtkSmartPointer<vtkPolyData> mapper = filter_scale->GetOutput ();
-
-                //vtkSmartPointer<vtkPolyData> polydata = readerQuery->GetOutput();
+                filter_scale->Update ();*/
+                
+                //vtkSmartPointer<vtkPolyData> mapper = filter_scale->GetOutput ();
+                 
+                vtkSmartPointer<vtkPolyData> polydata = readerQuery->GetOutput();
                 readerQuery->Update();
-
+                
                 //TODO Sauvegarder sous format PLY puis reouvrir PLY
 
                 //render the ply model from different view
                 //add the model to PCLVisualizer
-                renderer->addModelFromPolyData(mapper, "model", 0);
+                renderer->addModelFromPolyData(polydata, "model", 0);
                 //input parameter
                 const int xres = cfg.m_computeViewsDescriptors.xres;
                 const int yres = cfg.m_computeViewsDescriptors.yres;
@@ -1439,6 +1440,7 @@ main (int argc, char** argv)
                     completeModel += transformed_view;
  
                     pcl::PointCloud<pcl::PointXYZ>::Ptr view_i_ptr(new pcl::PointCloud<pcl::PointXYZ>(views[i]));
+                    
                     normalizePC(view_i_ptr);
 
                     //normalizePointCloud(views[i]);

@@ -187,7 +187,7 @@ protected:
     inline void nearestKSearch (flann::Index<DistT > &index, const model &model,int k, flann::Matrix<int> &indices, flann::Matrix<float> &distances);
     
     void normalizePointCloud(typename pcl::PointCloud<PointT>::Ptr& cloud);
-    
+    void normalizePC(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud);
     std::vector<float> minMaxScaler(std::vector<float> data);
     
 protected:
@@ -244,6 +244,29 @@ RetrievalSimilaritySearchDatabase<PointT, DescriptorT, DistT>::RetrievalSimilari
 {
     flann_search_.setPointRepresentation(typename SearchT::PointRepresentationPtr (new pcl::DefaultFeatureRepresentation<DescriptorT>));
     flann_search_.setChecks(checks);
+}
+
+template<typename PointT, typename DescriptorT, typename DistT>
+void RetrievalSimilaritySearchDatabasein<PointT, DescriptorT, DistT>::normalizePC(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud){
+    
+    pcl::PointXYZ centroid;
+    pcl::computeCentroid(*cloud, centroid);
+    std::cout<<"centroid :"<<centroid.x<<", "<<centroid.y<<", "<<centroid.z<<std::endl;
+    std::vector<int> indices;
+    std::vector<float> distances;
+    
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    kdtree.setInputCloud( cloud, NULL);
+    kdtree.nearestKSearch( centroid, cloud->size(), indices, distances);
+    std::cout<<"scale factor :"<<distances.back()<<std::endl;
+    Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+    
+    transform.translation() << -centroid.x/sqrt(distances.back()), -centroid.y/sqrt(distances.back()), -centroid.z/sqrt(distances.back());
+    transform.scale(1/sqrt(distances.back()));
+    
+    //pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
+    pcl::transformPointCloud (*cloud, *cloud, transform);
+    //pcl::io::savePLYFile( newFilePath, *transformed_cloud);
 }
 
 template<typename PointT, typename DescriptorT, typename DistT>
@@ -797,12 +820,10 @@ void RetrievalSimilaritySearchDatabase<PointT, DescriptorT, DistT>::globalMatchi
         std::cout << "Number of points  : " << cloud->size() << std::endl;
 
     }
+    std::cout << "==> Normalization Point Cloud <==" << std::endl;
+    normalizePC(cloud);
     
-    if (cloud->size() < 3000){
-    //This one
-    //cloud = Utils::upsampling(cloud,0.03,0.01,0.003);
-    //cloud = Utils::upsampling(cloud,0.5,0.06,0.02);
-    }
+    
     Timer timetotal;
     timetotal.startTimer();
     //First compute the descriptor
