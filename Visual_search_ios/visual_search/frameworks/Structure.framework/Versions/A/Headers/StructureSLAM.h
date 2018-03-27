@@ -43,7 +43,7 @@ The archive will also embed the MTL and JPEG file if the mesh has a texture.
 
 Stores mesh data as a collection of vertices and faces. STMesh objects are references, and access to the underlying data should be protected by locks in case multiple threads may be accessing it.
 
-Since OpenGL ES only supports 16 bits unsigned short for face indices, meshes larges than 65535 faces have to be split into smaller submeshes. STMesh is therefore a reference to a collection of partial meshes, each of them having less than 65k faces.
+Since OpenGL ES only supports 16 bits unsigned short for face indices, meshes larger than 65535 faces have to be split into smaller sub-meshes. STMesh is therefore a reference to a collection of partial meshes, each of them having less than 65k faces.
 */
 @interface STMesh : NSObject
 
@@ -127,18 +127,6 @@ Each line is represented by two vertex indices. These lines can be used for wire
 */
 - (unsigned short *)meshLines:(int)meshIndex;
 
-/** Intersect the mesh with a ray specified by the origin and end points.
-
-If TRUE is returned, `intersection` will contain the first (x, y, z) coordinate on the mesh that the ray intersects when traveling from the origin to the end.
-
-@param origin The origin of ray.
-@param end The end of ray.
-@param intersection The intersection point to the mesh if intersection happens.
-
-@return TRUE if there is an intersection, FALSE otherwise
-*/
-- (BOOL)intersectWithRayOrigin:(GLKVector3)origin rayEnd:(GLKVector3)end intersection:(GLKVector3 *)intersection;
-
 /** Save the STMesh to a file.
 
 Sample usage:
@@ -195,6 +183,24 @@ Sample usage:
 @end
 
 //------------------------------------------------------------------------------
+#pragma mark - STMeshIntersector
+/** A utility class to compute the intersection of a ray to the mesh
+ */
+@interface STMeshIntersector : NSObject
+- (instancetype)initWithMesh:(STMesh*)inputMesh;
+/** Intersect the mesh with a ray specified by the origin and end points.
+ If TRUE is returned, `intersection` will contain the first (x, y, z) coordinate on the mesh that the ray intersects when traveling from the origin to the end.
+ @param origin The origin of ray.
+ @param end The end of ray.
+ @param intersection The intersection point to the mesh if intersection happens.
+ @return TRUE if there is an intersection, FALSE otherwise
+ */
+- (BOOL)intersectWithRayOrigin:(GLKVector3)origin rayEnd:(GLKVector3)end intersection:(GLKVector3 *)intersection normal:(GLKVector3 *)normal ignoreBackFace:(BOOL)ignoreBackFace;
+- (BOOL)intersectWithRayOrigin:(GLKVector3)origin rayEnd:(GLKVector3)end intersection:(GLKVector3 *)intersection intersectionFaceIndex:(int *) intersectionFaceIndex ignoreBackFace:(BOOL)ignoreBackFace;
+- (BOOL)faceIsOnAPlane:(int)faceIndex normal:(GLKVector3 *)normal;
+@end
+
+//------------------------------------------------------------------------------
 #pragma mark - STScene
 
 /** Common data shared and updated by the SLAM pipeline.
@@ -209,10 +215,8 @@ In particular, STMesh objects should be properly locked.
 /** Mandatory initializer for STScene.
 
 @param glContext a valid EAGLContext.
-@param textureUnit A GL_TEXTUREX unit which will be used when SLAM objects need to render meshes to an OpenGL texture.
 */
-- (instancetype)initWithContext:(EAGLContext *)glContext
-              freeGLTextureUnit:(GLenum)textureUnit;
+- (instancetype)initWithContext:(EAGLContext *)glContext;
 
 /** Reference to the current scene mesh.
 
@@ -341,6 +345,8 @@ typedef struct
     bool modelOutOfView;
 }
 STTrackerHints;
+
+STTrackerHints STTrackerHints_init (void);
 
 /** A STTracker instance tracks the 3D position of the Structure Sensor.
 
@@ -593,20 +599,39 @@ __Note:__ This strategy does not require depth information.
     STCameraPoseInitializerStrategyGravityAlignedAtVolumeCenter = 2,
 };
 
+typedef struct STCameraPoseInitializerOutput
+{
+    /// Whether the pose initializer could find a good pose.
+    BOOL hasValidPose;
+    
+    /// Estimated camera pose, taking Structure Sensor as a reference.
+    GLKMatrix4 cameraPose;
+    
+    /// Whether the last cube placement was made with a supporting plane. Useful for STMapper.
+    BOOL hasSupportPlane;
+    
+    /// Equation of the detected support plane (if hasSupportPlane is true)
+    GLKVector4 supportPlane;
+    
+} STCameraPoseInitializerOutput;
+
 /// Determine an initial camera pose to make the best use of the cuboid scanning volume.
 @interface STCameraPoseInitializer : NSObject
 
 /// Width, height and depth of the volume cuboid.
 @property (nonatomic) GLKVector3 volumeSizeInMeters;
 
+/// Return the last estimated pose. This is the recommended thread-safe way to get the output.
+@property (nonatomic, readonly) struct STCameraPoseInitializerOutput lastOutput;
+
 /// Most recent estimated camera pose, taking Structure Sensor as a reference.
-@property (nonatomic, readonly) GLKMatrix4 cameraPose;
+@property (nonatomic, readonly) GLKMatrix4 cameraPose; __deprecated_msg("use lastOutput instead.");
 
 /// Whether the pose initializer could find a good pose.
-@property (nonatomic, readonly) BOOL hasValidPose;
+@property (nonatomic, readonly) BOOL hasValidPose; __deprecated_msg("use lastOutput instead.");
 
 /// Whether the last cube placement was made with a supporting plane. Useful for STMapper.
-@property (nonatomic, readonly) BOOL hasSupportPlane;
+@property (nonatomic, readonly) BOOL hasSupportPlane; __deprecated_msg("use lastOutput instead.");
 
 /** Initialize with all the required fields.
 
@@ -623,13 +648,13 @@ __Note:__ This strategy does not require depth information.
 
 /** Update the current pose estimate from a depth frame and a CoreMotion gravity vector, using the strategy specified at init.
 
-@param gravity a gravity vector in IMU coordinates, e.g. as provided by CMDeviceMotion.gravity.
+@param gravityInDeviceFrame a gravity vector in IMU coordinates, e.g. as provided by CMDeviceMotion.gravity.
 @param depthFrame the current processed depth from Structure Sensor. Can be `nil` if using the strategies `STCameraPoseInitializerStrategyGravityAlignedAtOrigin` or `STCameraPoseInitializerStrategyGravityAlignedAtVolumeCenter`.
 @param error will contain detailed information if the estimation failed.
 
 @return TRUE on success, FALSE on failure.
 */
-- (BOOL)updateCameraPoseWithGravity:(GLKVector3)gravity depthFrame:(STDepthFrame *)depthFrame error:(NSError* __autoreleasing *)error;
+- (BOOL)updateCameraPoseWithGravity:(GLKVector3)gravityInDeviceFrame depthFrame:(STDepthFrame *)depthFrame error:(NSError* __autoreleasing *)error;
 
 /** Determine which pixels of a depth frame are inside the current scanning volume.
  

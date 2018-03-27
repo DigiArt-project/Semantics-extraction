@@ -8,6 +8,10 @@
 
 
 int k = 10;
+float leaf_resolution = 0.01f;
+bool enable_resolution = true;
+bool enable_scaling = false;
+bool compute_on_full = true;
 std::string descriptor_type = "esf";
 std::string output_path_result = "../results.json";
 
@@ -31,18 +35,35 @@ showHelp (char *filename)
     std::cout << std::endl;
     std::cout << "***************************************************************************" << std::endl;
     std::cout << "*                                                                         *" << std::endl;
-    std::cout << "*                         Cloud Retrieval                              *" << std::endl;
+    std::cout << "*                 Cloud Retrieval using similarity search                 *" << std::endl;
     std::cout << "*                                                                         *" << std::endl;
     std::cout << "***************************************************************************" << std::endl << std::endl;
-    std::cout << "Usage: " << filename << "config_file (.cfg) -query object.pcd -trained tained_dataset [Options]" << std::endl << std::endl;
-    
+    std::cout << "Usage: " << filename << " -query object.pcd -trained tained_dataset [Options]" << std::endl << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "     -h:                     Show this help." << std::endl;
-    std::cout << "     -descriptor:            change descriptor. Available : esf, vfh, cvfh, ourcvfh. Per default : esf " << std::endl;
+    std::cout << "     -descriptor:            change descriptor. Available : esf, vfh, cvfh, ourcvfh, gshot. Per default : esf " << std::endl;
     std::cout << "     -output:                where to save the json results file. Per default : ../results.json" << std::endl;
+    std::cout << "     -leaf_resolution:       For cloud resolution invariance,. Per defaut : 0.01 \n" << std::endl;
+    std::cout << "     -compute_full:          Use full objects or views,. Per defaut : true \n" << std::endl;
     std::cout << "     -k:               number of results to find \n" << std::endl;
     
 }
+
+struct path_leaf_string
+{
+    std::string operator()(const boost::filesystem::directory_entry& entry) const
+    {
+        return entry.path().leaf().string();
+    }
+};
+void read_directory(const std::string& name, std::vector<std::string>& v)
+{
+    boost::filesystem::path p(name);
+    boost::filesystem::directory_iterator start(p);
+    boost::filesystem::directory_iterator end;
+    std::transform(start, end, std::back_inserter(v), path_leaf_string());
+}
+
 int main(int argc, char** argv)
 {
     
@@ -70,6 +91,7 @@ int main(int argc, char** argv)
         return (-1);
     
     bool resolution_activated = cfg.similaritySearch.enable_resolution;
+    bool scale_activated = enable_scaling;
    
     std::string query;
     if(pcl::console::parse_argument(argc, argv, "-query", query) == -1)
@@ -95,6 +117,18 @@ int main(int argc, char** argv)
     pcl::console::parse_argument (argc, argv, "-descriptor", descriptor_type);
     pcl::console::parse_argument (argc, argv, "-output", output_path_result);
     pcl::console::parse_argument (argc, argv, "-k", k);
+    pcl::console::parse_argument (argc, argv, "-leaf_resolution", leaf_resolution);
+    std::string activate ="";
+    pcl::console::parse_argument (argc, argv, "-compute_full", activate);
+    
+    if (activate == "true"){
+        compute_on_full = true;
+    }else{
+        compute_on_full = false;
+    }
+    
+    std::cout << compute_on_full << std::endl;
+
     
     if (!boost::filesystem::exists (query)){
         std::cerr<<"[ERROR] query empty - Please specify the query again using -query "<<std::endl;
@@ -199,9 +233,13 @@ int main(int argc, char** argv)
         
         RecognitionDatabase<pcl::PointXYZ, pcl::VFHSignature308, flann::L1<float> > db;
         db.setDescriptor(descriptor_type);
+        db.setComputeOnFull(compute_on_full);
         if (resolution_activated){
             db.setResolutionMode(true);
             db.setResolution(cfg.filtering.leaf_resolution);
+        }
+        if (scale_activated){
+            db.setScale(scale_activated);
         }
         db.globalMatchingUsingViewOfCloud(query,database_trained, categories,k);
         db.saveResultsDetectionsJSON(output_path_result);
@@ -210,9 +248,13 @@ int main(int argc, char** argv)
         
         RecognitionDatabase<pcl::PointXYZ, pcl::VFHSignature308, flann::ChiSquareDistance<float> > db;
         db.setDescriptor(descriptor_type);
+        db.setComputeOnFull(compute_on_full);
         if (resolution_activated){
             db.setResolutionMode(true);
             db.setResolution(cfg.filtering.leaf_resolution);
+        }
+        if (scale_activated){
+            db.setScale(scale_activated);
         }
         db.globalMatchingUsingViewOfCloud(query,database_trained,categories,k);
         db.saveResultsDetectionsJSON(output_path_result);
@@ -222,9 +264,13 @@ int main(int argc, char** argv)
         
         RecognitionDatabase<pcl::PointXYZ, pcl::VFHSignature308, flann::ChiSquareDistance<float> > db;
         db.setDescriptor(descriptor_type);
+        db.setComputeOnFull(compute_on_full);
         if (resolution_activated){
             db.setResolutionMode(true);
             db.setResolution(cfg.filtering.leaf_resolution);
+        }
+        if (scale_activated){
+            db.setScale(scale_activated);
         }
         db.globalMatchingUsingViewOfCloud(query,database_trained,categories,k);
         db.saveResultsDetectionsJSON(output_path_result);
@@ -234,9 +280,30 @@ int main(int argc, char** argv)
         
         RecognitionDatabase<pcl::PointXYZ, pcl::ESFSignature640, flann::L2<float> > db;
         db.setDescriptor(descriptor_type);
+        db.setComputeOnFull(compute_on_full);
         if (resolution_activated){
             db.setResolutionMode(true);
             db.setResolution(cfg.filtering.leaf_resolution);
+        }
+        if (scale_activated){
+            db.setScale(scale_activated);
+        }
+        db.globalMatchingUsingViewOfCloud(query,database_trained,categories,k);
+        db.saveResultsDetectionsJSON(output_path_result);
+        
+        
+    }
+    else if (descriptor_type.compare("gshot") == 0 || descriptor_type.compare("gshotPyramid") == 0 ){
+        
+        RecognitionDatabase<pcl::PointXYZ, pcl::SHOT352, flann::L2<float> > db;
+        db.setDescriptor(descriptor_type);
+        db.setComputeOnFull(compute_on_full);
+        if (resolution_activated){
+            db.setResolutionMode(true);
+            db.setResolution(leaf_resolution);
+        }
+        if (scale_activated){
+            db.setScale(scale_activated);
         }
         db.globalMatchingUsingViewOfCloud(query,database_trained,categories,k);
         db.saveResultsDetectionsJSON(output_path_result);

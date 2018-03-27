@@ -19,6 +19,8 @@ There are five importants components :
 * **training_database** —> the C++ algo (retrieval using similarity search and svm)
 * **scripts** —> All the scripts needed for generating files, training and testing
 
+In each folder, you will find instructions.
+
 ## How to run the code on your own server 
 
 ### Ports and IP

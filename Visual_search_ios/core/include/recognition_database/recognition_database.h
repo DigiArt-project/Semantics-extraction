@@ -15,6 +15,7 @@
 #include "descriptor_estimation/cvfh_estimation.h"
 #include "descriptor_estimation/ourcvfh_estimation.h"
 #include "descriptor_estimation/esf_estimation.h"
+#include "descriptor_estimation/gshot_estimation.h"
 
 
 
@@ -75,6 +76,14 @@ public:
         m_resolution_activated = toActivate;
     }
     
+    void setComputeOnFull(bool toActivate){
+        m_compute_full = toActivate;
+    }
+    void setScale(bool toActivate){
+        m_scale_activated = toActivate;
+    }
+    
+    
     
     /**
      *   Crawled a directory structure, looked at all the .PCD files found corresponding to the global descriptors, tested them whether they are VFH signatures (or others depending of the descriptors) and loaded them in memory; Then converted the data into FLANN format and dumped it to disk;
@@ -123,6 +132,8 @@ protected:
      * @param directory the path to the dataset
      * @param models the resultant vector of histogram models
      */
+    bool loadHistGSHOT (const boost::filesystem::path &path, model &gshot);
+
     void loadFeatureModelsVFH (const std::string &directory, std::vector<model> &models);
     /** Load a set of VFH features that will act as the model (training data)
      * @param directory the path to the dataset
@@ -139,6 +150,8 @@ protected:
      */
     inline void nearestKSearch (flann::Index<DistT > &index, const model &model,int k, flann::Matrix<int> &indices, flann::Matrix<float> &distances);
     
+    void normalizePC(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud);
+    std::vector<float> minMaxScaler(std::vector<float> data);
     
     
     
@@ -161,15 +174,48 @@ protected:
     std::string m_resultsdetectionJSONformat;
     
     bool m_resolution_activated;
+    bool m_scale_activated;
     float m_resolution;
-
+    bool m_compute_full;
     
     //Rotate cloud
     void rotateCloudAxisZ(std::string path_cloud,float theta = M_PI/2);
 };
 
+template<typename PointT, typename DescriptorT, typename DistT>
+std::vector<float> RecognitionDatabase<PointT, DescriptorT, DistT>::minMaxScaler(std::vector<float> data){
+    std::vector<float> result_min_max;
+    auto max = std::max_element(std::begin(data), std::end(data));
+    auto min = std::min_element(std::begin(data), std::end(data));
+    for (int i = 0; i < data.size(); i++){
+        float new_value = (data.at(i) - *min)/(*max - *min);
+        result_min_max.push_back(new_value);
+    }
+    return result_min_max;
+}
 
-
+template<typename PointT, typename DescriptorT, typename DistT>
+void RecognitionDatabase<PointT, DescriptorT, DistT>::normalizePC(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud){
+    
+    pcl::PointXYZ centroid;
+    pcl::computeCentroid(*cloud, centroid);
+    std::cout<<"centroid :"<<centroid.x<<", "<<centroid.y<<", "<<centroid.z<<std::endl;
+    std::vector<int> indices;
+    std::vector<float> distances;
+    
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    kdtree.setInputCloud( cloud, NULL);
+    kdtree.nearestKSearch( centroid, cloud->size(), indices, distances);
+    std::cout<<"scale factor :"<<distances.back()<<std::endl;
+    Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+    
+    transform.translation() << -centroid.x/sqrt(distances.back()), -centroid.y/sqrt(distances.back()), -centroid.z/sqrt(distances.back());
+    transform.scale(1/sqrt(distances.back()));
+    
+    //pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
+    pcl::transformPointCloud (*cloud, *cloud, transform);
+    //pcl::io::savePLYFile( newFilePath, *transformed_cloud);
+}
 
 template<typename PointT, typename DescriptorT, typename DistT>
 RecognitionDatabase<PointT, DescriptorT, DistT>::RecognitionDatabase():flann_search_(true, typename SearchT::FlannIndexCreatorPtr(new typename SearchT::KdTreeMultiIndexCreator(4))),descriptors_(new DescriptorCloudT)
@@ -542,6 +588,50 @@ bool RecognitionDatabase<PointT, DescriptorT, DistT>::loadHistESF (const boost::
     return (true);
     
 }
+
+#pragma mark -  Load GSHOT histogram
+template<typename PointT, typename DescriptorT, typename DistT>
+bool RecognitionDatabase<PointT, DescriptorT, DistT>::loadHistGSHOT(const boost::filesystem::path &path, model &gshot)
+{
+    int gshot_idx;
+    // Load the file as a PCD
+    try
+    {
+        pcl::PCLPointCloud2 cloud;
+        int version;
+        Eigen::Vector4f origin;
+        Eigen::Quaternionf orientation;
+        pcl::PCDReader r;
+        int type; unsigned int idx;
+        r.readHeader (path.string (), cloud, origin, orientation, version, type, idx);
+        
+        gshot_idx = pcl::getFieldIndex (cloud, "shot");
+        if (gshot_idx == -1)
+        return (false);
+        if ((int)cloud.width * cloud.height != 1)
+        return (false);
+    }
+    catch (const pcl::InvalidConversionException&)
+    {
+        return (false);
+    }
+    
+    // Treat the Gshot signature as a single Point Cloud
+    pcl::PointCloud <pcl::SHOT352> point;
+    pcl::io::loadPCDFile (path.string (), point);
+    gshot.second.resize (352);
+    
+    std::vector <pcl::PCLPointField> fields;
+    pcl::getFieldIndex (point, "shot", fields);
+    
+    for (size_t i = 0; i < fields[gshot_idx].count; ++i)
+    {
+        gshot.second[i] = point.points[0].descriptor[i];
+    }
+    gshot.first = path.string ();
+    return (true);
+}
+
 
 /** Load the list of file model names from an ASCII file training_data.list . This file contains all the paths relative to all the descriptors of every objects of the dataset
  * @param models the output
@@ -938,6 +1028,8 @@ void RecognitionDatabase<PointT, DescriptorT, DistT>::globalMatchingUsingViewOfC
         down.filter (*cloud);
         std::cout << "Resolution of the uploaded model after filtering : " << Utils::compute_resolution(cloud) << std::endl;
     }
+    std::cout << "==> Normalization Point Cloud <==" << std::endl;
+    normalizePC(cloud);
     
     //First compute the descriptor
     std::cout << "Computation of the descriptor ... " << std::flush;
@@ -952,6 +1044,17 @@ void RecognitionDatabase<PointT, DescriptorT, DistT>::globalMatchingUsingViewOfC
         vfh_estimation.estimate();
         pcl::PointCloud<pcl::VFHSignature308> vfhs;
         vfh_estimation.getResultDescriptors(vfhs);
+        if (m_scale_activated){
+            std::vector<float> data_tmp,value_descriptor_scaled;
+            for (size_t i = 0; i < pcl::VFHSignature308::descriptorSize(); i++)
+            {
+                data_tmp.push_back(vfhs.points[0].histogram[i]);
+            }
+            value_descriptor_scaled = minMaxScaler(data_tmp);
+            for (int j = 0; j < value_descriptor_scaled.size(); j++){
+                vfhs.points[0].histogram[j] = value_descriptor_scaled.at(j);
+            }
+        }
         boost::filesystem::create_directory(output_path/"descriptors_view/vfh");
         
         descriptor_name<<(output_path/"descriptors_view/vfh/").string()<<"descriptor_0.pcd";
@@ -966,6 +1069,18 @@ void RecognitionDatabase<PointT, DescriptorT, DistT>::globalMatchingUsingViewOfC
         pcl::PointCloud<pcl::VFHSignature308> cvfhs;
         cvfh_estimation.getResultDescriptors(cvfhs);
         
+        if (m_scale_activated){
+            std::vector<float> data_tmp,value_descriptor_scaled;
+            for (size_t i = 0; i < pcl::VFHSignature308::descriptorSize(); i++)
+            {
+                data_tmp.push_back(cvfhs.points[0].histogram[i]);
+            }
+            value_descriptor_scaled = minMaxScaler(data_tmp);
+            for (int j = 0; j < value_descriptor_scaled.size(); j++){
+                cvfhs.points[0].histogram[j] = value_descriptor_scaled.at(j);
+            }
+        }
+        
         boost::filesystem::create_directory(output_path/"descriptors_view/cvfh");
         descriptor_name<<(output_path/"descriptors_view/cvfh/").string()<<"descriptor_0.pcd";
         pcl::io::savePCDFileASCII<pcl::VFHSignature308>(descriptor_name.str(), cvfhs);
@@ -978,6 +1093,18 @@ void RecognitionDatabase<PointT, DescriptorT, DistT>::globalMatchingUsingViewOfC
         ourcvfh_estimation.estimate();
         pcl::PointCloud<pcl::VFHSignature308> ourcvfhs;
         ourcvfh_estimation.getResultDescriptors(ourcvfhs);
+        
+        if (m_scale_activated){
+            std::vector<float> data_tmp,value_descriptor_scaled;
+            for (size_t i = 0; i < pcl::VFHSignature308::descriptorSize(); i++)
+            {
+                data_tmp.push_back(ourcvfhs.points[0].histogram[i]);
+            }
+            value_descriptor_scaled = minMaxScaler(data_tmp);
+            for (int j = 0; j < value_descriptor_scaled.size(); j++){
+                ourcvfhs.points[0].histogram[j] = value_descriptor_scaled.at(j);
+            }
+        }
         
         boost::filesystem::create_directory(output_path/"descriptors_view/ourcvfh");
         
@@ -995,12 +1122,50 @@ void RecognitionDatabase<PointT, DescriptorT, DistT>::globalMatchingUsingViewOfC
         pcl::PointCloud<pcl::ESFSignature640> esfs;
         esf_estimation.getResultDescriptors(esfs);
         
+        if (m_scale_activated){
+            std::vector<float> data_tmp,value_descriptor_scaled;
+            for (size_t i = 0; i < pcl::ESFSignature640::descriptorSize(); i++)
+            {
+                data_tmp.push_back(esfs.points[0].histogram[i]);
+            }
+            value_descriptor_scaled = minMaxScaler(data_tmp);
+            for (int j = 0; j < value_descriptor_scaled.size(); j++){
+                esfs.points[0].histogram[j] = value_descriptor_scaled.at(j);
+            }
+        }
+        
         boost::filesystem::create_directory(output_path/"descriptors_view/esf");
         
         descriptor_name<<(output_path/"descriptors_view/esf/").string()<<"descriptor_0.pcd";
         pcl::io::savePCDFileASCII<pcl::ESFSignature640>(descriptor_name.str(), esfs);
         
-    }else{
+    }else if (m_descriptor_name == "gshot"){
+        std::cout << " GSHOT  " << std::flush;
+        GSHOTEstimation<pcl::PointXYZ> gshot_estimation;
+        gshot_estimation.setInputCluster(*cloud);
+        gshot_estimation.estimate();
+        pcl::PointCloud<pcl::SHOT352> gshots;
+        gshot_estimation.getResultDescriptors(gshots);
+        
+        if (m_scale_activated){
+            std::vector<float> data_tmp,value_descriptor_scaled;
+            for (size_t i = 0; i < pcl::SHOT352::descriptorSize(); i++)
+            {
+                data_tmp.push_back(gshots.points[0].descriptor[i]);
+            }
+            value_descriptor_scaled = minMaxScaler(data_tmp);
+            for (int j = 0; j < value_descriptor_scaled.size(); j++){
+                gshots.points[0].descriptor[j] = value_descriptor_scaled.at(j);
+            }
+        }
+        boost::filesystem::create_directory(output_path/"descriptors_view/gshot");
+        
+        descriptor_name<<(output_path/"descriptors_view/gshot/").string()<<"descriptor_0.pcd";
+        
+        pcl::io::savePCDFileASCII<pcl::SHOT352>(descriptor_name.str(), gshots);
+    }
+    
+    else{
         std::cerr << "[ERROR] Unknow type of descriptor " << std::endl;
         exit(1);
     }
@@ -1020,8 +1185,18 @@ void RecognitionDatabase<PointT, DescriptorT, DistT>::globalMatchingUsingViewOfC
         {
             pcl::console::print_error (" [ERROR] Cannot load global descriptor of the target file %s\n", queryCloud.c_str());
         }
-        //Suppose ESF
-    }else {
+        
+       
+    } else if (m_descriptor_name == "gshot" || m_descriptor_name == "gshotPyramid"){
+        
+        if (!loadHistGSHOT (queryDescriptor, histogram))
+        {
+            
+            pcl::console::print_error ("[ERROR] Cloud search - Cannot load global descriptor of the target file %s\n", queryCloud.c_str());
+        }
+    }
+    //Suppose ESF
+    else {
         std::cout << "[INFO] LOAD ESF histogram " << std::endl;
         if (!loadHistESF (queryDescriptor, histogram))
         {
@@ -1031,11 +1206,19 @@ void RecognitionDatabase<PointT, DescriptorT, DistT>::globalMatchingUsingViewOfC
     }
     
     std::cout << "[INFO]Using " << k << " nearest neighbors." <<  std::endl;
-    
-    std::string path_trained_dataset = dataset_trained + "training_"+m_descriptor_name+ "/";
-    std::string kdtree_idx_file_name = path_trained_dataset + "kdtree.idx";
-    std::string training_data_h5_file_name = path_trained_dataset + "training_data.h5";
-    std::string training_data_list_file_name = path_trained_dataset + "training_data.list";
+    std::string path_trained_dataset,kdtree_idx_file_name,training_data_h5_file_name,training_data_list_file_name;
+
+    if (m_compute_full){
+        path_trained_dataset = dataset_trained + "training_"+m_descriptor_name+ "/";
+        kdtree_idx_file_name = path_trained_dataset + "kdtree_full.idx";
+        training_data_h5_file_name = path_trained_dataset + "training_data_full.h5";
+        training_data_list_file_name = path_trained_dataset + "training_data_full.list";
+    }else {
+        path_trained_dataset = dataset_trained + "training_"+m_descriptor_name+ "/";
+        kdtree_idx_file_name = path_trained_dataset + "kdtree_views.idx";
+        training_data_h5_file_name = path_trained_dataset + "training_data_views.h5";
+        training_data_list_file_name = path_trained_dataset + "training_data_views.list";
+    }
     
     std::cout << "[DEBUG] Path dataset trained " << path_trained_dataset <<  std::endl;
     
@@ -1192,7 +1375,7 @@ std::string RecognitionDatabase<PointT, DescriptorT, DistT>::getDistanceName()
     else if(typeid(DistT) == typeid(flann::L1<float>)){
         m_distance_used = "L1";
     }
-    else if(typeid(DistT) == typeid(flann::HistIntersectionUnionDistance<float>)){
+    else if(typeid(DistT) == typeid(flann::HistIntersectionDistance<float>)){
         m_distance_used = "HistogramIntersectionUnion";
     }
     else if(typeid(DistT) == typeid(flann::HellingerDistance<float>)){

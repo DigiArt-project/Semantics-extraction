@@ -148,6 +148,74 @@ bool doScalingESF(const std::string path_to_rangeFile, const std::string path_to
     
 }
 
+bool doScalingGSHOT(const std::string path_to_rangeFile, const std::string path_to_scale_program, const pcl::PointCloud<pcl::SHOT352> gshots){
+    std::cout << "[Config] Path to svm scale : " << path_to_scale_program << std::endl;
+    std::string file_scale = "svm-scale";
+    //std::cout << "Current working dir : " << GetCurrentWorkingDir() << std::endl;
+    if (!boost::filesystem::exists (path_to_scale_program)){
+        std::cerr << "[ERROR] " << path_to_scale_program << " Scaling program does not exist" << std::endl;
+        exit(1);
+    }else {
+        //std::cerr << "[DO SCALING] " << file_scale << " pOK" << std::endl;
+    }
+    
+    int size_descriptor = gshots.points[0].descriptorSize();
+    std::string name_tmp_desc = "tmp_descriptor.txt";
+    std::string name_tmp_desc_scale = "tmp_descriptor.scale";
+    //../../svm/dataset_descriptor_training_esf_libsvm_ratio3.txt.range
+    //std::cout << "Path to range : " << path_to_rangeFile << std::endl;
+    if (!boost::filesystem::exists (path_to_rangeFile)){
+        std::cerr << "[ERROR] Are you sure the range file is here and you scaled the training data ? " << std::endl;
+        exit(1);
+    }
+    if (boost::filesystem::exists (name_tmp_desc)){
+        remove(name_tmp_desc.c_str());
+    }
+    if (boost::filesystem::exists ("tmp_descriptor.scale")){
+        remove("tmp_descriptor.scale");
+    }
+    std::cout << "[INFO] Writting GSHOT type descriptor to a file in order to scale it... " << std::flush;
+    std::vector<float> tmp_vector_descriptor;
+    std::ofstream file;
+    //Create a temporary file where we are going to write the feature descriptor
+    file.open(name_tmp_desc, ios::out | ios::app );
+    file <<"1 ";
+    for (int i = 0; i < size_descriptor;i++){
+        tmp_vector_descriptor.push_back(gshots.points[0].descriptor[i]);
+        //   std::cout << "Value: " << vfhs.points[0].histogram[i] << std::endl;
+        file << i+1<<":"<<gshots.points[0].descriptor[i] << " ";
+        
+    }
+    file << "\n";
+    
+    file.close();
+    std::cout << "Completed" << std::endl;
+    //Scale the file
+    // create a string, i.e. an array  of 100 char for the command line
+    char command[100];
+    sprintf (command, "%s -r %s %s >> %s",path_to_scale_program.c_str(), path_to_rangeFile.c_str(), name_tmp_desc.c_str(),name_tmp_desc_scale.c_str());
+    //sprintf (command, "./svm-scale -r %s %s ", path_to_rangeFile.c_str(), name_tmp_desc.c_str());
+    // system call
+    system(command);
+    
+    
+    //Read the scaled file to be sure it's okay
+    if (!std::ifstream(name_tmp_desc_scale))
+    {
+        std::cerr << "[ERROR]" << name_tmp_desc_scale << " could not be created" << std::endl;
+        return false;
+        
+    }
+    
+    if (boost::filesystem::exists (name_tmp_desc)){
+        remove(name_tmp_desc.c_str());
+    }
+    
+    
+    return true;
+    
+}
+
 
 
 char* readline(FILE *input)

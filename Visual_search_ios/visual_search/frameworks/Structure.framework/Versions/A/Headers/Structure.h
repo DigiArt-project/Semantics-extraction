@@ -78,7 +78,7 @@ typedef NS_ENUM(NSInteger, STStreamConfig)
     STStreamConfigDepth320x240 = 0,
 
 /// QVGA depth at 30 FPS, aligned to the color camera.
-    STStreamConfigRegisteredDepth320x240,
+    STStreamConfigRegisteredDepth320x240 __attribute__((deprecated("Please use STStreamConfigDepth320x240 with registeredToColorFrame instead."))),
 
 /// QVGA depth and infrared at 30 FPS.
     STStreamConfigDepth320x240AndInfrared320x248,
@@ -96,11 +96,13 @@ typedef NS_ENUM(NSInteger, STStreamConfig)
     STStreamConfigDepth640x480AndInfrared640x488,
 
 /// VGA depth at 30 FPS, aligned to the color camera.
-    STStreamConfigRegisteredDepth640x480,
+    STStreamConfigRegisteredDepth640x480 __attribute__((deprecated("Please use STStreamConfigDepth640x480 with registeredToColorFrame instead."))),
     
 /// QVGA depth at 60 FPS. Note: frame sync is not supported with this mode.
     STStreamConfigDepth320x240_60FPS
 };
+
+
 
 /** Frame Sync Configuration.
 
@@ -520,7 +522,7 @@ When a synchronized frame is found, one of the optional synchronized STSensorCon
 /// Check whether the controlled sensor is connected.
 - (BOOL)isConnected;
 
-/// Check whether the controlled sensor is in low-power mode.
+/// Check whether the controlled sensor is in low-power mode. Low-power mode is used when the sensor is in an idle state, and is entered when the Structure Sensor is out of battery.
 - (BOOL)isLowPower;
 
 /// Return an integer in 0..100 representing the battery charge.

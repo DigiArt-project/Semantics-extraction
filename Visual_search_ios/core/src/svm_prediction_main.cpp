@@ -10,6 +10,7 @@
 #include "descriptor_estimation/cvfh_estimation.h"
 #include "descriptor_estimation/ourcvfh_estimation.h"
 #include "descriptor_estimation/esf_estimation.h"
+#include "descriptor_estimation/gshot_estimation.h"
 
 #include <pcl/filters/voxel_grid.h>
 
@@ -41,6 +42,27 @@ void getCategories(std::string path_to_data, std::vector<std::string>& categorie
 }
 
 
+void normalizePC(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud){
+    
+    pcl::PointXYZ centroid;
+    pcl::computeCentroid(*cloud, centroid);
+    std::cout<<"centroid :"<<centroid.x<<", "<<centroid.y<<", "<<centroid.z<<std::endl;
+    std::vector<int> indices;
+    std::vector<float> distances;
+    
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    kdtree.setInputCloud( cloud, NULL);
+    kdtree.nearestKSearch( centroid, cloud->size(), indices, distances);
+    std::cout<<"scale factor :"<<distances.back()<<std::endl;
+    Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+    
+    transform.translation() << -centroid.x/sqrt(distances.back()), -centroid.y/sqrt(distances.back()), -centroid.z/sqrt(distances.back());
+    transform.scale(1/sqrt(distances.back()));
+    
+    //pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
+    pcl::transformPointCloud (*cloud, *cloud, transform);
+    //pcl::io::savePLYFile( newFilePath, *transformed_cloud);
+}
 
 /** given a label (int) and a file which contain the categories, we associate the numer to the label (string)
  * @param label number predicted
@@ -76,7 +98,7 @@ showHelp (char *filename)
     std::cout << "*                         SVM prediction                                  *" << std::endl;
     std::cout << "*                                                                         *" << std::endl;
     std::cout << "***************************************************************************" << std::endl << std::endl;
-    std::cout << "Usage: " << filename << " config (config file cfg format) model_file (svm model) pcd_file (point cloud to test) type_descriptor (esf/vfh/CVFH, OURCVFH)" << std::endl << std::endl;
+    std::cout << "Usage: " << filename << " config (config file cfg format) model_file (svm model) scale_file (range file) pcd_file (point cloud to test) type_descriptor (ESF/VFH/CVFH/OURCVFH/GSHOT) path_to_categories_file" << std::endl << std::endl;
     
     std::cout << "Options:" << std::endl;
     std::cout << "     -h:                     Show this help." << std::endl;
@@ -90,7 +112,7 @@ main (int argc, char** argv)
     
     
     //If not enough parameters
-    if (argc < 5)
+    if (argc < 7)
     {
         showHelp (argv[0]);
         return (-1);
@@ -104,13 +126,13 @@ main (int argc, char** argv)
     //Fill in the parameters
     std::string configuration_file = argv[1];
     std::string model_file = argv[2];
-    std::string pcd_file = argv[3];
-    std::string type_descriptor = argv[4];
+    std::string range_file = argv[3];
+    std::string pcd_file = argv[4];
+    std::string type_descriptor = argv[5];
+    std::string path_to_dataset_categories = argv[6];
     pcl::console::parse_argument (argc, argv, "-output", output_path_result);
     
-    if (!type_descriptor.empty() || type_descriptor.compare("vfh") == 0 || type_descriptor.compare("esf") == 0 || type_descriptor.compare("cvfh") == 0 || type_descriptor.compare("ourcvfh") == 0){
-        
-        
+    if (!type_descriptor.empty() || type_descriptor.compare("vfh") == 0 || type_descriptor.compare("esf") == 0 || type_descriptor.compare("cvfh") == 0 || type_descriptor.compare("ourcvfh") == 0 || type_descriptor.compare("gshot") == 0){
         
         Config cfg;
         bool scaling = false;
@@ -132,7 +154,7 @@ main (int argc, char** argv)
         std::string path_to_rangefile = cfg.classification.scaling.path_to_rangeFile;
         std::string path_scale_program = cfg.classification.scaling.path_to_scale_program;
         std::string out_result = "./results/label_predicted_result.txt";
-        std::string range_file;
+        /*std::string range_file;
         
         if (type_descriptor.compare("vfh") == 0){
             range_file = path_to_rangefile + "training_vfh.range";
@@ -145,9 +167,9 @@ main (int argc, char** argv)
         }
         else if (type_descriptor.compare("esf") == 0){
             range_file = path_to_rangefile  + "training_esf.range";
-        }
+        }*/
         
-        std::cout << "[Config] Path to range file: " << path_to_rangefile << std::endl;
+        std::cout << "[INFO] Path to range file: " << path_to_rangefile << std::endl;
 
 
         //Get the svm model
@@ -157,6 +179,8 @@ main (int argc, char** argv)
             std::cerr << "[ERROR] Could not load SVM model file : " << model_file << std::endl;
             return (-1);
         }
+        std::cout << "[INFO] MODEL SVM LOADED : " << model_file << std::endl;
+        std::cout << "[INFO] RANGE FILE SVM LOADED : " << range_file << std::endl;
         //Load the pcd point cloud
         if (pcl::io::loadPCDFile<pcl::PointXYZ> (pcd_file.c_str (), *cloud) < 0)
         {
@@ -164,6 +188,7 @@ main (int argc, char** argv)
             return (-1);
         }
         double label = 0;
+        
         
         float leaf_size_resolution = cfg.filtering.leaf_resolution;
         if (cfg.similaritySearch.enable_resolution){
@@ -174,12 +199,16 @@ main (int argc, char** argv)
             down.filter (*cloud);
         }
         
+        //Normalization
+        normalizePC(cloud);
+        
         
         pcl::PointCloud<pcl::PointXYZ> completeModel;
         VFHEstimation<pcl::PointXYZ> vfh_estimation;
         CVFHEstimation<pcl::PointXYZ> cvfh_estimation;
         OURCVFHEstimation<pcl::PointXYZ> ourcvfh_estimation;
         ESFEstimation<pcl::PointXYZ> esf_estimation;
+        GSHOTEstimation<pcl::PointXYZ> gshot_estimation;
         
         //Compute VFH descriptor
         if (type_descriptor.compare("vfh") == 0){
@@ -190,9 +219,7 @@ main (int argc, char** argv)
             std::cout << "[INFO] Computation completed" << std::endl;
             pcl::PointCloud<pcl::VFHSignature308> vfhs;
             vfh_estimation.getResultDescriptors(vfhs);
-            
-            
-            
+
             if (doScalingVFH(range_file,path_scale_program,vfhs)){
                 label =doPrediction(tmp_desc_scale,model_file,out_result);
             }
@@ -242,8 +269,22 @@ main (int argc, char** argv)
             }
             
         }
+        if (type_descriptor.compare("gshot") == 0){
+            std::cout << "[INFO] Computing GSHOT descriptor..." << std::endl;
+            //gshot
+            gshot_estimation.setInputCluster(*cloud);
+            gshot_estimation.estimate();
+            pcl::PointCloud<pcl::SHOT352> gshots;
+            std::cout << "[INFO] Computation completed" << std::endl;
+            gshot_estimation.getResultDescriptors(gshots);
+            
+            if (doScalingGSHOT(range_file,path_scale_program,gshots)){
+                label =doPrediction(tmp_desc_scale,model_file,out_result);
+            }
+            
+        }
         
-        std::string name_category = giveNameCategoryOfLabel(label,cfg.path_dataset.path_to_dataset_categories);
+        std::string name_category = giveNameCategoryOfLabel(label,path_to_dataset_categories);
         std::cout << "[Prediction] Label predicted : " << label << " corresponding to " << name_category << std::endl;
         
         std::cout << "[Info] Saving results to : " << output_path_result << " ... " << std::flush;

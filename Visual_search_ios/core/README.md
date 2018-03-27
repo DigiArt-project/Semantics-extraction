@@ -1,7 +1,7 @@
 # Similarity Search, SVM training and testing 
 
 In this readme, we will see how to perform classification using **similarity search** and **svm**.
-We will use two database : 
+We will use two database for examples : 
 
 * **Structure sensor dataset** : A dataset which has been created manually from the structure sensor device
 * **RGBD Dataset** : an object RGBD dataset from this [institute](https://rgbd-dataset.cs.washington.edu/).

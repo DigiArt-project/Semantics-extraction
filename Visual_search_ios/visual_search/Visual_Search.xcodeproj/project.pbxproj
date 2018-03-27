@@ -7,14 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E121E3020693B7300DA286E /* categories_structure.json in Resources */ = {isa = PBXBuildFile; fileRef = 0E121E2D20693B7200DA286E /* categories_structure.json */; };
+		0E121E3120693B7300DA286E /* categories_pottery.json in Resources */ = {isa = PBXBuildFile; fileRef = 0E121E2E20693B7200DA286E /* categories_pottery.json */; };
+		0E121E3220693B7300DA286E /* categories_potterymix.json in Resources */ = {isa = PBXBuildFile; fileRef = 0E121E2F20693B7300DA286E /* categories_potterymix.json */; };
+		0E121E3620693B8300DA286E /* categories_potterymix.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0E121E3320693B8300DA286E /* categories_potterymix.plist */; };
+		0E121E3720693B8300DA286E /* categories_pottery.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0E121E3420693B8300DA286E /* categories_pottery.plist */; };
+		0E121E3820693B8300DA286E /* categories_structure.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0E121E3520693B8300DA286E /* categories_structure.plist */; };
 		0E1BB96A1E3796BC00A9112C /* Structure.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E1BB9691E3796BC00A9112C /* Structure.framework */; };
 		0E1BB96C1E3796C700A9112C /* libboost.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E1BB96B1E3796C700A9112C /* libboost.a */; };
 		0E41A5F11D9AB169005D1C3C /* converter.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0E41A5F01D9AB169005D1C3C /* converter.mm */; };
 		0E5018E41E2F67380013713A /* Category.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5018E31E2F67380013713A /* Category.m */; };
 		0E5018E71E2F67410013713A /* Object.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5018E61E2F67410013713A /* Object.m */; };
-		0E5018E91E2F75460013713A /* categories.json in Resources */ = {isa = PBXBuildFile; fileRef = 0E5018E81E2F75460013713A /* categories.json */; };
-		0E5018EB1E2FA9F50013713A /* categories in Resources */ = {isa = PBXBuildFile; fileRef = 0E5018EA1E2FA9F50013713A /* categories */; };
-		0E5018EE1E30BE810013713A /* categories.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0E5018ED1E30BE810013713A /* categories.plist */; };
 		0E50190A1E30F56F0013713A /* ParametersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5019081E30F56F0013713A /* ParametersViewController.m */; };
 		0E50190B1E30F56F0013713A /* ParametersViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0E5019091E30F56F0013713A /* ParametersViewController.xib */; };
 		0EA1A98C1DBE4275003CC521 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0EA1A98B1DBE4274003CC521 /* AssetsLibrary.framework */; };
@@ -57,6 +60,7 @@
 		2DC7D69818438E1D005BEE8B /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC7D69618438E1D005BEE8B /* CoreMotion.framework */; };
 		2DC7D69A18438E42005BEE8B /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC7D69918438E42005BEE8B /* Accelerate.framework */; };
 		2DE057BD199E58E100137F8F /* ViewpointController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2DE057BC199E58E100137F8F /* ViewpointController.mm */; };
+		3F7301165D4ED5CCC961E992 /* libPods-Visual_Search.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BC94CEE4D6CE1BEB3E4B407C /* libPods-Visual_Search.a */; };
 		435307C71872825B00B04481 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 435307C31872825B00B04481 /* Default-568h@2x.png */; };
 		435307C81872825B00B04481 /* Default-Landscape@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 435307C41872825B00B04481 /* Default-Landscape@2x~ipad.png */; };
 		435307C91872825B00B04481 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 435307C51872825B00B04481 /* Default@2x.png */; };
@@ -72,10 +76,16 @@
 		77AAADA51CA5AFC500D91B6C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77AAADA41CA5AFC500D91B6C /* Metal.framework */; };
 		7E2288CE198FE67D00F6E3B2 /* CustomUIKitStyles.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7E2288CD198FE67D00F6E3B2 /* CustomUIKitStyles.mm */; };
 		7EAD26B3198B47DA00638C9C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EAD26B2198B47DA00638C9C /* libz.dylib */; };
-		CE938F5D07A44C68B9F07519 /* libPods-Visual_Search.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 96C0E91D7C9D09CD5AAD1000 /* libPods-Visual_Search.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0ABF5794DA4435996A1AE8F2 /* Pods-Visual_Search.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Visual_Search.release.xcconfig"; path = "Pods/Target Support Files/Pods-Visual_Search/Pods-Visual_Search.release.xcconfig"; sourceTree = "<group>"; };
+		0E121E2D20693B7200DA286E /* categories_structure.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = categories_structure.json; sourceTree = "<group>"; };
+		0E121E2E20693B7200DA286E /* categories_pottery.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = categories_pottery.json; sourceTree = "<group>"; };
+		0E121E2F20693B7300DA286E /* categories_potterymix.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = categories_potterymix.json; sourceTree = "<group>"; };
+		0E121E3320693B8300DA286E /* categories_potterymix.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = categories_potterymix.plist; path = images/categories/categories_potterymix.plist; sourceTree = "<group>"; };
+		0E121E3420693B8300DA286E /* categories_pottery.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = categories_pottery.plist; path = images/categories/categories_pottery.plist; sourceTree = "<group>"; };
+		0E121E3520693B8300DA286E /* categories_structure.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = categories_structure.plist; path = images/categories/categories_structure.plist; sourceTree = "<group>"; };
 		0E1BB9691E3796BC00A9112C /* Structure.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Structure.framework; path = frameworks/Structure.framework; sourceTree = "<group>"; };
 		0E1BB96B1E3796C700A9112C /* libboost.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost.a; path = frameworks/boost/libs/boost/ios/libboost.a; sourceTree = "<group>"; };
 		0E41A5EF1D9AB169005D1C3C /* converter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = converter.h; sourceTree = "<group>"; };
@@ -86,12 +96,12 @@
 		0E5018E51E2F67410013713A /* Object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Object.h; sourceTree = "<group>"; };
 		0E5018E61E2F67410013713A /* Object.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Object.m; sourceTree = "<group>"; };
 		0E5018E81E2F75460013713A /* categories.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = categories.json; sourceTree = "<group>"; };
-		0E5018EA1E2FA9F50013713A /* categories */ = {isa = PBXFileReference; lastKnownFileType = folder; name = categories; path = images/categories; sourceTree = "<group>"; };
 		0E5018ED1E30BE810013713A /* categories.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = categories.plist; path = Visual_Search/categories.plist; sourceTree = "<group>"; };
 		0E5019071E30F56F0013713A /* ParametersViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParametersViewController.h; sourceTree = "<group>"; };
 		0E5019081E30F56F0013713A /* ParametersViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ParametersViewController.m; sourceTree = "<group>"; };
 		0E5019091E30F56F0013713A /* ParametersViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ParametersViewController.xib; sourceTree = "<group>"; };
 		0E50190C1E3200A10013713A /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
+		0E88FA202068EB3F009827CD /* categories */ = {isa = PBXFileReference; lastKnownFileType = folder; name = categories; path = images/categories; sourceTree = "<group>"; };
 		0EA1A98B1DBE4274003CC521 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
 		0EA1DC491DA634220072AC54 /* Helper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Helper.mm; sourceTree = "<group>"; };
 		0EA1DC4B1DA634490072AC54 /* Helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Helper.h; sourceTree = "<group>"; };
@@ -155,7 +165,6 @@
 		438C049918723EB10062E958 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/ViewController_iPad.xib; sourceTree = "<group>"; };
 		438C049B18723EB10062E958 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/ViewController_iPhone.xib; sourceTree = "<group>"; };
 		43BB38C8199D2A51009D7AB2 /* calibration.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = calibration.png; sourceTree = "<group>"; };
-		4E4EF1E1490DF7ADC29FF9B8 /* Pods-Visual_Search.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Visual_Search.release.xcconfig"; path = "Pods/Target Support Files/Pods-Visual_Search/Pods-Visual_Search.release.xcconfig"; sourceTree = "<group>"; };
 		6F03CB581862823000518C22 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = InfoPlist.strings; sourceTree = "<group>"; };
 		6F03CB5E1862832600518C22 /* EAGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EAGLView.h; sourceTree = "<group>"; };
 		6F03CB5F1862832600518C22 /* EAGLView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EAGLView.mm; sourceTree = "<group>"; };
@@ -166,11 +175,11 @@
 		6F8BE65E199EED0C00E10C10 /* CalibrationOverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalibrationOverlay.h; sourceTree = "<group>"; };
 		6F8BE65F199EED0C00E10C10 /* CalibrationOverlay.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CalibrationOverlay.mm; sourceTree = "<group>"; };
 		77AAADA41CA5AFC500D91B6C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		78AD37CA9481CE5686388466 /* Pods-Visual_Search.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Visual_Search.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Visual_Search/Pods-Visual_Search.debug.xcconfig"; sourceTree = "<group>"; };
 		7E2288CD198FE67D00F6E3B2 /* CustomUIKitStyles.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CustomUIKitStyles.mm; sourceTree = "<group>"; };
 		7EAD26B2198B47DA00638C9C /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		7EAD26B4198C07F600638C9C /* CustomUIKitStyles.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CustomUIKitStyles.h; sourceTree = "<group>"; };
-		96C0E91D7C9D09CD5AAD1000 /* libPods-Visual_Search.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Visual_Search.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A8A49B54153D4DD3F70132AC /* Pods-Visual_Search.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Visual_Search.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Visual_Search/Pods-Visual_Search.debug.xcconfig"; sourceTree = "<group>"; };
+		BC94CEE4D6CE1BEB3E4B407C /* libPods-Visual_Search.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Visual_Search.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -178,14 +187,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0EF9E6B51DBF9A650044907F /* ExternalAccessory.framework in Frameworks */,
+				2DC7D69718438E1D005BEE8B /* ImageIO.framework in Frameworks */,
+				2DC7D69A18438E42005BEE8B /* Accelerate.framework in Frameworks */,
+				0E1BB96A1E3796BC00A9112C /* Structure.framework in Frameworks */,
 				0EA1A98C1DBE4275003CC521 /* AssetsLibrary.framework in Frameworks */,
 				77AAADA51CA5AFC500D91B6C /* Metal.framework in Frameworks */,
 				7EAD26B3198B47DA00638C9C /* libz.dylib in Frameworks */,
 				2A3F2BB01857FB1600EE7A96 /* MessageUI.framework in Frameworks */,
-				0E1BB96A1E3796BC00A9112C /* Structure.framework in Frameworks */,
 				2A0BA3E418500398008FBE2E /* CoreImage.framework in Frameworks */,
 				2D74AC2E18461A83009F7B5B /* QuartzCore.framework in Frameworks */,
-				2DC7D69A18438E42005BEE8B /* Accelerate.framework in Frameworks */,
 				2AF77B8B17F2575500A99E20 /* CoreGraphics.framework in Frameworks */,
 				2AB8B9CD17EA78860097C231 /* CoreMedia.framework in Frameworks */,
 				0E1BB96C1E3796C700A9112C /* libboost.a in Frameworks */,
@@ -195,10 +206,8 @@
 				2AFC8D78176F966000F7F3B5 /* UIKit.framework in Frameworks */,
 				2AFC8D7A176F966000F7F3B5 /* Foundation.framework in Frameworks */,
 				2AFC8D7E176F966000F7F3B5 /* GLKit.framework in Frameworks */,
-				2DC7D69718438E1D005BEE8B /* ImageIO.framework in Frameworks */,
 				2DC7D69818438E1D005BEE8B /* CoreMotion.framework in Frameworks */,
-				0EF9E6B51DBF9A650044907F /* ExternalAccessory.framework in Frameworks */,
-				CE938F5D07A44C68B9F07519 /* libPods-Visual_Search.a in Frameworks */,
+				3F7301165D4ED5CCC961E992 /* libPods-Visual_Search.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -308,14 +317,20 @@
 		2AFC8D6B176F966000F7F3B5 = {
 			isa = PBXGroup;
 			children = (
-				0E5018EA1E2FA9F50013713A /* categories */,
+				0E121E3420693B8300DA286E /* categories_pottery.plist */,
+				0E121E3320693B8300DA286E /* categories_potterymix.plist */,
+				0E121E3520693B8300DA286E /* categories_structure.plist */,
+				0E121E2E20693B7200DA286E /* categories_pottery.json */,
+				0E121E2F20693B7300DA286E /* categories_potterymix.json */,
+				0E121E2D20693B7200DA286E /* categories_structure.json */,
+				0E88FA202068EB3F009827CD /* categories */,
 				0E5018E81E2F75460013713A /* categories.json */,
 				0E5018ED1E30BE810013713A /* categories.plist */,
 				0EC26C621DC0F7870052F96F /* images */,
 				2AFC8D81176F966000F7F3B5 /* Visual_Search */,
 				2AFC8D76176F966000F7F3B5 /* Frameworks */,
 				2AFC8D75176F966000F7F3B5 /* Products */,
-				6151CAA86A1408967DFA680D /* Pods */,
+				92A47FAC23C38E486434CE81 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -350,7 +365,7 @@
 				2AFC8D77176F966000F7F3B5 /* UIKit.framework */,
 				2AFC8D7D176F966000F7F3B5 /* GLKit.framework */,
 				2A5AA3831771397A0092391A /* OpenGLES.framework */,
-				96C0E91D7C9D09CD5AAD1000 /* libPods-Visual_Search.a */,
+				BC94CEE4D6CE1BEB3E4B407C /* libPods-Visual_Search.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -385,15 +400,6 @@
 			name = Ressources;
 			sourceTree = "<group>";
 		};
-		6151CAA86A1408967DFA680D /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				A8A49B54153D4DD3F70132AC /* Pods-Visual_Search.debug.xcconfig */,
-				4E4EF1E1490DF7ADC29FF9B8 /* Pods-Visual_Search.release.xcconfig */,
-			);
-			name = Pods;
-			sourceTree = "<group>";
-		};
 		6F03CB601862832600518C22 /* Graphics */ = {
 			isa = PBXGroup;
 			children = (
@@ -410,6 +416,15 @@
 			path = Graphics;
 			sourceTree = "<group>";
 		};
+		92A47FAC23C38E486434CE81 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				78AD37CA9481CE5686388466 /* Pods-Visual_Search.debug.xcconfig */,
+				0ABF5794DA4435996A1AE8F2 /* Pods-Visual_Search.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -417,12 +432,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2AFC8DA2176F966000F7F3B5 /* Build configuration list for PBXNativeTarget "Visual_Search" */;
 			buildPhases = (
-				C5393DED9A2367ACD402C997 /* [CP] Check Pods Manifest.lock */,
+				F2C82A1DF0644F25DE2B98DD /* [CP] Check Pods Manifest.lock */,
 				2AFC8D70176F966000F7F3B5 /* Sources */,
 				2AFC8D71176F966000F7F3B5 /* Frameworks */,
 				2AFC8D72176F966000F7F3B5 /* Resources */,
-				69386C66C7FF7282C1EF362F /* [CP] Embed Pods Frameworks */,
-				3ED51BF8F4472142D616AAE1 /* [CP] Copy Pods Resources */,
+				5C849FA192D83D6468586D75 /* [CP] Embed Pods Frameworks */,
+				43228885B65C8EF67908913F /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -475,8 +490,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0E5018EB1E2FA9F50013713A /* categories in Resources */,
-				0E5018E91E2F75460013713A /* categories.json in Resources */,
+				0E121E3620693B8300DA286E /* categories_potterymix.plist in Resources */,
+				0E121E3720693B8300DA286E /* categories_pottery.plist in Resources */,
+				0E121E3820693B8300DA286E /* categories_structure.plist in Resources */,
+				0E121E3020693B7300DA286E /* categories_structure.json in Resources */,
+				0E121E3120693B7300DA286E /* categories_pottery.json in Resources */,
+				0E121E3220693B7300DA286E /* categories_potterymix.json in Resources */,
 				0EC26C631DC0F7870052F96F /* images in Resources */,
 				6F7803CB186285E10005E6CD /* InfoPlist.strings in Resources */,
 				43BB38C9199D2A51009D7AB2 /* calibration.png in Resources */,
@@ -496,14 +515,13 @@
 				0E50190B1E30F56F0013713A /* ParametersViewController.xib in Resources */,
 				435307C71872825B00B04481 /* Default-568h@2x.png in Resources */,
 				438C049D18723EB10062E958 /* ViewController_iPhone.xib in Resources */,
-				0E5018EE1E30BE810013713A /* categories.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		3ED51BF8F4472142D616AAE1 /* [CP] Copy Pods Resources */ = {
+		43228885B65C8EF67908913F /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -518,7 +536,7 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Visual_Search/Pods-Visual_Search-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		69386C66C7FF7282C1EF362F /* [CP] Embed Pods Frameworks */ = {
+		5C849FA192D83D6468586D75 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -533,19 +551,22 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Visual_Search/Pods-Visual_Search-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C5393DED9A2367ACD402C997 /* [CP] Check Pods Manifest.lock */ = {
+		F2C82A1DF0644F25DE2B98DD /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Visual_Search-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -654,7 +675,7 @@
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -665,13 +686,14 @@
 		};
 		2AFC8DA4176F966000F7F3B5 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4E4EF1E1490DF7ADC29FF9B8 /* Pods-Visual_Search.release.xcconfig */;
+			baseConfigurationReference = 0ABF5794DA4435996A1AE8F2 /* Pods-Visual_Search.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = 34GV5B4M2U;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(frameworks_dir)",
@@ -685,7 +707,8 @@
 					"$(frameworks_dir)/boost/libs/boost/include",
 					/usr/local/Cellar/flann/1.8.4_1/include,
 					"/usr/local/include/pcl-1.8/",
-					"\"${PODS_ROOT}/BuildHeaders\"/**",
+					/usr/local/include/eigen3,
+					"$(frameworks_dir)/Structure.framework/Headers",
 				);
 				INFOPLIST_FILE = "Visual_Search/Visual_Search-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -694,9 +717,8 @@
 					"$(frameworks_dir)/boost/libs/boost/ios",
 					/usr/local/lib,
 					"$(PROJECT_DIR)/framework/boost/libs/boost/ios",
-					"$(PROJECT_DIR)/frameworks/boost/libs/boost/ios",
 				);
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = "";
 				OTHER_LDFLAGS = "$(inherited)";
 				OTHER_LIBTOOLFLAGS = "$(inherited)";
@@ -704,7 +726,8 @@
 				PRODUCT_NAME = Visual_Search;
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s";
+				USER_HEADER_SEARCH_PATHS = "\"$(BUILT_PRODUCTS_DIR)\"/**";
+				VALID_ARCHS = "armv7 armv7s arm64";
 			};
 			name = Release;
 		};
@@ -753,7 +776,7 @@
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "armv7 armv7s arm64";
@@ -763,13 +786,14 @@
 		};
 		7E6F73551A7826BD008BA18E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A8A49B54153D4DD3F70132AC /* Pods-Visual_Search.debug.xcconfig */;
+			baseConfigurationReference = 78AD37CA9481CE5686388466 /* Pods-Visual_Search.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = 34GV5B4M2U;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(frameworks_dir)",
@@ -783,7 +807,8 @@
 					"$(frameworks_dir)/boost/libs/boost/include",
 					/usr/local/Cellar/flann/1.8.4_1/include,
 					"/usr/local/include/pcl-1.8/",
-					"\"${PODS_ROOT}/BuildHeaders\"/**",
+					/usr/local/include/eigen3,
+					"$(frameworks_dir)/Structure.framework/Headers",
 				);
 				INFOPLIST_FILE = "Visual_Search/Visual_Search-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -792,9 +817,8 @@
 					"$(frameworks_dir)/boost/libs/boost/ios",
 					/usr/local/lib,
 					"$(PROJECT_DIR)/framework/boost/libs/boost/ios",
-					"$(PROJECT_DIR)/frameworks/boost/libs/boost/ios",
 				);
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = "";
 				OTHER_LDFLAGS = "$(inherited)";
 				OTHER_LIBTOOLFLAGS = "$(inherited)";
@@ -802,7 +826,8 @@
 				PRODUCT_NAME = Visual_Search;
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s";
+				USER_HEADER_SEARCH_PATHS = "\"$(BUILT_PRODUCTS_DIR)\"/**";
+				VALID_ARCHS = "armv7 armv7s arm64";
 			};
 			name = Debug;
 		};

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>description</key>
+		<string>a bell</string>
+		<key>image</key>
+		<string>images/categories/bell.jpg</string>
+		<key>name</key>
+		<string>bell</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a bottle</string>
+		<key>image</key>
+		<string>images/categories/bottle.jpg</string>
+		<key>name</key>
+		<string>bottle</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a box</string>
+		<key>image</key>
+		<string>images/categories/box.jpg</string>
+		<key>name</key>
+		<string>box</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a chair</string>
+		<key>image</key>
+		<string>images/categories/chair.jpg</string>
+		<key>name</key>
+		<string>chair</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a coffeemaker</string>
+		<key>image</key>
+		<string>images/categories/coffeemaker.jpg</string>
+		<key>name</key>
+		<string>coffeemaker</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a computer</string>
+		<key>image</key>
+		<string>images/categories/computer.jpg</string>
+		<key>name</key>
+		<string>computer</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a foodbox</string>
+		<key>image</key>
+		<string>images/categories/foodbox.jpg</string>
+		<key>name</key>
+		<string>foodbox</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a jar</string>
+		<key>image</key>
+		<string>images/categories/jar.jpg</string>
+		<key>name</key>
+		<string>jar</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a mug</string>
+		<key>image</key>
+		<string>images/categories/mug.jpg</string>
+		<key>name</key>
+		<string>mug</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a lemon squeezer</string>
+		<key>image</key>
+		<string>images/categories/lemonsquezzer.jpg</string>
+		<key>name</key>
+		<string>lemonsquezzer</string>
+	</dict>
+</array>
+</plist>

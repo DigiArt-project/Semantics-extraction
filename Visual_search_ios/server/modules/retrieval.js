@@ -90,51 +90,58 @@
 	 * Function which call the C++ programm with parameters corresponding to retrieval process svm
 	 * @param object_cloud : name of the pcd file (assuming that the file is inside the uploads folder)
 	 */
-	 var svmPrediction = function (object_cloud, type_descriptor, callback){
-	 	console.log('svm prediction type descriptor: ' + type_descriptor);
+	 var svmPrediction = function (object_cloud, type_descriptor, type_dataset, trainedDatabase, callback){
+	 	console.log('[SVM prediction] Type descriptor: ' + type_descriptor);
+	 	console.log('[SVM prediction] Type dataset: ' + type_dataset);
+	 	console.log('[SVM prediction] Path dataset: ' + trainedDatabase);
+
 	 	var program = path_program + "svm_prediction_main";
-	  //The cloud we want to retrieve in the database
-	  var myCloud = "uploads/";
-	  myCloud += object_cloud;
-	  //__dirname The name of the directory that the currently executing script resides in.
-	  // ./ refer to the directory from which you ran the node command in your terminal window (i.e. your working directory)
-	  var results = "./results/";
-	  var objectCloud_without_extension = object_cloud.slice(0, -4);
-	  results += objectCloud_without_extension+"_result.json"
-	  var path_to_svm = "../svm/svm_"+type_descriptor+".model";
+	  	//The cloud we want to retrieve in the database
+	  	var myCloud = "uploads/";
+	  	myCloud += object_cloud;
+	  	//__dirname The name of the directory that the currently executing script resides in.
+	  	// ./ refer to the directory from which you ran the node command in your terminal window (i.e. your working directory)
+	  	var results = "./results/";
+	  	var objectCloud_without_extension = object_cloud.slice(0, -4);
+	  	results += objectCloud_without_extension+"_result.json"
+	  	var path_to_svm = "../svm/svm_"+type_dataset+"_"+type_descriptor+".model";
+	  	var path_to_range_file = "../svm/training_"+type_dataset+"_"+type_descriptor+".range";
+	  	var path_to_categories_file = trainedDatabase + "dataset_" + type_dataset + "_categories.txt";
 
-	  var output_result = "./results/";
-	  var objectCloud_without_extension = object_cloud.slice(0, -4);
-	  output_result += objectCloud_without_extension+"_result.label"
+	  	var output_result = "./results/";
+	  	var objectCloud_without_extension = object_cloud.slice(0, -4);
+	  	output_result += objectCloud_without_extension+"_result.label"
 
-	  const args = [
-	  core_config,
-	  path_to_svm, 
-	  myCloud, 
-	  type_descriptor,
-	  "-output",
-	  output_result,
-	  ];
+	  	const args = [
+	  	core_config,
+	  	path_to_svm,
+	  	path_to_range_file, 
+	  	myCloud, 
+	  	type_descriptor,
+	  	path_to_categories_file,
+	  	"-output",
+	  	output_result,
+	  	];
 
-	  const proc = exec(program, args,  {maxBuffer: 1024 * 500});
+	  	const proc = exec(program, args,  {maxBuffer: 1024 * 500});
 
-	  proc.stdout.on('data',
-	  	function (data) {
-	  		console.log('svm prediction stdcout: ' + data);
-	  	});
-	  proc.stderr.on('data', function (data) {
+	  	proc.stdout.on('data',
+	  		function (data) {
+	  			console.log('svm prediction stdcout: ' + data);
+	  		});
+	  	proc.stderr.on('data', function (data) {
 	    //throw errors
-	    console.log('[ERROR] svm prediction stderr: ' + data);
-	});
+	    console.log('[NODE JS ERROR] svm prediction stderr: ' + data);
+		});
 
-	  proc.on('close', function (code) {
-	  	console.log('svm prediction process exited with code ' + code);
-	  	if (code == 0 ){
+	  	proc.on('close', function (code) {
+	  		console.log('svm prediction process exited with code ' + code);
+	  		if (code == 0 ){
 	 			callback(true);
 	 		}else {
 	 			callback(false);
 	 		}
-	  });
+	  	});
 
 	}
 

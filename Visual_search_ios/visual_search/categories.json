@@ -8,4 +8,14 @@
 {"name" :"foodbox", "image" :"images/categories/foodbox.jpg", "description" :"a foodbox"},
 {"name" :"jar", "image" :"images/categories/jar.jpg", "description" :"a jar"}, 
 {"name" :"mug", "image" :"images/categories/mug.jpg", "description" :"a mug"}, 
-{"name" :"lemonsquezzer", "image" :"images/categories/lemonsquezzer.jpg", "description" :"a lemon squeezer"},] 
+{"name" :"lemonsquezzer", "image" :"images/categories/lemonsquezzer.jpg", "description" :"a lemon squeezer"},
+ {"name" :"coffeemug", "image" :"images/categories/coffeemug.jpg", "description" :"a mug"},
+ {"name" :"Psykter", "image" :"images/categories/Psykter.jpg", "description" :"a Psykter"},
+ {"name" :"Pelike", "image" :"images/categories/Pelike.jpg", "description" :"a Pelike"},
+ {"name" :"bowl", "image" :"images/categories/bowl.jpg", "description" :"a bowl"},
+ {"name" :"Amphora", "image" :"images/categories/Amphora.jpg", "description" :"a mug"},
+ {"name" :"Kalathos", "image" :"images/categories/Kalathos.jpg", "description" :"a Kalathos"},
+ {"name" :"Kylix", "image" :"images/categories/Kylix.jpg", "description" :"a Kylix"},
+ {"name" :"lekythos", "image" :"images/categories/lekythos.jpg", "description" :"a lekythos"},
+ {"name" :"Glass", "image" :"images/categories/Glass.jpg", "description" :"Glass"}]
+

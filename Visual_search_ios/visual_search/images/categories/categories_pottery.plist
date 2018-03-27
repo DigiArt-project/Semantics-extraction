@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>description</key>
+		<string>a Psykter</string>
+		<key>image</key>
+		<string>images/categories/Psykter.jpg</string>
+		<key>name</key>
+		<string>Psykter</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a Pelike</string>
+		<key>image</key>
+		<string>images/categories/Pelike.jpg</string>
+		<key>name</key>
+		<string>Pelike</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a bowl</string>
+		<key>image</key>
+		<string>images/categories/bowl.jpg</string>
+		<key>name</key>
+		<string>bowl</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a mug</string>
+		<key>image</key>
+		<string>images/categories/Amphora.jpg</string>
+		<key>name</key>
+		<string>Amphora</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a Kalathos</string>
+		<key>image</key>
+		<string>images/categories/Kalathos.jpg</string>
+		<key>name</key>
+		<string>Kalathos</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a Kylix</string>
+		<key>image</key>
+		<string>images/categories/Kylix.jpg</string>
+		<key>name</key>
+		<string>Kylix</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>a lekythos</string>
+		<key>image</key>
+		<string>images/categories/lekythos.jpg</string>
+		<key>name</key>
+		<string>lekythos</string>
+	</dict>
+	<dict>
+		<key>description</key>
+		<string>Glass</string>
+		<key>image</key>
+		<string>images/categories/Glass.jpg</string>
+		<key>name</key>
+		<string>Glass</string>
+	</dict>
+</array>
+</plist>

@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 #import <MRProgress/MRProgress.h>
-#include <AFNetworking.h>
-#include <AFHTTPSessionManager.h>
+#include <AFNetworking/AFNetworking.h>
+#include <AFNetworking/AFHTTPSessionManager.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 #import "SearchViewController.h"
 #import "SimpleTableCell.h"
@@ -32,7 +32,7 @@ BOOL svm_ourcvfh_available = NO;
     NSMutableArray *number_array;
     NSMutableArray *distance_array;
     
-    NSString *m_method_search_selected, *m_type_descriptor_selected;
+    NSString *m_method_search_selected, *m_type_descriptor_selected, *m_type_dataset_selected;
     
     BOOL m_isConnectedToInternet, m_isConnectedToServer;
     
@@ -160,17 +160,33 @@ BOOL svm_ourcvfh_available = NO;
         m_type_descriptor_selected = @"cvfh";
         self.descriptorChoseLabel.text = @"CVFH";
     }
-    else if (self.descriptorsClassificationControl.selectedSegmentIndex == 2){
+    else if (self.descriptorsClassificationControl.selectedSegmentIndex == 3){
+        m_type_descriptor_selected = @"gshot";
+        self.descriptorChoseLabel.text = @"GSHOT";
+    }
+    else {
         m_type_descriptor_selected = @"vfh";
         self.descriptorChoseLabel.text = @"VFH";
     }
-    else {
-        m_type_descriptor_selected = @"ourcvfh";
-        self.descriptorChoseLabel.text = @" OUR-CVFH";
+    
+    if (self.datasetClassificationControl.selectedSegmentIndex == 0){
+        m_type_dataset_selected = @"structure";
+        self.methodChoseLabel.text = @"Structure Sensor";
+        categories_arr = [self loadCategoriesFromJasonFileCategories:@"categories_structure"];
+    }else if (self.datasetClassificationControl.selectedSegmentIndex == 1){
+        m_type_dataset_selected = @"pottery";
+        self.methodChoseLabel.text = @"Pottery";
+        categories_arr = [self loadCategoriesFromJasonFileCategories:@"categories_pottery"];
+    }
+    else if (self.datasetClassificationControl.selectedSegmentIndex == 2){
+        m_type_dataset_selected = @"Pottery Mix";
+        self.methodChoseLabel.text = @"Potter Mix";
+        categories_arr = [self loadCategoriesFromJasonFileCategories:@"categories_potterymix"];
     }
     
+
     //We get from our json file categories.json the categories available for our retrieval process
-    categories_arr = [self loadCategoriesFromJasonFileCategories:@"categories"];
+    //categories_arr = [self loadCategoriesFromJasonFileCategories:@"categories"];
     
     NSString *str = [NSString stringWithFormat:@"%s %lu", "Categories available : ",  (unsigned long)[categories_arr count]];
     [self writeToTextView:self.debugLogTextField string:str erase:YES];
@@ -690,7 +706,9 @@ BOOL svm_ourcvfh_available = NO;
     NSDictionary *params;
     params = @{@"enctype": @"multipart/form-data",
                @"type_descriptor_selected": m_type_descriptor_selected,
-               @"method_search_selected": m_method_search_selected};
+               @"method_search_selected": m_method_search_selected,
+               @"type_dataset_selected": m_type_dataset_selected,
+               };
     
     NSString *cloud_obj_path;
     //Save the point cloud to the device
@@ -952,13 +970,29 @@ BOOL svm_ourcvfh_available = NO;
     
         if (svm_ourcvfh_available){
             m_type_descriptor_selected = @"ourcvfh";
-            self.descriptorChoseLabel.text = @" OUR-CVFH";
+            self.descriptorChoseLabel.text = @"OUR-CVFH";
         }
         else {
             [self popupMessage:@"OURCVFH Model not available according to the user" title:@"Error"];
         }
     }
     
+}
+
+- (IBAction)datasetClassificationOnSwitch:(id)sender {
+    if (self.datasetClassificationControl.selectedSegmentIndex == 0){
+        //Structure Sensor Dataset
+        m_type_dataset_selected = @"structure";
+        self.datasetTypeLabel.text = @"Structure Sensor";
+    }
+    else if (self.datasetClassificationControl.selectedSegmentIndex == 1){
+        m_type_dataset_selected = @"pottery";
+        self.datasetTypeLabel.text = @"Pottery";
+    }
+    else if (self.datasetClassificationControl.selectedSegmentIndex == 2){
+        m_type_dataset_selected = @"potterymix";
+        self.datasetTypeLabel.text = @"Pottery Mix";
+    }
 }
 
 - (void) threadStartAnimating {

@@ -24,6 +24,10 @@ The protocole used is HTTP.
 * **uploads:** Contains the uploaded point cloud 
 * **view :** Differents .jade view for nodeJS
 
+## How to run the code using LOCALHOST (your own computer)
+
+You can use the software Postman to test some requests before putting the code on the server.
+
 ## How to run the code on your own server 
 
 ### Installation of the Node JS module dependencies

@@ -43,8 +43,10 @@
 //Segmenter control
 - (IBAction)methodClassificationOnSwitch:(id)sender;
 - (IBAction)descriptorsClassificationOnSwitch:(id)sender;
+- (IBAction)datasetClassificationOnSwitch:(id)sender;
 @property (weak, nonatomic) IBOutlet UISegmentedControl *methodClassificationControl;
 @property (weak, nonatomic) IBOutlet UISegmentedControl *descriptorsClassificationControl;
+@property (weak, nonatomic) IBOutlet UISegmentedControl *datasetClassificationControl;
 
 
 
@@ -61,5 +63,6 @@
 @property (weak, nonatomic) IBOutlet UITableView *classificationResultTableView;
 /*! @brief Label which shows the category predicted from the SVM */
 @property (weak, nonatomic) IBOutlet UILabel *categoryResultSvmLabel;
+@property (weak, nonatomic) IBOutlet UILabel *datasetTypeLabel;
 
 @end

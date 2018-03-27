@@ -8,8 +8,8 @@
 //https://blog.engineyard.com/2013/developing-ios-push-notifications-nodejs
 
 #import "ParametersViewController.h"
-#include <AFNetworking.h>
-#include <AFHTTPSessionManager.h>
+#include <AFNetworking/AFNetworking.h>
+#include "AFHTTPSessionManager.h"
 
 UIColor *colourRED, *colourBLUE, *colourGREEN, *colorBLACK;
 

@@ -7,7 +7,7 @@
 		<key>ALL_BUILD.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>0</integer>
+			<integer>2</integer>
 		</dict>
 		<key>ZERO_CHECK.xcscheme</key>
 		<dict>
@@ -17,262 +17,87 @@
 		<key>buildTree_main.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>2</integer>
+			<integer>3</integer>
 		</dict>
 		<key>checkDatasetDirectory.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>3</integer>
+			<integer>6</integer>
 		</dict>
 		<key>computeNormalsAndSave.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>17</integer>
+			<integer>5</integer>
 		</dict>
 		<key>compute_descriptors_RGBD_dataset_main.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>4</integer>
+			<integer>6</integer>
 		</dict>
 		<key>compute_resolution.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>5</integer>
+			<integer>4</integer>
 		</dict>
 		<key>compute_views_descriptor_cloud_main.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>6</integer>
+			<integer>8</integer>
 		</dict>
 		<key>descriptor_estimation_test.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>7</integer>
+			<integer>9</integer>
 		</dict>
 		<key>generate_dataset_libsvm_main.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>8</integer>
+			<integer>0</integer>
 		</dict>
 		<key>obj2pcd.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>9</integer>
+			<integer>7</integer>
 		</dict>
 		<key>obj2pcd_color.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>10</integer>
+			<integer>8</integer>
 		</dict>
 		<key>retrieval_similaritySearch.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>11</integer>
+			<integer>9</integer>
 		</dict>
 		<key>svm-testing-main.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>12</integer>
+			<integer>10</integer>
 		</dict>
 		<key>svm_learn_main.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>13</integer>
+			<integer>11</integer>
 		</dict>
 		<key>svm_prediction_main.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>14</integer>
+			<integer>12</integer>
 		</dict>
 		<key>train_similaritySearch.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>15</integer>
+			<integer>13</integer>
 		</dict>
 		<key>transform_point_cloud_main.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>16</integer>
+			<integer>14</integer>
 		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>061D0930FC7E4BC4B84CA84E</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>0E180697062040AF9445FC09</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>0F05260A5681435C9CC460E7</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>118D1AC277DE46F5A81934AF</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>17C67EA9D75C4F77827D15DD</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>1AF9F6D0C96C4AA089B23882</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>1E3EBB489F7F40899460EA7D</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>1F70B6EFFDC84BA0A291B8A4</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>224D5A8B9BAD4BD58C252104</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>257AC84BE1CF4607B7302C0C</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>3B47AF6505D74CBDA6DFD91E</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>554452C9E24B4B3E9329A488</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>559093BE85744A27B42DC638</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>5EA0F599E0AD432CAA700A48</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>5F8BF42B45AC4FB49E619809</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>609E574567CF47269A297DFA</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>62EB7C674DD14BF99CA105F7</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>6F6067CA7E1D411AAF8FFB05</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>77D8AC1F2FCB4BDAACB95319</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>78F654D034464518A264E4A2</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>7A7E86ACD1D9421EA41B11B2</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>85C87212786C440DA6FBBE90</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>86F47CAA1DE643BE8532F298</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>8DDBAEE5CB444723911464AA</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>8E80196D0B14424E91FDC3D7</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>9888F89D305F4B1584217F0E</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>9C0D00218D7C477E83F647AB</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>A12F6137C03C4C358FAB1DBD</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>A178D68FA204473B87E71001</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>A3135861430B4832BBF7E0A7</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>A84BC83721F74C2AB4B64B77</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>C10143B2FEC443999C7480B6</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>DDC3241DDB4544B189956C3D</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>EC663282566D4DC2B8CF10DD</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>F3683B8A7A254AE299E569ED</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>FA95126581E341BBA92E5193</key>
+		<key>9554E77A2575442F88290DE0</key>
 		<dict>
 			<key>primary</key>
 			<true/>

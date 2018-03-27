@@ -10,15 +10,20 @@
 
 #include "recognition_database/recognition_database.h"
 
-/**
- 
- 
- **/
 
-void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event, void* viewer_void){}
+
+POINT_CLOUD_REGISTER_POINT_STRUCT(pcl::Histogram<90>,
+                                  (float[90], histogram, histogram)
+                                  )
+POINT_CLOUD_REGISTER_POINT_STRUCT(pcl::Histogram<153>,
+                                  (float[153], histogram, histogram)
+                                  )
 
 bool build_tree = true;
 std::string descriptor_type = "esf";
+std::string folder_type = "full";
+
+void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event, void* viewer_void){}
 
 typedef std::pair<std::string, std::vector<float> > model;
 
@@ -68,6 +73,49 @@ loadHistVFH (const boost::filesystem::path &path, model &vfh)
     return (true);
 }
 
+bool
+loadHistGSHOT(const boost::filesystem::path &path, model &gshot)
+{
+    int gshot_idx;
+    // Load the file as a PCD
+    try
+    {
+        pcl::PCLPointCloud2 cloud;
+        int version;
+        Eigen::Vector4f origin;
+        Eigen::Quaternionf orientation;
+        pcl::PCDReader r;
+        int type; unsigned int idx;
+        r.readHeader (path.string (), cloud, origin, orientation, version, type, idx);
+        
+        gshot_idx = pcl::getFieldIndex (cloud, "shot");
+        if (gshot_idx == -1)
+            return (false);
+        if ((int)cloud.width * cloud.height != 1)
+            return (false);
+    }
+    catch (const pcl::InvalidConversionException&)
+    {
+        return (false);
+    }
+    
+    // Treat the Gshot signature as a single Point Cloud
+    pcl::PointCloud <pcl::SHOT352> point;
+    pcl::io::loadPCDFile (path.string (), point);
+    gshot.second.resize (352);
+    
+    std::vector <pcl::PCLPointField> fields;
+    pcl::getFieldIndex (point, "shot", fields);
+    
+    for (size_t i = 0; i < fields[gshot_idx].count; ++i)
+    {
+        gshot.second[i] = point.points[0].descriptor[i];
+    }
+    gshot.first = path.string ();
+    return (true);
+}
+
+
 bool loadHistESF (const boost::filesystem::path &path, model &esf)
 {
     int esf_idx;
@@ -111,6 +159,47 @@ bool loadHistESF (const boost::filesystem::path &path, model &esf)
     
 }
 
+bool loadHistGOOD (const boost::filesystem::path &path, model &good)
+{
+    //Read the txtfile
+    string line;
+    ifstream myfile (path.c_str());
+    std::vector<std::string> desc_str;
+    if (myfile.is_open())
+    {
+        while ( getline (myfile,line) )
+        {
+            //std::cout << "line : " << line << std::endl;
+            boost::split(desc_str, line, boost::is_any_of("\t "));
+            //std::cout << "Size number : " << desc_str.size() << std::endl;
+        }
+        myfile.close();
+    }
+    
+    else cout << "Unable to open file";
+    
+    std::vector<float> desc_float;
+    for (int i=0; i < desc_str.size();i++){
+        if(desc_str.at(i).find_first_not_of(' ') != std::string::npos)
+        {
+            // There's a non-space.
+            desc_float.push_back( std::stof (desc_str.at(i)));
+            
+        }
+    }
+    // Treat the esf signature as a single Point Cloud
+    good.second.resize (80);
+    
+    for (size_t i = 0; i <desc_float.size(); ++i)
+    {
+        good.second[i] = desc_float.at(i);
+    }
+    good.first = path.string ();
+    
+    return (true);
+    
+}
+
 /** \brief Load a set of VFH features that will act as the model (training data)
  * \param argc the number of arguments (pass from main ())
  * \param argv the actual command line arguments (pass from main ())
@@ -129,11 +218,24 @@ loadFeatureModels (const boost::filesystem::path &base_dir, const std::string &e
     {
         
         std::string path_current = it->path().c_str();
-        if (path_current.find("/"+descriptor_type+"/")  != std::string::npos  && it->path().extension().string() == ".pcd" ){
+        if (path_current.find("/"+descriptor_type+"/")  != std::string::npos  && path_current.find("/"+folder_type+"/")  != std::string::npos){
             std::cout << "File : " << it->path().c_str() << std::endl;
             model m;
             if (descriptor_type == "vfh" || descriptor_type == "cvfh" || descriptor_type == "ourcvfh"){
                 if (loadHistVFH (it->path().c_str(), m)){
+                    models.push_back (m);
+                    numberObjects++;
+                }
+            }    //Supose gshot
+            else if (descriptor_type == "gshot" || descriptor_type == "gshotPyramid" ) {
+                if (loadHistGSHOT (it->path().c_str(), m)){
+                    models.push_back (m);
+                    numberObjects++;
+                }
+            }
+            else if (descriptor_type == "good") {
+                if (loadHistGOOD (it->path().c_str(), m)){
+                    
                     models.push_back (m);
                     numberObjects++;
                 }
@@ -161,8 +263,9 @@ showHelp (char *filename)
     std::cout << "*                                                                         *" << std::endl;
     std::cout << "***************************************************************************" << std::endl << std::endl;
     
-    std::cout << "Usage: " << filename << "-trained tained_dataset -descriptor type_descriptor [Options]" << std::endl << std::endl;
-    
+    std::cout << "Usage: " << filename << " -trained tained_dataset -descriptor type_descriptor -folder  [Options]" << std::endl << std::endl;
+    std::cout << "Folder need to be either views or full" << std::endl;
+    std::cout << "Descriptor Availables : esf, cvfh,vfh, ourcvfh, gshot,pointnet, gshotPyramid, grsd, esfvfh " << std::endl << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "     -h:                     Show this help." << std::endl;
     
@@ -179,7 +282,7 @@ int main(int argc, char** argv)
         exit (0);
     }
     //If not enough parameters
-    if (argc < 4)
+    if (argc < 6)
     {
         std::cout << "[INFO] Not enough parameters " << std::endl;
         showHelp (argv[0]);
@@ -197,13 +300,18 @@ int main(int argc, char** argv)
         std::cerr<<"Please specify the descriptors"<<std::endl;
         return -1;
     }
+    if(pcl::console::parse_argument(argc, argv, "-folder", folder_type) == -1)
+    {
+        std::cerr<<"Please specify on which folder you want to compute (views or full)"<<std::endl;
+        return -1;
+    }
     
     std::string extension (".pcd");
     transform (extension.begin (), extension.end (), extension.begin (), (int(*)(int))tolower);
     
-    std::string kdtree_idx_file_name = "kdtree.idx";
-    std::string training_data_h5_file_name = "training_data.h5";
-    std::string training_data_list_file_name = "training_data.list";
+    std::string kdtree_idx_file_name = "kdtree_"+folder_type+".idx";
+    std::string training_data_h5_file_name = "training_data_"+folder_type+".h5";
+    std::string training_data_list_file_name = "training_data_"+folder_type+".list";
     
     std::vector<model> models;
     
@@ -288,7 +396,32 @@ int main(int argc, char** argv)
             }
             index.save (pathToSaveKdtreeIdxFilename);
             //It's esf
-        }else {
+        }
+        else if (descriptor_type == "good"){
+            flann::Index<flann::L2<float> > index (data, flann::KDTreeIndexParams (8));
+            //Constructs the nearest neighbor search index using the parameters provided to the constructor
+            index.buildIndex ();
+            
+            if (boost::filesystem::exists(pathToSaveKdtreeIdxFilename)){
+                boost::filesystem::remove(pathToSaveKdtreeIdxFilename);
+                
+            }
+            index.save (pathToSaveKdtreeIdxFilename);
+            //It's esf or GRSD
+        }else if (descriptor_type == "gshot" || descriptor_type == "gshotPyramid"){
+            flann::Index<flann::ChiSquareDistance<float> > index (data, flann::KDTreeIndexParams (8));
+            //Constructs the nearest neighbor search index using the parameters provided to the constructor
+            index.buildIndex ();
+            
+            if (boost::filesystem::exists(pathToSaveKdtreeIdxFilename)){
+                boost::filesystem::remove(pathToSaveKdtreeIdxFilename);
+                
+            }
+            index.save (pathToSaveKdtreeIdxFilename);
+            
+            //It's esf or GRSD
+        }
+        else {
             flann::Index<flann::L2<float> > index (data, flann::KDTreeIndexParams (6));
             //Constructs the nearest neighbor search index using the parameters provided to the constructor
             index.buildIndex ();
