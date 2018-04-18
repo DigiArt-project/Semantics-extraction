@@ -3,9 +3,6 @@
 #include <fstream>
 #include <vector>
 
-//NANOFLANN
-//#include <nanoflann.hpp>
-
 // PCL
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
@@ -22,6 +19,13 @@
 #include <boost/algorithm/string.hpp>
 
 #include "others/utils.hpp"
+
+/**
+ 
+ Given a file which contains the path to every descriptors, generate a fil wich contains the descriptors compatible with the libsvm format
+ 
+ **/
+
 
 using namespace std;
 
@@ -448,7 +452,7 @@ showHelp (char *filename)
     std::cout << "*                         Generate libsvm type dataset                    *" << std::endl;
     std::cout << "*                                                                         *" << std::endl;
     std::cout << "***************************************************************************" << std::endl << std::endl;
-    std::cout << "Usage: " << filename << " descriptor_file_pat (descriptor file which contains the path to every descriptor. One line per data) output (file which will contains the descriptors) type_descriptor (esf/vfh/ourcvfh/cvfh/grsd/gshot/scurv/good/egi/spin/sc3D/pointnet/pointnet_modelnet/esffull/gshotfull/grsdfull/all) multiclass (1/0)" << std::endl << std::endl;
+    std::cout << "Usage: " << filename << " descriptor_file_path output type_descriptor (esf/vfh/ourcvfh/cvfh/grsd/gshot/scurv/good/egi/spin/sc3D/pointnet/pointnet_modelnet/esffull/gshotfull/grsdfull/all) multiclass (1/0)" << std::endl << std::endl;
     
     std::cout << "Options:" << std::endl;
     std::cout << "     -h:                     Show this help." << std::endl;
@@ -491,20 +495,6 @@ int main(int argc, char** argv)
             generate_libsvmdata_binary(descriptor_file,output);
         }
     
-       
-        /*
-        //First generate the training data
-        if (boost::filesystem::exists(output)){
-            std::cerr << "[INFO] The training datalibsvm already exist"<< std::endl;
-            std::cout << "Check the following path : " << output << std::endl;
-        }else {
-            if (multiclass == "1"){
-                generate_libsvmdata(descriptor_file,output);
-            }else {
-                generate_libsvmdata_binary(descriptor_file,output);
-            }
-            
-        }*/
     }
      else if (type_descriptor.compare("scurv") == 0  || type_descriptor.compare("spin") == 0  || type_descriptor.compare("good") == 0
                || type_descriptor.compare("egi") == 0 || type_descriptor.compare("pointnet") == 0 || type_descriptor.compare("pointnet_modelnet") == 0 ){

@@ -114,7 +114,6 @@ public:
     
     void globalMatchingEvaluation(const std::string queryCloud, const std::string dataset_trained, const std::vector<std::string> categories,int k);
     
-    void normalizePC(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud);
     void saveResultsDetectionsJSON(const string outputPath);
     
     double getAveragePrecision(){

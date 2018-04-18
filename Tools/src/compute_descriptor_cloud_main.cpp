@@ -49,18 +49,41 @@
 using namespace Eigen;
 using namespace std;
 
+/**
+ 
+ Given a point cloud or a dataset, compute descriptors.
+ 
+ **/
+
 typedef pcl::PointXYZ PointT;
 
 std::string output = "descriptor.pcd";
 //If want to scale descriptor between 0 and 1
 bool scale_descriptor = false;
+//If we want to normalize point cloud
 bool normalize_cloud = false;
-//If instead of computing one point cloud, you want to compute inside folder
+//If instead of computing one point cloud, you want to compute every points cloud of a dataset
 bool compute_all = true;
+//Dataset where you want to compute descroptors
 std::string dataset_folder = "/Users/lironesamoun/digiArt/Datasets/Dataset_pottery_views_resolution_normalized";
+//If you want to compute descriptors for full objects of partial views
 bool onFull = false;
+//If you want to downsize the point cloud
 bool enable_filtering = true;
 float leaf_size = 0.01f;
+
+//Activate the descriptor you want
+bool enable_esf = true;
+bool enable_vfh = true;
+bool enable_cvfh = false;
+bool enable_ourcvfh = false;
+bool enable_grsd = false;
+bool enable_gshot = true;
+bool enable_gshot_pyramid = false;
+bool enable_good = false;
+bool enable_usc = false;
+bool enable_sc3D = false;
+
 
 
 
@@ -290,18 +313,7 @@ main (int argc, char** argv)
             fullOrViews="/views/";
         }
         std::cout << "COMPUTE ALL" << std::endl;
-        //Activate the descriptor you want
-        bool enable_esf = true;
-        bool enable_vfh = true;
-        bool enable_cvfh = false;
-        bool enable_ourcvfh = false;
-        bool enable_grsd = false;
-        bool enable_gshot = true;
-        bool enable_gshot_pyramid = false;
-        bool enable_good = false;
-        bool enable_usc = false;
-        bool enable_sc3D = false;
-        
+
         if (!boost::filesystem::exists (dataset_folder) && !boost::filesystem::is_directory (dataset_folder)){
             std::cerr << "Error with the directory" << std::endl;
             return -1;

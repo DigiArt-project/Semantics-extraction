@@ -26,6 +26,15 @@
 
 #include "Configuration/configuration.hpp"
 
+/**
+ 
+Generate an Index KDTree structure for performing faster similarity search
+@paramers trained  - This is the path to the dataset with contains the points clouds (partial views or full) along its descriptor. Follow the correct structure of the dataset
+@paramers descriptor - The descriptor you want to use for building the Similarity Search Index. Check the lists of available descriptors below.
+@paramers folder - If you want to build the index for partials views (so 'views') or full objects (so 'full')
+ 
+ **/
+
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(pcl::Histogram<90>,
                                   (float[90], histogram, histogram)
@@ -426,7 +435,7 @@ showHelp (char *filename)
     std::cout << "*                                                                         *" << std::endl;
     std::cout << "***************************************************************************" << std::endl << std::endl;
     
-    std::cout << "Usage: " << filename << " -trained tained_dataset -descriptor type_descriptor -folder  [Options]" << std::endl << std::endl;
+    std::cout << "Usage: " << filename << " -trained tained_dataset -descriptor type_descriptor -folder (views/full)  [Options]" << std::endl << std::endl;
     std::cout << "Folder need to be either views or full" << std::endl;
     std::cout << "Descriptor Availables : esf, cvfh,vfh, ourcvfh, gshot,pointnet, gshotPyramid, grsd, esfvfh " << std::endl << std::endl;
     std::cout << "Options:" << std::endl;

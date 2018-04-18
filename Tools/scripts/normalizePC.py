@@ -55,8 +55,8 @@ def normalizeFolder(folder_path, new_folder_path):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument("-folder", "--folder", required=True, help="Dataset for computing the spin and EGI descriptor")
-    ap.add_argument("-new-folder", "--new-folder", required=True, help="Dataset for computing the spin and EGI descriptor")
+    ap.add_argument("-folder", "--folder", required=True, help="Dataset for normalizing point cloud")
+    ap.add_argument("-new-folder", "--new-folder", required=True, help="Dataset for saving the normalization")
     args = vars(ap.parse_args())
 
     normalizeFolder(args["folder"], args["new_folder"])

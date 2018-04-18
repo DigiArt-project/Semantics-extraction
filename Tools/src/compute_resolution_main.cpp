@@ -11,7 +11,7 @@
 #include <string>
 /**
  
- Ce programme calcul la résolution d'un nuage de points
+Compute resolution of a point cloud
  
  **/
 

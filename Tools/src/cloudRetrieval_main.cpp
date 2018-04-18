@@ -14,11 +14,26 @@
 #include <stdlib.h>
 #include <cstdlib>
 
+/**
+ 
+Given a point cloud, find the most similar results
+@parameters query - The point cloud you want to find the most similar results
+@parameters trained - The dataset which contains the descriptors and especiallt the index structure built by build_tree_main
+ 
+ **/
+
+//Option if you want to run the evaluation of similarity search
 bool runEvaluation = false;
+
+//Number of k results for similarity search
 int k = 20;
-float leaf_resolution = 0.01f;
+//If you want to downsize the point cloud
 bool enable_resolution = true;
+float leaf_resolution = 0.01f;
+//If you want to scale descriptors
 bool enable_scaling = false;
+//##Options
+//Partial views or full objects
 bool compute_on_full = true;
 std::string descriptor_type = "esf";
 std::string output_path_result = "../results.json";

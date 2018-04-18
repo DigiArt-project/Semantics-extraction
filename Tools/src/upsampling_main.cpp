@@ -14,7 +14,7 @@
 #include <string>
 /**
  
- Ce programme realise un upsampling d'un point cloud
+Given a point cloud, add more points to it and rise his resolution by applying an upsampling method
  
  **/
 
@@ -127,11 +127,11 @@ showHelp (char *filename)
     std::cout << "Usage: " << filename << " -query pcd_point_cloud [option]" << std::endl << std::endl;
     
     std::cout << "Options:" << std::endl;
-    std::cout << "     -output :                     Radius Search (0.03 per defaut)" << std::endl;
+    std::cout << "     -output :                 output for saving the new point cloud" << std::endl;
     std::cout << "     -rs :                     Radius Search (0.03 per defaut)" << std::endl;
     std::cout << "     -ur :                     Upsampling radius (0.03 per defaut)" << std::endl;
     std::cout << "     -uss :                    upsampling step size  (0.03 per defaut)" << std::endl;
-    std::cout << "     -vis 1/0:                     Visualise results (0.03 per defaut)" << std::endl;
+    std::cout << "     -vis 1/0:                 Visualise results (0.03 per defaut)" << std::endl;
     std::cout << "     -h:                     Show this help." << std::endl;
     
 }
@@ -184,9 +184,6 @@ int main(int argc, char** argv)
         visualise_result = false;
     }
     
-    /*std::cout << "Radius Search : " << radius_search << std::endl;
-    std::cout << "Upsampling radius : " << upsampling_radius << std::endl;
-    std::cout << "upsampling step size : " << upsampling_radius << std::endl;*/
     std::cout << "Process : " << query << std::endl;
     
     // Read a PCD file from disk.
@@ -212,72 +209,44 @@ int main(int argc, char** argv)
     filter.setSearchMethod(kdtree);
     // Use all neighbors in a radius of 3cm.
     float radius_search_manual = 3;
-    if (val_resolution_original > 0.1){
-        std::cout << "\n Initial Resolution of point cloud : " << val_resolution_original << "| number of points : " << cloud->size() << std::endl;
+    
+    filter.setSearchRadius(radius_search_manual);
+    // Upsampling method. Other possibilites are DISTINCT_CLOUD, RANDOM_UNIFORM_DENSITY
+    // and VOXEL_GRID_DILATION. NONE disables upsampling. Check the API for details.
+    filter.setUpsamplingMethod(pcl::MovingLeastSquares<PointType, PointType>::SAMPLE_LOCAL_PLANE );
+    // Radius around each point, where the local plane will be sampled.
+    //filter.setPointDensity(200);
+    filter.setUpsamplingRadius(upsampling_radius);
+    //Sampling step size. Bigger values will yield less (if any) new points.
+    filter.setUpsamplingStepSize(upsampling_step_size);
+    
+    filter.process(*filteredCloud);
+    double val_resolution = compute_resolution(filteredCloud);
+    double size_cloud = filteredCloud->size();
+    std::cout << "New Resolution of point cloud : " << val_resolution << " | Number of points : " << size_cloud << std::endl;
+    
+    if (!output.empty()){
         
-        if (val_resolution_original > 18){
-            radius_search_manual = 10;
-        }else if (val_resolution_original > 1 && val_resolution_original < 2){
-             radius_search_manual = 3;
-        }
-        else if (val_resolution_original > 6 && val_resolution_original < 7){
-            radius_search_manual = 4;
-        }
-        else if (val_resolution_original > 7 && val_resolution_original < 8){
-            radius_search_manual = 9.2;
-        }
-        else if (val_resolution_original > 4 && val_resolution_original < 5){
-            radius_search_manual = 6;
-        }else if (val_resolution_original > 3 && val_resolution_original < 4){
-            radius_search_manual = 5;
-        }
-        else if (val_resolution_original > 0.5 && val_resolution_original < 1.1){
-            radius_search_manual = 1.5;
-        }
-        else if (val_resolution_original > 0.1 && val_resolution_original < 0.5){
-            radius_search_manual = 0.7;
-        }
-        else if (val_resolution_original > 10 && val_resolution_original < 18){
-            radius_search_manual = 0.7;
-        }
-        filter.setSearchRadius(radius_search_manual);
-        // Upsampling method. Other possibilites are DISTINCT_CLOUD, RANDOM_UNIFORM_DENSITY
-        // and VOXEL_GRID_DILATION. NONE disables upsampling. Check the API for details.
-        filter.setUpsamplingMethod(pcl::MovingLeastSquares<PointType, PointType>::RANDOM_UNIFORM_DENSITY );
-        // Radius around each point, where the local plane will be sampled.
-        filter.setPointDensity(200);
-        //filter.setUpsamplingRadius(upsampling_radius);
-        // Sampling step size. Bigger values will yield less (if any) new points.
-        //filter.setUpsamplingStepSize(upsampling_step_size);
-        
-        filter.process(*filteredCloud);
-        double val_resolution = compute_resolution(filteredCloud);
-        double size_cloud = filteredCloud->size();
-        std::cout << "New Resolution of point cloud : " << val_resolution << " | Number of points : " << size_cloud << std::endl;
-        
-        if (!output.empty()){
-            
-            
-            //SAVING
-            std::string extension = boost::filesystem::extension(query);
-            if (extension == ".pcd" || extension == ".PCD")
+        //SAVING
+        std::string extension = boost::filesystem::extension(query);
+        if (extension == ".pcd" || extension == ".PCD")
+        {
+            if (pcl::io::savePCDFile(output, *filteredCloud) == -1)
             {
-                if (pcl::io::savePCDFile(output, *filteredCloud) == -1)
-                {
-                    std::cout << "\n Cloud saving failed." << std::endl;
-                    return (-1);
-                }
+                std::cout << "\n Cloud saving failed." << std::endl;
+                return (-1);
             }
-            else if (extension == ".ply" || extension == ".PLY")
-            {
-                if (pcl::io::savePLYFile(output, *filteredCloud) == -1)
-                {
-                    std::cout << "\n Cloud saving failed." << std::endl;
-                    return (-1);
-                }
-            }
-            
         }
+        else if (extension == ".ply" || extension == ".PLY")
+        {
+            if (pcl::io::savePLYFile(output, *filteredCloud) == -1)
+            {
+                std::cout << "\n Cloud saving failed." << std::endl;
+                return (-1);
+            }
+        }
+        
+        
         
     }
     
