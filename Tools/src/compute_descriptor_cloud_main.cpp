@@ -57,8 +57,8 @@ bool scale_descriptor = false;
 bool normalize_cloud = false;
 //If instead of computing one point cloud, you want to compute inside folder
 bool compute_all = true;
-std::string dataset_folder = "/Users/lironesamoun/digiArt/Datasets/dataset_potterymix_normalized";
-bool onFull = true;
+std::string dataset_folder = "/Users/lironesamoun/digiArt/Datasets/Dataset_pottery_views_resolution_normalized";
+bool onFull = false;
 bool enable_filtering = true;
 float leaf_size = 0.01f;
 
@@ -294,11 +294,11 @@ main (int argc, char** argv)
         bool enable_esf = true;
         bool enable_vfh = true;
         bool enable_cvfh = false;
-        bool enable_ourcvfh = true;
+        bool enable_ourcvfh = false;
         bool enable_grsd = false;
         bool enable_gshot = true;
         bool enable_gshot_pyramid = false;
-        bool enable_good = true;
+        bool enable_good = false;
         bool enable_usc = false;
         bool enable_sc3D = false;
         
@@ -347,11 +347,11 @@ main (int argc, char** argv)
                     if (readPointCloud( cloud_path,  cloud)==-1)
                         continue;
                     
-                    
-                    if (cloud->size() > 18){
+            
+                    if (cloud->size() > 18 && cloud->size() < 8000){
                         
                         
-                        if (enable_filtering){
+                        /*if (enable_filtering){
                             //down sample the current view
                             pcl::VoxelGrid<pcl::PointXYZ> down;
                             down.setLeafSize (leaf_size, leaf_size, leaf_size);
@@ -359,7 +359,8 @@ main (int argc, char** argv)
                             down.filter (*cloud);
                             
                         }
-                        
+                        */
+                        std::cout << "CLOUD SIZE : " << cloud->size() << std::endl;
                         
                         Timer timer_alldescriptor;
                         timer_alldescriptor.startTimer();
@@ -896,11 +897,11 @@ main (int argc, char** argv)
         if (!checkValidityDescriptor(type_descriptor)){
             return -1;
         }
-        if (normalize_cloud){
+        /*if (normalize_cloud){
             std::cout << "Normalize point cloud " << std::endl;
-            normalizePointCloud(cloud);
+            normalizePC(cloud);
             
-        }
+        }*/
         /*boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer = visualise_both_cloud(cloud,cloud);
          //--------------------
          // -----Main loop-----

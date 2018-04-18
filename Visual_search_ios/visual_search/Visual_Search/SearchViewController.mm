@@ -661,6 +661,8 @@ BOOL svm_ourcvfh_available = NO;
         [self writeToTextView:_debugLogTextField string:str erase:NO];
         
         for (Category * category in categories_arr) {
+             //NSLog(@"Category ARRAY : %@",[category m_name]);
+            //[self writeToTextView:_debugLogTextField string:[category m_name] erase:NO];
             if ([self IsString:current_category contains:[category m_name]]) {
                 count ++;
                 [result_cat_array addObject:[category m_name]];
@@ -984,14 +986,17 @@ BOOL svm_ourcvfh_available = NO;
         //Structure Sensor Dataset
         m_type_dataset_selected = @"structure";
         self.datasetTypeLabel.text = @"Structure Sensor";
+         categories_arr = [self loadCategoriesFromJasonFileCategories:@"categories_structure"];
     }
     else if (self.datasetClassificationControl.selectedSegmentIndex == 1){
         m_type_dataset_selected = @"pottery";
         self.datasetTypeLabel.text = @"Pottery";
+        categories_arr = [self loadCategoriesFromJasonFileCategories:@"categories_pottery"];
     }
     else if (self.datasetClassificationControl.selectedSegmentIndex == 2){
         m_type_dataset_selected = @"potterymix";
         self.datasetTypeLabel.text = @"Pottery Mix";
+         categories_arr = [self loadCategoriesFromJasonFileCategories:@"categories_potterymix"];
     }
 }
 

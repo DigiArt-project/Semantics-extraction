@@ -62,8 +62,9 @@
 	  type_descriptor,
 	  "-output",
 	  output_result,
+	  "-compute_full",
+	  "false",
 	  ];
-
 	  const proc = exec(program, args,  {maxBuffer: 1024 * 500});
 
 	  proc.stdout.on('data',

@@ -1017,19 +1017,27 @@ void RecognitionDatabase<PointT, DescriptorT, DistT>::globalMatchingUsingViewOfC
         //std::cout << "[INFO] Loading Complete \n" << std::endl;
     }
     
+     /*Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+    float theta = M_PI; // The angle of rotation in radians
+     transform.rotate (Eigen::AngleAxisf (theta, Eigen::Vector3f::UnitZ()));
+    
+     pcl::transformPointCloud (*cloud, *cloud, transform);*/
+    
     if (m_resolution_activated){
         std::cout << "[INFO] Using resolution : " << m_resolution << std::endl;
-        std::cout << "Resolution of the uploaded model : " << Utils::compute_resolution(cloud) << std::endl;
+        std::cout << "### Resolution of the uploaded model : " << Utils::compute_resolution(cloud) << std::endl;
         //Downsize for resolution invariance
         pcl::VoxelGrid<pcl::PointXYZ> down;
         float leaf = m_resolution;
         down.setLeafSize (leaf, leaf, leaf);
         down.setInputCloud (cloud);
         down.filter (*cloud);
-        std::cout << "Resolution of the uploaded model after filtering : " << Utils::compute_resolution(cloud) << std::endl;
+        std::cout << "### Resolution of the uploaded model after filtering : " << Utils::compute_resolution(cloud) << std::endl;
     }
+    
     std::cout << "==> Normalization Point Cloud <==" << std::endl;
     normalizePC(cloud);
+
     
     //First compute the descriptor
     std::cout << "Computation of the descriptor ... " << std::flush;

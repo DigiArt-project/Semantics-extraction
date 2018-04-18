@@ -1360,7 +1360,7 @@ main (int argc, char** argv)
                 //pcl::visualization::PCLVisualizer renderer("render");
                 renderer->setBackgroundColor( 1, 1, 1 );
 
-                vtkSmartPointer<vtkPLYReader> readerQuery = vtkSmartPointer<vtkPLYReader>::New();
+               
                 std::string path_to_ply = cloud_path;
                 std::cout << "Path to Ply : " << cloud_path << std::endl;
 
@@ -1370,29 +1370,48 @@ main (int argc, char** argv)
                     return -1;
 
                 normalizePC(cloud);
+                /*
+                if (cfg.m_computeViewsDescriptors.enable_resolution){
+                    std::cout << "INFO : using leaf resolution  : " << leaf << std::endl;
+                    int size_original = cloud->size();
+                    float resolution_original = compute_resolution(cloud);
+                    //down sample the current view
+                    pcl::VoxelGrid<pcl::PointXYZ> down;
+                    down.setLeafSize (leaf, leaf, leaf);
+                    down.setInputCloud (cloud);
+                    down.filter (*cloud);
+                    int size_after = cloud->size();
+                    float resolution_after = compute_resolution(cloud);
+                    std::cout << "Resolution before : " << resolution_original << "| Resolution after : " << resolution_after << std::endl;
+                    std::cout << "Size before : " << size_original << "| Size after : " << size_after << std::endl;
+                    
+                }*/
                 
-                vtkSmartPointer<vtkPolyData> data = vtkSmartPointer<vtkPolyData>::New ();
+                //vtkSmartPointer<vtkPolyData> data = vtkSmartPointer<vtkPolyData>::New ();
 
                 //Load PLY model and scale it
                 const float model_scale = cfg.m_computeViewsDescriptors.model_scale;
 
+                vtkSmartPointer<vtkPLYReader> readerQuery = vtkSmartPointer<vtkPLYReader>::New();
                 readerQuery->SetFileName (path_to_ply.c_str());
-                /*
-                vtkSmartPointer<vtkTransform> trans = vtkSmartPointer<vtkTransform>::New ();
-                trans->Scale (model_scale, model_scale, model_scale);
-                trans->Modified ();
-                trans->Update ();
-                 */
+                
+                vtkSmartPointer<vtkPolyData> polydata = readerQuery->GetOutput();
+                readerQuery->Update();
+        
                 /*vtkSmartPointer<vtkTransformPolyDataFilter> filter_scale = vtkSmartPointer<vtkTransformPolyDataFilter>::New ();
                 filter_scale->SetTransform (trans);
                 filter_scale->SetInputConnection (readerQuery->GetOutputPort ());
-                //filter_scale->SetInputData(data);
+                filter_scale->SetInputData(data);
                 filter_scale->Update ();*/
                 
                 //vtkSmartPointer<vtkPolyData> mapper = filter_scale->GetOutput ();
                  
-                vtkSmartPointer<vtkPolyData> polydata = readerQuery->GetOutput();
-                readerQuery->Update();
+                
+                
+                /*vtkSmartPointer<vtkCleanPolyData> cleanPolyData = vtkSmartPointer<vtkCleanPolyData>::New();
+                cleanPolyData->SetInputConnection(readerQuery->GetOutputPort())
+                cleanPolyData->SetTolerance(0.1);
+                cleanPolyData->Update();*/
                 
                 //TODO Sauvegarder sous format PLY puis reouvrir PLY
 
@@ -1445,6 +1464,7 @@ main (int argc, char** argv)
 
                     //normalizePointCloud(views[i]);
 
+                    
                     //save the view, pose, enthropy, and descriptor to the disk
                     if (cfg.m_computeViewsDescriptors.enable_resolution){
                         std::cout << "INFO : using leaf resolution  : " << leaf << std::endl;
@@ -1932,7 +1952,8 @@ main (int argc, char** argv)
                         //std::string view_name_ply = view_dir + "/view_" +  std::to_string(count_data) + std::to_string(i) + ".ply";
                         std::string view_name = view_dir + "/view_" + filename + "_" + std::to_string(i) + ".pcd";
                         std::string view_name_ply = view_dir + "/view_" + filename + "_" + std::to_string(i) + ".ply";
-
+                        float resolution_after = compute_resolution(views[i].makeShared());
+                        std::cout << "[SAVE]Resolution before saving : " << resolution_after << std::endl;
                         if (cfg.m_computeViewsDescriptors.save_binary){
                             pcl::io::savePCDFileBinary<pcl::PointXYZ>(view_name, views[i]);
                             pcl::io::savePLYFileBinary<pcl::PointXYZ>(view_name_ply, views[i]);

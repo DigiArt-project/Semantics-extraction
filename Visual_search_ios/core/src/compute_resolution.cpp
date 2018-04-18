@@ -2,6 +2,8 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/io/ply_io.h>
+#include <pcl/io/obj_io.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/search/kdtree.h>
 #include <pcl/filters/voxel_grid.h>
@@ -47,6 +49,41 @@ compute_resolution(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & cloud){
     resolution /= points;
     
     return resolution;
+}
+
+//Read point cloud from a path
+int readPointCloud(std::string object_path,  boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > point_cloud)
+{
+    std::string extension = boost::filesystem::extension(object_path);
+    if (extension == ".pcd" || extension == ".PCD")
+    {
+        if (pcl::io::loadPCDFile(object_path.c_str() , *point_cloud) == -1)
+        {
+            std::cout << "\n Cloud reading failed." << std::endl;
+            return (-1);
+        }
+    }
+    else if (extension == ".ply" || extension == ".PLY")
+    {
+        if (pcl::io::loadPLYFile(object_path , *point_cloud) == -1)
+        {
+            std::cout << "\n Cloud reading failed." << std::endl;
+            return (-1);
+        }
+    } else if (extension == ".obj" || extension == ".OBJ")
+    {
+        if (pcl::io::loadOBJFile(object_path , *point_cloud) == -1)
+        {
+            std::cout << "\n Cloud reading failed." << std::endl;
+            return (-1);
+        }
+    }
+    else
+    {
+        std::cout << "\n file extension is not correct. Syntax is: compute_descriptor_cloud_main <path/file_name.pcd> [--nogui] or compute_descriptor_cloud_main <path/file_name.ply> [--nogui]" << std::endl;
+        return -1;
+    }
+    return 1;
 }
 
 boost::shared_ptr<pcl::visualization::PCLVisualizer> visualise_both_cloud (pcl::PointCloud<pcl::PointXYZ>::ConstPtr cloud1,pcl::PointCloud<pcl::PointXYZ>::ConstPtr cloud2, float resolution)
@@ -96,7 +133,7 @@ showHelp (char *filename)
     std::cout << "Usage: " << filename << " -query pcd_point_cloud  -res resolution [option]" << std::endl << std::endl;
     
     std::cout << "Options:" << std::endl;
-    std::cout << "     -v 1/0:                     Visualise results (0 per defaut)" << std::endl;
+    std::cout << "     -vis 1/0:                     Visualise results (0 per defaut)" << std::endl;
     std::cout << "     -h:                     Show this help." << std::endl;
     
 }
@@ -152,11 +189,9 @@ int main(int argc, char** argv)
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_tmp (new pcl::PointCloud<pcl::PointXYZ>);
     
-    if (pcl::io::loadPCDFile<pcl::PointXYZ>(query, *cloud) != 0)
-    {
+    if (readPointCloud(query,  cloud)==-1)
         return -1;
-    }
-    
+
     pcl::copyPointCloud(*cloud, *cloud_tmp);
     //Keep original
     

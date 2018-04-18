@@ -19,7 +19,7 @@ import plotting
 
 
 ###### GLOBAL VARIABLE #######
-path_dataset = "/Users/lironesamoun/digiArt/Datasets/Dataset_potterymix_normalized/"
+path_dataset = "/Users/lironesamoun/digiArt/Datasets/Dataset_pottery_normalized/"
 training_file_full = path_dataset + "train_full.txt"
 testing_file_full =  path_dataset + "test_full.txt"
 training_file_views =  path_dataset +"train_views.txt"
@@ -28,7 +28,7 @@ testing_file_views =  path_dataset +"test_views.txt"
 compute_full = "false"
 #Array of descriptors we want to test
 descriptors = ['esf','vfh']
-name_dataset = 'potterymix_views'
+name_dataset = 'pottery_views'
 #Location of the dataset directory where the txt file are located. The txt represents the list of all the descriptors and path to descriptors
 root_data = "data/"
 
@@ -39,7 +39,7 @@ output_graphicals_result = "results_graphics/"
 log_file = "interactive_learning_log.txt"
 
 #Category label to change for option similarity search interactive learning
-category_label = 5
+category_label = 6
 #Positive example ranking for display i.e the number of samples ranked from positive to negative, to display to the user 
 nbre_data_selection = 20 #defaut 48
 #Number of uncertain examples close to the margin to choose 
@@ -51,7 +51,7 @@ nbre_data_final_selection = 7
 # the percentage of samples in the dataset that will be randomly selected and assigned to the test set
 test_size = 0.35
 #SVM parameters
-C = 120 #100
+C = 100 #100
 gam = 0.0078125 #0.001
 kernel_svm = "rbf" #rbf, linear, poly, sigmoid
 

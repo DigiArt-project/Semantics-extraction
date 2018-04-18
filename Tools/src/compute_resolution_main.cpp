@@ -33,7 +33,7 @@ compute_resolution(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & cloud){
     for (size_t i = 0; i < cloud->size(); ++i)
     {
         if (!pcl_isfinite((*cloud)[i].x))
-        continue;
+            continue;
         
         nres = kdtree.nearestKSearch(i, 2, indices, sqrDistances);
         
@@ -45,7 +45,7 @@ compute_resolution(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & cloud){
     }
     
     if (points != 0)
-    resolution /= points;
+        resolution /= points;
     
     return resolution;
 }
@@ -64,13 +64,13 @@ boost::shared_ptr<pcl::visualization::PCLVisualizer> visualise_both_cloud (pcl::
     std::string number_points_cloud1 = "Number of points : " + std::to_string(cloud1->size());
     std::string resolution_orig_str = "Original resolution " + number_points_cloud1;
     viewer->addText(resolution_orig_str, 10, 10, "v1 text", v1);
-        pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color1(cloud1, 0, 255, 0);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color1(cloud1, 0, 255, 0);
     viewer->addPointCloud<pcl::PointXYZ> (cloud1, single_color1, "sample cloud1", v1);
     
     int v2(0);
     viewer->createViewPort(0.5, 0.0, 1.0, 1.0, v2);
     viewer->setBackgroundColor (0.3, 0.3, 0.3, v2);
-     std::string number_points_cloud2 = " Number of points : " + std::to_string(cloud2->size());
+    std::string number_points_cloud2 = " Number of points : " + std::to_string(cloud2->size());
     std::string resolution_str = "Resolution: " + std::to_string(resolution) + number_points_cloud2;
     viewer->addText(resolution_str, 10, 10, "v2 text", v2);
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color2(cloud2, 0, 255, 0);
@@ -129,10 +129,11 @@ showHelp (char *filename)
     std::cout << "*                         compute resolution point cloud                  *" << std::endl;
     std::cout << "*                                                                         *" << std::endl;
     std::cout << "***************************************************************************" << std::endl << std::endl;
-    std::cout << "Usage: " << filename << " -query pcd_point_cloud  -res resolution [option]" << std::endl << std::endl;
+    std::cout << "Usage: " << filename << " -query pcd_point_cloud [option]" << std::endl << std::endl;
     
     std::cout << "Options:" << std::endl;
-    std::cout << "     -vis 1/0:                     Visualise results (0 per defaut)" << std::endl;
+    std::cout << "     -res resolution:        Resolution (0.01 per defaut)" << std::endl;
+    std::cout << "     -vis 1/0:               Visualise results (0 per defaut)" << std::endl;
     std::cout << "     -h:                     Show this help." << std::endl;
     
 }
@@ -144,7 +145,7 @@ int main(int argc, char** argv)
     bool visualise_result = false;
     
     //If not enough parameters
-    if (argc < 4)
+    if (argc < 3)
     {
         showHelp (argv[0]);
         return (-1);
@@ -163,12 +164,8 @@ int main(int argc, char** argv)
         std::cerr<<"Please specify the query point cloud -query"<<std::endl;
         return -1;
     }
-    float leaf = 0.01;
-    if(pcl::console::parse_argument(argc, argv, "-res", leaf) == -1)
-    {
-        std::cerr<<"Please specify the resolution -res"<<std::endl;
-        return -1;
-    }
+    float leaf;
+    pcl::console::parse_argument(argc, argv, "-res", leaf);
     
     std::string visualise = "0";
     
@@ -188,7 +185,7 @@ int main(int argc, char** argv)
     
     if (readPointCloud( query,  cloud)==-1)
         return -1;
-
+    
     pcl::copyPointCloud(*cloud, *cloud_tmp);
     //Keep original
     
@@ -196,14 +193,16 @@ int main(int argc, char** argv)
     double size_cloud = cloud->size();
     std::cout << "Initial Resolution of point cloud : " << val_resolution << " | Number of points : " << size_cloud << std::endl;
     
-    //down sample the current view
-    pcl::VoxelGrid<pcl::PointXYZ> down;
-    down.setLeafSize (leaf, leaf, leaf);
-    down.setInputCloud (cloud);
-    down.filter (*cloud);
-    
-    size_cloud = cloud->size();
-    std::cout << "With leaf : " << leaf << " New resolution of point cloud : " << compute_resolution(cloud) <<  "| Number of points : " << size_cloud << std::endl;
+    if (leaf != 0){
+        //down sample the current view
+        pcl::VoxelGrid<pcl::PointXYZ> down;
+        down.setLeafSize (leaf, leaf, leaf);
+        down.setInputCloud (cloud);
+        down.filter (*cloud);
+        
+        size_cloud = cloud->size();
+        std::cout << "With leaf : " << leaf << " New resolution of point cloud : " << compute_resolution(cloud) <<  "| Number of points : " << size_cloud << std::endl;
+    }
     
     if (visualise_result){
         boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer = visualise_both_cloud(cloud_tmp, cloud,leaf);

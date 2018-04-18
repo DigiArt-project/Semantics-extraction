@@ -44,21 +44,33 @@ CMakeCache.txt
 cmake_install.cmake
 .lock
 .xcworkspace
+.xcodeproj
 *.git_backup
 *.json
 *.pyc
+.range
+.svm
 
-# Folder #
+# Folder root#
 ######################
-Datasets/
+
+
+# Folder visual search iOS #
+######################
+Visual_search_ios/visual_search/Pods
+Visual_search_ios/Datasets/Dataset*
+Visual_search_ios/svm/
+build/
+
+# Folder interactive learning #
+######################
+Code_Quentin/
+Datasets/*
 Debug/
+data/*
 CMakeScripts/
 build/
 CMakeFiles/
-build
-cat10_descriptors
-cat31_descriptors
-cat51_descriptors
 structuresensor_descriptors
 structuresensor_descriptors2
 InteractiveLearning/others/

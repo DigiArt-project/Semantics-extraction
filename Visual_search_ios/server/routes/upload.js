@@ -25,12 +25,14 @@
       callback(null, './uploads/');
     },
     filename: function (request, file, callback) {
+      console.log("FILE : ")
       console.log(file);
+      console.log("END FILE ")
       callback(null, file.originalname)
     }
   });
   // Multer parameter. Cloud correspond to the filename of the form sent by the http request in iOS
-  var upload = multer({ storage: storage }).single('cloud');
+  var upload = multer({ storage: storage, limits: {fileSize: 1000000}}).single('cloud');
 
 
   //check is the parameters are good
@@ -120,7 +122,6 @@
   //http://localhost:8080/api/upload/action_upload
   router.post('/action_upload', function (req, res) {
     //Call the upload variable we defined before
-    console.log("[NodeJS] Action Upload")
     upload(req, res, function (err) {
       if (err) {
         // An error occurred when uploading

@@ -38,7 +38,7 @@ showHelp (char *filename)
     std::cout << "*                 Cloud Retrieval using similarity search                 *" << std::endl;
     std::cout << "*                                                                         *" << std::endl;
     std::cout << "***************************************************************************" << std::endl << std::endl;
-    std::cout << "Usage: " << filename << " -query object.pcd -trained tained_dataset [Options]" << std::endl << std::endl;
+    std::cout << "Usage: " << filename << "config_file -query object.pcd -trained tained_dataset [Options]" << std::endl << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "     -h:                     Show this help." << std::endl;
     std::cout << "     -descriptor:            change descriptor. Available : esf, vfh, cvfh, ourcvfh, gshot. Per default : esf " << std::endl;

@@ -114,6 +114,7 @@ public:
     
     void globalMatchingEvaluation(const std::string queryCloud, const std::string dataset_trained, const std::vector<std::string> categories,int k);
     
+    void normalizePC(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud);
     void saveResultsDetectionsJSON(const string outputPath);
     
     double getAveragePrecision(){
@@ -247,7 +248,7 @@ RetrievalSimilaritySearchDatabase<PointT, DescriptorT, DistT>::RetrievalSimilari
 }
 
 template<typename PointT, typename DescriptorT, typename DistT>
-void RetrievalSimilaritySearchDatabasein<PointT, DescriptorT, DistT>::normalizePC(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud){
+void RetrievalSimilaritySearchDatabase<PointT, DescriptorT, DistT>::normalizePC(typename pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud){
     
     pcl::PointXYZ centroid;
     pcl::computeCentroid(*cloud, centroid);

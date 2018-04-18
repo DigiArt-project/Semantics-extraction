@@ -12,7 +12,7 @@
 		<key>ZERO_CHECK.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>1</integer>
+			<integer>4</integer>
 		</dict>
 		<key>buildTree_main.xcscheme</key>
 		<dict>
@@ -22,12 +22,12 @@
 		<key>checkDatasetDirectory.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>6</integer>
+			<integer>5</integer>
 		</dict>
 		<key>computeNormalsAndSave.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>5</integer>
+			<integer>6</integer>
 		</dict>
 		<key>compute_descriptors_RGBD_dataset_main.xcscheme</key>
 		<dict>
@@ -37,7 +37,7 @@
 		<key>compute_resolution.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>4</integer>
+			<integer>1</integer>
 		</dict>
 		<key>compute_views_descriptor_cloud_main.xcscheme</key>
 		<dict>
@@ -97,6 +97,11 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>1CE2587D13F64792968FB3CA</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>9554E77A2575442F88290DE0</key>
 		<dict>
 			<key>primary</key>
