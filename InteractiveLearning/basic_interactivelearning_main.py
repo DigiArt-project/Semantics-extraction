@@ -60,6 +60,7 @@ TEST_SIZE = 0.35
 C = 100 #100
 GAM = 0.0078125 #0.001
 KERNEL_SVM = "rbf" #rbf, linear, poly, sigmoid
+DIVERSIFICATION_LAMBDA = 0.5
 #Defaut descriptor to use for Interactive Leaning
 DESCRIPTOR_INTERACTIVELEARNING = "esf"
 
@@ -70,7 +71,7 @@ _ITEM_CLICK_CALLBACK= set()
 _ITEM_ALL_LABEL_DATA = list()
 
 USE_NORMALIZATION = True
-
+PLOT_SCORE = True
 
 """
 Handle the on click event, when the user select example on the screen
@@ -703,7 +704,7 @@ def compute_scores_SVM(X_test, y_test, y_pred, model_learning, plot_PR_curve=Fal
 
 
 """
-Interactive learning without similarity search. Basic test
+Interactive learning without similarity search
 """
 def basic_interactive_learning_start(params):
     global OBJECTSLIST_PATH_FILE
@@ -717,41 +718,38 @@ def basic_interactive_learning_start(params):
     OBJECTSLIST_PATH_FILE= listObjectsFromDataset
     DESCRIPTORSLIST_PATH_FILE= listDescriptorsFromDataset
     
-    
-    E_in, E_out, rank_array = [], [], []
+    score_array, error_array, rank_array = [], [], []
     nb_iterations = 1
     
-
     dataset_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), DESCRIPTORSLIST_PATH_FILE)
-    fully_dataset,train_dataset, X_test,y_test, y_train_gt, fully_labeled_train_dataset, path_list_train_views, path_list_test_views = utils.split_train_test_from_libsvm_data(dataset_filepath, OBJECTSLIST_PATH_FILE,  TEST_SIZE)
+    fully_dataset,train_dataset, X_test,y_test, y_train_gt, fully_labeled_train_dataset, list_objects_train, path_list_test_views = utils.split_train_test_from_libsvm_data(dataset_filepath, OBJECTSLIST_PATH_FILE,  TEST_SIZE)
     unlabeled_entry_list = list(train_dataset.get_unlabeled_entries())
 
-
     #Initialization rank
-    rank = len(unlabeled_entry_list)/2
+    rank = len(unlabeled_entry_list) / 2
 
     print("[INFO] Initial rank : {} ".format(rank))
     print("\n=====> Itération : {} ".format(nb_iterations))
     logging.info('\n=====> Itération : %s  ', nb_iterations)
 
-
-    ################ FIRST PLOT ###################
     start = time.time()
-    display_data_init(unlabeled_entry_list, path_list_train_views, NBRE_DATA_SELECTION)
+
+    #Display first data to the user for the first annotation
+    display_data_init(unlabeled_entry_list, list_objects_train, NBRE_DATA_SELECTION)
     stop = time.time()
     print("Displya data init - time : {} s".format(stop - start))
-    test_dataset,X_test_new,y_test_new,CATEGORY_LABEL = utils.get_testDataset_binary(X_test, y_test, OBJECTSLIST_PATH_FILE)
 
-    y_train_binary_gt = utils.get_train_label_binary(y_train_gt, CATEGORY_LABEL)
-    #Annotate first data
+    #Ask the user which category he wants to retrieve - Return the binary dataset to the user
+    test_dataset,x_test,y_test_binary,category_label = utils.get_testDataset_binary(X_test, y_test, OBJECTSLIST_PATH_FILE)
+    y_train_binary_gt = utils.get_train_label_binary(y_train_gt, category_label)
+    
+    #The users annotates 
     id_unlabeled_display_first= [id_feature for id_feature, feature in enumerate(unlabeled_entry_list[:NBRE_DATA_SELECTION])]
     total_annotated_id_list= annotate_data(train_dataset, id_unlabeled_display_first)
     
     ################ FIRST TRAINING ###################
     model_learning = svm.SVC(kernel=KERNEL_SVM,C=C, gamma = GAM, class_weight = 'balanced', probability = True)
-
     training_data(train_dataset, model_learning)
-
 
     #Get parameters from the svm model
     _params = model_learning.get_params()
@@ -765,72 +763,73 @@ def basic_interactive_learning_start(params):
     idx_unlabeled_data, x_pool_unlabeled = zip(*train_dataset.get_unlabeled_entries())
     #Get the id and features from all the data
     idx_all_data, x_pool_all= zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset.data)])
-
     #Get the probabilities result and decision function of all the data
     probabilities_samples_unlabeled = model_learning.predict_proba(x_pool_unlabeled)
-    ##HAS BEEN CHANGED
     decision_function= model_learning.decision_function(x_pool_unlabeled)
 
-    ################ GRAPHIC ###################
     #Add the score to the chart
     score = model_learning.score(*(test_dataset.format_sklearn()))
-    E_out = np.append(E_out, 1 - score)
-    E_in = np.append(E_in,score)
-    score_ok = model_learning.score(*(test_dataset.format_sklearn()))*100
-    score_error = (1 - model_learning.score(*(test_dataset.format_sklearn())))*100
-    #title = "Score Success : " + str(score_ok)  + " Score Error : " + str(score_error) + " \n Rank : " + str(rank)
-    rank_array=np.append(rank_array, rank)
+    error_array = np.append(error_array, 1 - score)
+    score_array = np.append(score_array,score)
+    score_ok = model_learning.score(*(test_dataset.format_sklearn())) * 100
+    score_error = (1 - model_learning.score(*(test_dataset.format_sklearn()))) * 100
+    
+    title = "Score Success : " + str(score_ok)  + " Score Error : " + str(score_error) + " \n Rank : " + str(rank)
+    rank_array = np.append(rank_array, rank)
 
-    query_num=np.arange(0, 1)
-    fig=plt.figure(figsize=(7, 8))
-    ax=fig.add_subplot(2, 1, 1)
-    p1,= ax.plot(query_num, E_out, 'r', label='Error')
-    ax.set_xlabel('Number of steps')
-    ax.set_ylabel('Error')
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
-               shadow=True, ncol=5)
+    query_num = np.arange(0, 1)
+    ################ GRAPHIC ###################
+    if (PLOT_SCORE):
+        fig = plt.figure(figsize=(7, 8))
+        plt.title(title)
+        ax = fig.add_subplot(2, 1, 1)
+        p1,= ax.plot(query_num, error_array, 'r', label='Error')
+        ax.set_xlabel('Number of steps')
+        ax.set_ylabel('Error')
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
+                   shadow=True, ncol=5)
 
-    ay = fig.add_subplot(2, 1, 2)
-    p2, = ay.plot(query_num, E_in, 'g', label='Score')
-    ay.set_xlabel('Number of steps ')
-    ay.set_ylabel('Score')
-    ay.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
-               shadow=True, ncol=5)
-  
-    plt.show(block=False)
- 
+        ay = fig.add_subplot(2, 1, 2)
+        p2, = ay.plot(query_num, score_array, 'g', label='Score')
+        ay.set_xlabel('Number of steps ')
+        ay.set_ylabel('Score')
+        ay.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
+                   shadow=True, ncol=5)
+      
+        plt.show(block=False)
+     
     if (USE_NORMALIZATION):
         decision_function=MinMaxScaler(feature_range=(-1, 1)).fit_transform(decision_function)
 
-
-    #Sort the result in descending order so that we get the most certains results, i.e further point in the positive side
+    #Sort the result in descending order so that we get the most certains results, i.e the most further samples in the positive side
     indices_ranking_descending_order, distance_ranking_descending_order = utils.sort_descending_order(decision_function,False)
-    idx_example_positif_selection=np.take(idx_unlabeled_data, indices_ranking_descending_order)[:NBRE_DATA_SELECTION]
+    idx_example_positif_selection = np.take(idx_unlabeled_data, indices_ranking_descending_order)[:NBRE_DATA_SELECTION]
 
     ################ SELECTION UNCERTAINTY ###################
     #ids_example_close_margin,_ = select_queries_uncertainty_sampling(train_dataset, probabilities_samples_unlabeled,NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY,True)
-    start=time.time()
+    start = time.time()
     ids_example_close_margin=select_queries_uncertainty_decision_function(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)
-    stop=time.time()
+    stop = time.time()
     print("Select queries uncertainty decision - time : {} s".format(stop - start))
     total_id_annotation = list(itertools.chain(idx_example_positif_selection, ids_example_close_margin))
-    display_selected_data(train_dataset, path_list_train_views, idx_example_positif_selection, ids_example_close_margin[:NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY_DISPLAY])
+    display_selected_data(train_dataset, list_objects_train, idx_example_positif_selection, ids_example_close_margin[:NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY_DISPLAY])
 
     ###########=====>>>> SECOND STEP UPDATE  ###########
     total_annotated_id_list = annotate_data(train_dataset,total_id_annotation)
     idx_unlabeled_data,x_pool_unlabeled = zip(*train_dataset.get_unlabeled_entries())
-    decision_function=model_learning.decision_function(x_pool_unlabeled)
-    decision_function_custom=decision_function_vector(params, _sv, _nv, _a, _b, x_pool_unlabeled)
+    decision_function = model_learning.decision_function(x_pool_unlabeled)
+    decision_function_custom = decision_function_vector(_params, _sv, _nv, _a, _b, x_pool_unlabeled)
 
     decision_func = copy.copy(decision_function)
+    
     i = 0
     while True :
         nb_iterations = nb_iterations + 1
         print("\n=====>[INFO] Itération : {} ".format(nb_iterations))
         startStep2=time.time()
 
-        ################ 1. FEEDBACK ###################
-        rank=feedback(train_dataset, rank, model_learning, total_annotated_id_list)
+        ################ 1. FEEDBACK STEP ###################
+        rank = feedback(train_dataset, rank, model_learning, total_annotated_id_list)
  
         training_data(train_dataset, model_learning)
 
@@ -843,60 +842,60 @@ def basic_interactive_learning_start(params):
         _cs = model_learning.classes_
 
         # Add score to the chart
-        score=model_learning.score(*(test_dataset.format_sklearn()))
-        E_out=np.append(E_out, 1 - score)
-        E_in=np.append(E_in, score)
-        score_ok=model_learning.score(*(test_dataset.format_sklearn()))*100
-        score_error=(1 - model_learning.score(*(test_dataset.format_sklearn())))*100
-        rank_array=np.append(rank_array, rank)
+        score = model_learning.score(*(test_dataset.format_sklearn()))
+        error_array = np.append(error_array, 1 - score)
+        score_array = np.append(score_array, score)
+        score_ok = model_learning.score(*(test_dataset.format_sklearn()))*100
+        score_error = (1 - model_learning.score(*(test_dataset.format_sklearn())))*100
+        rank_array = np.append(rank_array, rank)
 
-        ax.set_xlim((0, i + 1))
-        ax.set_ylim((0, max(E_out) + 0.2))
-        ay.set_xlim((0, i + 1))
-        ay.set_ylim((0, max(E_in) + 0.2))
+        if (PLOT_SCORE):
+            ax.set_xlim((0, i + 1))
+            ax.set_ylim((0, max(error_array) + 0.2))
+            ay.set_xlim((0, i + 1))
+            ay.set_ylim((0, max(score_array) + 0.2))
 
-        query_num=np.arange(0, i + 2)
+            query_num=np.arange(0, i + 2)
 
-        p1.set_xdata(query_num)
-        p1.set_ydata(E_out)
-        p2.set_xdata(query_num)
-        p2.set_ydata(E_in)
+            p1.set_xdata(query_num)
+            p1.set_ydata(error_array)
+            p2.set_xdata(query_num)
+            p2.set_ydata(score_array)
 
+            plt.show(block=False)
 
-        plt.show(block=False)
-
-        idx_unlabeled_data,x_pool_unlabeled=zip(*train_dataset.get_unlabeled_entries())
-        idx_all_data,x_pool_all=zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset.data)])
-        probabilities_samples_unlabeled=model_learning.predict_proba(x_pool_unlabeled)
-        decision_function=model_learning.decision_function(x_pool_unlabeled)
+        idx_unlabeled_data,x_pool_unlabeled = zip(*train_dataset.get_unlabeled_entries())
+        idx_all_data,x_pool_all = zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset.data)])
+        probabilities_samples_unlabeled = model_learning.predict_proba(x_pool_unlabeled)
+        decision_function = model_learning.decision_function(x_pool_unlabeled)
 
         indices_rank_decision_function_positif_without_correction,_= utils.sort_descending_order(decision_function,True)
-        idx_example_positif_selection_without_correction=np.take(idx_unlabeled_data, indices_rank_decision_function_positif_without_correction)[:NBRE_DATA_SELECTION]
+        idx_example_positif_selection_without_correction = np.take(idx_unlabeled_data, indices_rank_decision_function_positif_without_correction)[:NBRE_DATA_SELECTION]
 
-        ################ 2. CORRECTION ###################
+        ################ 2. CORRECTION STEP ###################
         decision_function, number_to_remove=correction(train_dataset, model_learning, rank)
         indices_rank_new_decision_function_positif, distance_rank_decision_function_positif=utils.sort_descending_order(decision_function,True)
         idx_example_positif_selection=np.take(idx_unlabeled_data, indices_rank_new_decision_function_positif)[:NBRE_DATA_SELECTION]
 
-        ################ 3. PRESELECTION ###################
-        ids_example_close_margin_correction=select_queries_uncertainty_decision_function(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY, number_to_remove)
-        ids_example_close_margin_without_correction=select_queries_uncertainty_decision_function(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)
+        ################ 3. PRESELECTION STEP ###################
+        ids_example_close_margin_correction = select_queries_uncertainty_decision_function(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY, number_to_remove)
+        ids_example_close_margin_without_correction = select_queries_uncertainty_decision_function(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)
 
-        ################ 4. SELECTION ###################
+        ################ 4. SELECTION STEP ###################
         kernel_=0
-        cost_g=selectioner(train_dataset, model_learning,kernel_, y_train_binary_gt, decision_function, ids_example_close_margin_correction)
+        cost_g = selectioner(train_dataset, model_learning,kernel_, y_train_binary_gt, decision_function, ids_example_close_margin_correction)
 
 
-        ################ 5. DIVERSIFIER ###################
-        param_adjust=0.5
-        id_selection_diversification=diversifier(train_dataset, param_adjust, NBRE_DATA_FINAL_SELECTION, cost_g,params, ids_example_close_margin_correction)
+        ################ 5. DIVERSIFIER STEP ###################
+        id_selection_diversification = diversifier(train_dataset, DIVERSIFICATION_LAMBDA, NBRE_DATA_FINAL_SELECTION, cost_g,params, ids_example_close_margin_correction)
 
 
-        stopStep2=time.time()
+        stopStep2 = time.time()
         print("Computation time : {} s".format(stopStep2 - startStep2 ))
-        display_selected_data(train_dataset,path_list_train_views, idx_example_positif_selection, id_selection_diversification)
-        total_id_annotation=list(itertools.chain(idx_example_positif_selection, id_selection_diversification))
-        total_annotated_id_list=annotate_data(train_dataset, total_id_annotation)
+        
+        display_selected_data(train_dataset,list_objects_train, idx_example_positif_selection, id_selection_diversification)
+        total_id_annotation = list(itertools.chain(idx_example_positif_selection, id_selection_diversification))
+        total_annotated_id_list = annotate_data(train_dataset, total_id_annotation)
 
         i = i + 1
     

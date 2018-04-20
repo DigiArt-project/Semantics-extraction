@@ -23,7 +23,7 @@ def is_ascii(text):
     return True
 
 
-
+""" Timer """
 def startTimer():
     start = time.time()
     return start
@@ -36,8 +36,6 @@ def getTime(start,end):
     time_experiment_elapsed = end - start
     print("Time elapsed : {}".format(time_experiment_elapsed))
 
-
-    #Take items closest to 0
 """
 Given an array, compute the absolute value and get the values in ascending order. This functions allows to take value closest to zero
 """
@@ -81,10 +79,42 @@ def sort_descending_order(data,get_positive_only = False):
     
     return sorted_indice_descending_order, sorted_values_descending_order
 
+"""
+Count number of lines inside a file
+"""
+def count_number_lines(file):
+    if os.path.isfile(file):
+        with open(file) as f:
+            nbLine = len(f.readlines())
+            return nbLine
+    else :
+        logging.error("Impossible to read the file - CountNumberLines()")
+        return 0
+
+def save_list_points(input_list,output):
+    input_list = np.asarray(input_list)
+    dimension_array = input_list.ndim
+    if (dimension_array > 1):
+        with open(output, 'w') as outfile:
+            outfile.write('# Array shape: {0}\n'.format(input_list.shape))
+            writer = csv.writer(outfile, delimiter=' ')
+            writer.writerows(input_list)
+    else :
+        file = open(output, 'w')
+        file.write('# Array shape: {0}\n'.format(input_list.shape))
+        for item in input_list:
+            file.write("%s " % item)
+
+    logging.debug("[Saving] Points have been saved to %s", output)
+
+def get_y_data_from_dataset(dataset):
+    y =[entry[1] for idx, entry in enumerate(dataset.data)]
+    return y
+
 
 
 """
-From a specific txt file, get the categories
+From a txt file which contains the categories along the associated objects, get the categories
 """
 def get_categories_from_file(path):
     dataset_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
@@ -107,7 +137,7 @@ Assume you have something like this :
 /Users/user/digiArt/Tools/cat10_descriptors/car/descriptors/alldesc4/desc_car0_8_esfgshotgrsdvfh.txt
 we want to get only the name : car0_8 i.e car0, view 8
 """
-def get_filename_descriptor_from_path(path,number_to_split = 9):
+def get_filename_descriptor_from_path(path, number_to_split = 9):
     #print(path)
     filename = path.split("/")[number_to_split]
     filename_test = path.split("/")
@@ -275,42 +305,9 @@ def get_random_objects_from_dataset(path_dataset,number_object_to_select_randoml
                     list_of_random_items = random.sample(filename_array, number_object_to_select_randomly)
                     result_list_object_random.append((name_category,list_of_random_items))
           
-
-        #print("\n Random choice for category {} : {} ".format(category,list_of_random_items))
-        #logging.debug('\n Random choice for category %s : %s ',category,list_of_random_items )
-    #print(result_list_object_random)
-    #print(result_list_numberObjectsPerClass)
     return result_list_object_random,category_list,result_list_numberObjectsPerClass
 
 
-def countNumberLines(file):
-    if os.path.isfile(file):
-        with open(file) as f:
-            nbLine = len(f.readlines())
-            return nbLine
-    else :
-        logging.error("Impossible to read the file - CountNumberLines()")
-        return 0
-
-def save_list_points(input_list,output):
-    input_list = np.asarray(input_list)
-    dimension_array = input_list.ndim
-    if (dimension_array > 1):
-        with open(output, 'w') as outfile:
-            outfile.write('# Array shape: {0}\n'.format(input_list.shape))
-            writer = csv.writer(outfile, delimiter=' ')
-            writer.writerows(input_list)
-    else :
-        file = open(output, 'w')
-        file.write('# Array shape: {0}\n'.format(input_list.shape))
-        for item in input_list:
-            file.write("%s " % item)
-
-    logging.debug("[Saving] Points have been saved to %s", output)
-
-def getYdataFromDataset(dataset):
-    y =[entry[1] for idx, entry in enumerate(dataset.data)]
-    return y
 
 
 
@@ -366,16 +363,14 @@ At the end we have
 - y_train : label from the train set
 - fully_labeled_train_dataset object : fully dataset features X + label y
 """
-def split_train_test_from_libsvm_data(dataset_filepath,view_path_file, test_size_split):
+def split_train_test_from_libsvm_data(dataset_filepath,list_objects, test_size_split):
     start = time.time()
     X, y = import_libsvm_sparse(dataset_filepath).format_sklearn()
     X = MinMaxScaler().fit_transform(X)
     end = time.time()
     print("Time elapsed import libsvm : {} s".format(end - start))
-    #print(y)
-    #print(X)
     test = ""
-    with open(view_path_file, "r") as ins:
+    with open(list_objects, "r") as ins:
         #array = []
         array = np.chararray(len(X),itemsize="1500")
         test_list = list()
@@ -386,9 +381,7 @@ def split_train_test_from_libsvm_data(dataset_filepath,view_path_file, test_size
                 #print(line.strip())
                 array[i]=str(line.strip())
                 test_list.append(str(line.strip()))
-                #array.append(line.strip()) 
-                #array[i] = array[i].decode("utf-8")
-                #print(array[i].decode("utf-8"))
+
                 test = line.strip()
 
                 i = i + 1
@@ -398,12 +391,8 @@ def split_train_test_from_libsvm_data(dataset_filepath,view_path_file, test_size
 
     fully_dataset = Dataset(X_dataset_with_path, y)
 
-    #random.shuffle(X_dataset_with_path)
-    #print("Number descriptors : {}" .format(len(X_dataset_with_path)))
-    X_train, X_test, y_train, y_test = train_test_split(X_dataset_with_path, y, test_size=test_size_split)
 
-    #print("[INFO] X_train  {}".format(X_train))
-    #print("[INFO] Y_train  {}".format(y_train))
+    X_train, X_test, y_train, y_test = train_test_split(X_dataset_with_path, y, test_size=test_size_split)
   
     path_list_train_views = list()
     feature_train = list()
@@ -425,10 +414,7 @@ def split_train_test_from_libsvm_data(dataset_filepath,view_path_file, test_size
     train_dataset_unlabeled = Dataset(feature_train, y_train_unlabeled)
     test_dataset_labeled = Dataset(feature_test, y_test)
     
-    #HAs been changed
-    #fully_labeled_trn_ds = Dataset(X_train, y_train)
     fully_labeled_train_dataset = Dataset(X_train, y_train)
-
 
     #On cree une nouvelle liste qui contiendra trois elements (entry, path, feature)
     newList_X = list()
@@ -518,7 +504,7 @@ def check_info_database(database):
 def get_testDataset_binary(X_test,y_test,view_path_file):
     #Get categories name and associated label from file
     categories_list = get_categories_from_file(view_path_file)
-    banner = "[For Testing] Enter the positive category by its number: \n"
+    banner = "[INFO] Which category are you looking for ? Write the ID of the category : \n"
     banner += str(categories_list) + ' ' 
     category_label = input(banner)
     y_test_binary= [1 if y == int(category_label) else -1 for y in y_test]
@@ -533,13 +519,10 @@ def get_testDataset_binary(X_test,y_test,view_path_file):
     return tst_ds,X_test,y_test_binary,category_label
 
 def get_train_label_binary(y_train,category_label):
-    #Get categories name and associated label from file
-    
+    #Get categories name and associated label from file    
     y_train_binary= [1 if y == int(category_label) else -1 for y in y_train]
-    #print("[INFO] Y_train binary {}".format(y_train_binary))
     y_train_binary = np.array(y_train_binary)
-    #print("X test  {}".format(X_test))
-    #print("[INFO] Y_train binary {}".format(y_train_binary))
+
 
     return y_train_binary
 
