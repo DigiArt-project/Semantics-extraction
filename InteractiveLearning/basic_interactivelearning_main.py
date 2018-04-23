@@ -449,7 +449,7 @@ def compute_pourcentage_results(fully_labeled_train_dataset, train_dataset, id_t
 Based on the decision function, select the most uncertain data i.e the closest value to zero. 
 So the most uncertains are the one which their distance to the boundary are close to 0
 """
-def select_queries_uncertainty_decision_function(dataset, model_learning, m, correction_to_apply = 0):
+def select_most_uncertains_samples_from_decisionfunction(dataset, model_learning, m, correction_to_apply = 0):
     idx_all, features_all =  zip(*[(idx, entry[0]) for idx, entry in enumerate(dataset.data)])
     features_all = np.array(features_all)
     idx_unlabeled_data, x_pool_unlabeled = zip(*dataset.get_unlabeled_entries())
@@ -470,17 +470,19 @@ def select_queries_uncertainty_decision_function(dataset, model_learning, m, cor
     return idx_example_positif_selection
 
 """
-Based on the probabilities, Select the most uncertain data the smallest probabilities.
- So the most uncertains are the one which their probabilities are close to 0
+Based on the probabilities, select the most uncertain data i.e the smallest probabilities.
+So the most uncertains are the one which their probabilities are close to 0
 """
-def select_queries_uncertainty_sampling(dataset, probabilities, m, return_score=False):
+def select_most_uncertains_samples_from_probabilities(dataset, probabilities, m, return_score=False):
     idx_all, features_all =  zip(*[(idx, entry[0]) for idx, entry in enumerate(dataset.data)])
     unlabeled_entry_ids, X_pool = zip(*dataset.get_unlabeled_entries())
     dvalue = copy.copy(probabilities)
     score = -np.max(dvalue, axis=1)
     ask_id = np.argmax(score)
     ask_multiple_id = (np.array(score).argsort()[::-1])[:m]
+    
     list_result =  np.take(idx_all,ask_multiple_id)
+    
     if return_score:
         return list_result, \
                    list(zip(idx_all, score))
@@ -488,13 +490,13 @@ def select_queries_uncertainty_sampling(dataset, probabilities, m, return_score=
         return list_result
 
 """
-Step 1 Interactive Learning
+Step 0 Interactive Learning
 Feedback
 Compute the rank based on positive and negatives samples selected by the user
 """
 def feedback(whole_dataset, current_rank, model_learning, annotated_data_selection):
     #Have the score of the selected example
-    logging.debug('Previous Rank : %s  ', current_rank)
+    logging.info('[INFO] Previous Rank : %s  ', current_rank)
 
     h = 0
     new_rank = 0
@@ -507,10 +509,8 @@ def feedback(whole_dataset, current_rank, model_learning, annotated_data_selecti
     features_all = np.array(features_all)
 
     decision_function_all = model_learning.decision_function(features_all)
-    decision_function_all = MinMaxScaler(feature_range=(-1, 1)).fit_transform(decision_function_all)
-    #print("[INFO]Decision function all feature : {} ".format(decision_function_all))
-
-    decision_func_tmp_unlabel = copy.copy(decision_function_unlabeled)
+    if (USE_NORMALIZATION):
+        decision_function_all = MinMaxScaler(feature_range=(-1, 1)).fit_transform(decision_function_all)
 
     for idx,selection in enumerate(annotated_data_selection):
         logging.debug('=> h = %s  ', h)
@@ -527,23 +527,22 @@ def feedback(whole_dataset, current_rank, model_learning, annotated_data_selecti
         h_current = label - decision_function_X
         
         h = h + h_current
-    #print("h final =  {} ".format(h))
+
     new_rank = current_rank + h
 
-    #print("New  rank : {}".format(int(round(new_rank))))
-    logging.debug('New rank = %s  ', new_rank)
+    logging.info('[INFO]New rank = %s  ', new_rank)
 
     return int(round(new_rank))
 
 """
-Step 2 Interactive Learning
+Step 1 Interactive Learning
 Classification
 """
 def training_data(training_dataset, model):
     model.fit(*(training_dataset.format_sklearn()))
 
 """
-Step 3 Interactive Learning
+Step 2 Interactive Learning
 Correction
 """
 def correction(dataset, model, rank):
@@ -573,7 +572,7 @@ def correction(dataset, model, rank):
     return decision_function_unlabeled,number_to_remove
 
 """
-Step 4 Interactive Learning
+Step 3 Interactive Learning
 Preselection
 """
 def preselection(dataset, decision_function, m):
@@ -585,8 +584,7 @@ def preselection(dataset, decision_function, m):
     return sorted_indice, sorted_values
 
 """
-Step 5 Interactive Learning
-Selection
+Step 4 Interactive Learning : Selection
 Consider the subset of images close to the boundary and then use a criterion related to Average precision to compute the cost g
 """
 def selectioner(dataset, model_learning, kernel, y_train_gt, decision_function, pre_selection_data):
@@ -601,7 +599,7 @@ def selectioner(dataset, model_learning, kernel, y_train_gt, decision_function, 
     #Loop over all the uncertain example which have been chose
     for idx, value_id in enumerate(pre_selection_data):
        
-        X= features_all[value_id]
+        X = features_all[value_id]
         prediction= model_learning.predict(X.reshape(1, -1))
 
         if prediction[0] == -1 :
@@ -621,8 +619,7 @@ def selectioner(dataset, model_learning, kernel, y_train_gt, decision_function, 
     return g
 
 """
-Step 5 Interactive Learning
-Diversity
+Step 5 Interactive Learning : Diversity
 https://www.aaai.org/Papers/ICML/2003/ICML03-011.pdf
 """
 def diversifier(dataset, param_adjust, batch_number, g, params, pre_selection_data):
@@ -667,8 +664,8 @@ def diversifier(dataset, param_adjust, batch_number, g, params, pre_selection_da
 
 
 
-def compute_scores_SVM(X_test, y_test, y_pred, model_learning, plot_PR_curve=False, plot_cnf_matrix=False, plot_clf_report=False, save_figure=False):
-    y_true=y_test
+def compute_scores_SVM(X_test, y_test, y_pred):
+    y_true = y_test
     ### F1 SCORE ###
     #The f1-score gives you the harmonic mean of precision and recall. 
     #The scores corresponding to every class will tell you the accuracy of the classifier 
@@ -680,9 +677,9 @@ def compute_scores_SVM(X_test, y_test, y_pred, model_learning, plot_PR_curve=Fal
     AP= average_precision_score(y_true, y_pred)
 
     ### Precision recall curve ###
-    precision_curve, recall_curve, thresholds= precision_recall_curve(y_true, y_pred)
-    recall= recall_score(y_true, y_pred, average='weighted')
-    precision= precision_score(y_true, y_pred, average='weighted')
+    precision_curve, recall_curve, thresholds = precision_recall_curve(y_true, y_pred)
+    recall = recall_score(y_true, y_pred, average='weighted')
+    precision = precision_score(y_true, y_pred, average='weighted')
 
     ### Classification report ###
     report_classification= classification_report(y_true, y_pred)
@@ -706,15 +703,16 @@ def compute_scores_SVM(X_test, y_test, y_pred, model_learning, plot_PR_curve=Fal
 """
 Interactive learning without similarity search
 """
-def basic_interactive_learning_start(params):
+def basic_interactive_learning_start(descriptor_interactivelearning):
     global OBJECTSLIST_PATH_FILE
     global DESCRIPTORSLIST_PATH_FILE
 
-    DESCRIPTOR_INTERACTIVELEARNING = params
+    iteration_max = 10
+
     #Get the file which contain the path to every objects of the dataset
-    listObjectsFromDataset= ROOT_DATA + NAME_DATASET + "/dataset_descriptor_" + DESCRIPTOR_INTERACTIVELEARNING + ".txt"
+    listObjectsFromDataset= ROOT_DATA + NAME_DATASET + "/dataset_descriptor_" + descriptor_interactivelearning + ".txt"
     #Get the file which contain the path to every descriptors of the dataset
-    listDescriptorsFromDataset= ROOT_DATA + NAME_DATASET + "/descriptors_"+ DESCRIPTOR_INTERACTIVELEARNING + ".txt"
+    listDescriptorsFromDataset= ROOT_DATA + NAME_DATASET + "/descriptors_"+ descriptor_interactivelearning + ".txt"
     OBJECTSLIST_PATH_FILE= listObjectsFromDataset
     DESCRIPTORSLIST_PATH_FILE= listDescriptorsFromDataset
     
@@ -737,7 +735,7 @@ def basic_interactive_learning_start(params):
     #Display first data to the user for the first annotation
     display_data_init(unlabeled_entry_list, list_objects_train, NBRE_DATA_SELECTION)
     stop = time.time()
-    print("Displya data init - time : {} s".format(stop - start))
+    print("Display data init - time : {} s".format(stop - start))
 
     #Ask the user which category he wants to retrieve - Return the binary dataset to the user
     test_dataset,x_test,y_test_binary,category_label = utils.get_testDataset_binary(X_test, y_test, OBJECTSLIST_PATH_FILE)
@@ -767,8 +765,16 @@ def basic_interactive_learning_start(params):
     probabilities_samples_unlabeled = model_learning.predict_proba(x_pool_unlabeled)
     decision_function= model_learning.decision_function(x_pool_unlabeled)
 
-    #Add the score to the chart
+    #Get the score
     score = model_learning.score(*(test_dataset.format_sklearn()))
+    y_pred = model_learning.predict(X_test)
+    f1score, AP, precision, recall, precision_curve,recall_curve,report_classification, cnf_matrix = compute_scores_SVM(X_test,y_test_binary,y_pred)
+
+    print("Precision = {}".format(precision))
+    print("Recall = {}".format(recall))
+    print("F1-Score = {}".format(f1score))
+
+    #Add the score to the chart
     error_array = np.append(error_array, 1 - score)
     score_array = np.append(score_array,score)
     score_ok = model_learning.score(*(test_dataset.format_sklearn())) * 100
@@ -799,22 +805,24 @@ def basic_interactive_learning_start(params):
         plt.show(block=False)
      
     if (USE_NORMALIZATION):
-        decision_function=MinMaxScaler(feature_range=(-1, 1)).fit_transform(decision_function)
+        decision_function = MinMaxScaler(feature_range=(-1, 1)).fit_transform(decision_function)
 
     #Sort the result in descending order so that we get the most certains results, i.e the most further samples in the positive side
     indices_ranking_descending_order, distance_ranking_descending_order = utils.sort_descending_order(decision_function,False)
     idx_example_positif_selection = np.take(idx_unlabeled_data, indices_ranking_descending_order)[:NBRE_DATA_SELECTION]
 
     ################ SELECTION UNCERTAINTY ###################
-    #ids_example_close_margin,_ = select_queries_uncertainty_sampling(train_dataset, probabilities_samples_unlabeled,NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY,True)
+    #ids_example_close_margin,_ = select_most_uncertains_samples_from_probabilities(train_dataset, probabilities_samples_unlabeled,NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY,True)
     start = time.time()
-    ids_example_close_margin=select_queries_uncertainty_decision_function(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)
+    ids_example_close_margin = select_most_uncertains_samples_from_decisionfunction(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)
     stop = time.time()
     print("Select queries uncertainty decision - time : {} s".format(stop - start))
     total_id_annotation = list(itertools.chain(idx_example_positif_selection, ids_example_close_margin))
+    #Display to the user the positives samples and the most uncertains one
     display_selected_data(train_dataset, list_objects_train, idx_example_positif_selection, ids_example_close_margin[:NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY_DISPLAY])
 
     ###########=====>>>> SECOND STEP UPDATE  ###########
+    #Ask the user to annotate data
     total_annotated_id_list = annotate_data(train_dataset,total_id_annotation)
     idx_unlabeled_data,x_pool_unlabeled = zip(*train_dataset.get_unlabeled_entries())
     decision_function = model_learning.decision_function(x_pool_unlabeled)
@@ -823,18 +831,33 @@ def basic_interactive_learning_start(params):
     decision_func = copy.copy(decision_function)
     
     i = 0
-    while True :
+    while nb_iterations < iteration_max :
+        
         nb_iterations = nb_iterations + 1
-        print("\n=====>[INFO] Itération : {} ".format(nb_iterations))
+        print("\n=====>[INFO] Itération : ({}/{}) ".format(nb_iterations,iteration_max))
+        
         startStep2=time.time()
 
         ################ 1. FEEDBACK STEP ###################
         rank = feedback(train_dataset, rank, model_learning, total_annotated_id_list)
- 
         training_data(train_dataset, model_learning)
 
+
+        X_test, y = zip(*test_dataset.get_labeled_entries())
+        X_test =  np.array(X_test)
+        #Get the score
+        score = model_learning.score(*(test_dataset.format_sklearn()))
+        y_pred = model_learning.predict(X_test)
+        f1score, AP, precision, recall, precision_curve,recall_curve,report_classification, cnf_matrix = compute_scores_SVM(X_test,y_test_binary,y_pred)
+
+        print("Score = {}".format(precision))
+        print("Precision = {}".format(precision))
+        print("Recall = {}".format(recall))
+        print("F1-Score = {}".format(f1score))
+
+
         # Get parameters from model
-        params=model_learning.get_params()
+        params = model_learning.get_params()
         _sv = model_learning.support_vectors_
         _nv = model_learning.n_support_
         _a = model_learning.dual_coef_
@@ -842,7 +865,6 @@ def basic_interactive_learning_start(params):
         _cs = model_learning.classes_
 
         # Add score to the chart
-        score = model_learning.score(*(test_dataset.format_sklearn()))
         error_array = np.append(error_array, 1 - score)
         score_array = np.append(score_array, score)
         score_ok = model_learning.score(*(test_dataset.format_sklearn()))*100
@@ -866,6 +888,7 @@ def basic_interactive_learning_start(params):
 
         idx_unlabeled_data,x_pool_unlabeled = zip(*train_dataset.get_unlabeled_entries())
         idx_all_data,x_pool_all = zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset.data)])
+        #Get the probabilities/decision function from the SVM
         probabilities_samples_unlabeled = model_learning.predict_proba(x_pool_unlabeled)
         decision_function = model_learning.decision_function(x_pool_unlabeled)
 
@@ -873,16 +896,16 @@ def basic_interactive_learning_start(params):
         idx_example_positif_selection_without_correction = np.take(idx_unlabeled_data, indices_rank_decision_function_positif_without_correction)[:NBRE_DATA_SELECTION]
 
         ################ 2. CORRECTION STEP ###################
-        decision_function, number_to_remove=correction(train_dataset, model_learning, rank)
-        indices_rank_new_decision_function_positif, distance_rank_decision_function_positif=utils.sort_descending_order(decision_function,True)
-        idx_example_positif_selection=np.take(idx_unlabeled_data, indices_rank_new_decision_function_positif)[:NBRE_DATA_SELECTION]
+        decision_function, number_to_remove = correction(train_dataset, model_learning, rank)
+        indices_rank_new_decision_function_positif, distance_rank_decision_function_positif = utils.sort_descending_order(decision_function,True)
+        idx_example_positif_selection = np.take(idx_unlabeled_data, indices_rank_new_decision_function_positif)[:NBRE_DATA_SELECTION]
 
         ################ 3. PRESELECTION STEP ###################
-        ids_example_close_margin_correction = select_queries_uncertainty_decision_function(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY, number_to_remove)
-        ids_example_close_margin_without_correction = select_queries_uncertainty_decision_function(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)
+        ids_example_close_margin_correction = select_most_uncertains_samples_from_decisionfunction(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY, number_to_remove)
+        ids_example_close_margin_without_correction = select_most_uncertains_samples_from_decisionfunction(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)
 
         ################ 4. SELECTION STEP ###################
-        kernel_=0
+        kernel_ = 0
         cost_g = selectioner(train_dataset, model_learning,kernel_, y_train_binary_gt, decision_function, ids_example_close_margin_correction)
 
 
@@ -893,7 +916,9 @@ def basic_interactive_learning_start(params):
         stopStep2 = time.time()
         print("Computation time : {} s".format(stopStep2 - startStep2 ))
         
+        #Display to the user the positive sample and the most uncertain one
         display_selected_data(train_dataset,list_objects_train, idx_example_positif_selection, id_selection_diversification)
+        
         total_id_annotation = list(itertools.chain(idx_example_positif_selection, id_selection_diversification))
         total_annotated_id_list = annotate_data(train_dataset, total_id_annotation)
 
@@ -927,11 +952,13 @@ def main():
     ap.add_argument("-descriptorInteractive", "--descriptorInteractive", required=False, help="Descriptor for interactive learning. Per default : esf")
     args = vars(ap.parse_args())
 
+    descriptor = ''
     if args["descriptorInteractive"] is not None:
-        DESCRIPTOR_INTERACTIVELEARNING = args["descriptorInteractive"]
+        descriptor = args["descriptorInteractive"]
+    else : 
+        descriptor = DESCRIPTOR_INTERACTIVELEARNING
         
-    params = (DESCRIPTOR_INTERACTIVELEARNING)
-    basic_interactive_learning_start(params)
+    basic_interactive_learning_start(descriptor)
 
     
 
