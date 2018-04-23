@@ -245,7 +245,7 @@ def get_category_name_from_path(path,number_to_split = 6):
 
 
  
- """
+"""
 Given a dataset, get all the 3D point cloud from it. If full object activated, return only path from full objects. 
 If not, return path from partial views
 Return a list of objects'path
