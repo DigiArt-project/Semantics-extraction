@@ -91,6 +91,9 @@ def count_number_lines(file):
         logging.error("Impossible to read the file - CountNumberLines()")
         return 0
 
+"""
+Save an array of points to disk
+"""
 def save_list_points(input_list,output):
     input_list = np.asarray(input_list)
     dimension_array = input_list.ndim
@@ -106,11 +109,6 @@ def save_list_points(input_list,output):
             file.write("%s " % item)
 
     logging.debug("[Saving] Points have been saved to %s", output)
-
-def get_y_data_from_dataset(dataset):
-    y =[entry[1] for idx, entry in enumerate(dataset.data)]
-    return y
-
 
 
 """
@@ -160,59 +158,13 @@ def get_category_name_from_path(path,number_to_split = 6):
     filename = path.split("/")[number_to_split]
 
 
-
  
-"""
-First loop over category folder in the dataset
-Assume that the structure of each dataset follows this structure : dataset/category_i/object.pcd/ply
-In each category, select maximum 'number_object_to_select_randomly' pcd file. If the number object to select is > to the number of object inside the category, reduce
-the numer automatically
-"""    
-def get_random_objects_from_dataset2(directory,number_object_to_select_randomly,extension = "pcd"):
-    #For each category inside the dataset
-    result_list_object_random = list()
-    result_list_categories = list()
-    list_of_random_items = 0
-    category_list = list()
-    for category in os.listdir(directory):
-        result_list_categories.append(category)
-        pattern = re.compile("training_*")
-        if (not pattern.match(category) and not category.startswith('.') and category != "libsvmdata"):
-            category_list.append(category)
-            path = directory+ "/"+ category
-            #print("path {}".format(path))
-            if os.path.isdir(path):
-                #Print over category
-                filename_array = []
-                for filename in os.listdir(path):
-                    extension = "."+extension
-                    if filename.endswith(extension):
-                        #print(os.path.join(path, filename))
-                        filename_array.append(os.path.join(path, filename))
-                reduce_number = 1
-                if (number_object_to_select_randomly > len(filename_array)):
-                    tmp_number_object_to_select = number_object_to_select_randomly 
-                    while (tmp_number_object_to_select > len(filename_array) ):
-                        tmp_number_object_to_select = tmp_number_object_to_select - reduce_number
-                        reduce_number = reduce_number + 1
-                    if (tmp_number_object_to_select == 0):
-                        tmp_number_object_to_select = 1
-                    list_of_random_items = random.sample(filename_array, tmp_number_object_to_select)
-
-                    #print("\n Random choice for category {} : {} ".format(category,list_of_random_items))
-                    result_list_object_random.append((category,list_of_random_items))
-                else :
-                    list_of_random_items = random.sample(filename_array, number_object_to_select_randomly)
-                    result_list_object_random.append((category,list_of_random_items))
-          
-
-        #print("\n Random choice for category {} : {} ".format(category,list_of_random_items))
-        #logging.debug('\n Random choice for category %s : %s ',category,list_of_random_items )
-    #print(type(result_list_object_random))
-    return result_list_object_random,category_list
-
-def get_all_objects_from_dataset(path_dataset,full_object = True,extension = "pcd"):
-    #For each category inside the dataset
+ """
+Given a dataset, get all the 3D point cloud from it. If full object activated, return only path from full objects. 
+If not, return path from partial views
+Return a list of objects'path
+ """
+def get_all_objects_from_dataset(path_dataset, full_object=True, extension="pcd"):
     result_list_object_all= list()
     result_list_categories = list()
     result_list_numberObjectsPerClass = list()
@@ -224,6 +176,7 @@ def get_all_objects_from_dataset(path_dataset,full_object = True,extension = "pc
         type_folder="/full"
     else:
         type_folder="/views"
+    
     for root, directories, filenames in os.walk(path_dataset):
         for directory in directories:
             directory = os.path.join(root, directory)
@@ -233,8 +186,6 @@ def get_all_objects_from_dataset(path_dataset,full_object = True,extension = "pc
             
             if type_folder in directory and not "/descriptors" in directory:
                 category_list.append(name_category)
-                #print(name_category)
-                #print(directory)
                 #Print over category
                 filename_array = []
                 numberOnlyFile = next(os.walk(directory))[2] #dir is your directory path as string
@@ -248,8 +199,6 @@ def get_all_objects_from_dataset(path_dataset,full_object = True,extension = "pc
                 
                 result_list_object_all.append((name_category,filename_array))
                 
-          
-
         #print("\n Random choice for category {} : {} ".format(category,list_of_random_items))
         #logging.debug('\n Random choice for category %s : %s ',category,list_of_random_items )
     #print(result_list_object_random)
@@ -257,7 +206,11 @@ def get_all_objects_from_dataset(path_dataset,full_object = True,extension = "pc
     return result_list_object_all,category_list,result_list_numberObjectsPerClass
 
 
-def get_random_objects_from_dataset(path_dataset,number_object_to_select_randomly,full_object = True,extension = "pcd"):
+"""
+Given a dataset, get randomly multiple objects from each category. If full object activated, return only path from full objects. 
+"""   
+
+def get_random_objects_from_dataset(path_dataset, number_object_to_select_randomly, full_object=True, extension="pcd"):
     #For each category inside the dataset
     result_list_object_random = list()
     result_list_categories = list()
@@ -309,11 +262,11 @@ def get_random_objects_from_dataset(path_dataset,number_object_to_select_randoml
 
 
 
-
-
 """
-Given a json file which contain the results of the similarity search, extract from the path the name of the object
-So that we can link the categories to interactive learning
+Given a json file which contain the results from the similarity search, extract from the path, the name of the object
+At the end of the process; we get directly the results in terms of categories found.
+For example : path":"../../Datasets/Dataset_pottery_normalized/Lekythos/views/descriptors/esf/desc_Lekythos2_4.pcd"
+Return Lekythos
 """
 def extract_names_objects_from_result_json(result_jsonfile):
     path_array_results = []
@@ -335,26 +288,10 @@ def extract_names_objects_from_result_json(result_jsonfile):
 
     return categorie_array_results
 
-"""
-Given a json file which contain the results of the similarity search, extract the category of each result
-So that we can link the categories to interactive learning
-"""
-def extract_categories_from_result_json(result_jsonfile):
-    path_array_results = []
-    categorie_array_results = []
-    with open(result_jsonfile, 'r') as jsonfile:
-        array = json.load(jsonfile)
-
-        #print (array)
-        for line in array:
-            #Get the tag corresponding to the category
-            categorie_array_results.append(line["Category"])
-           
-
-    return categorie_array_results
 
 """
-From a file of descriptors and another file which contains its path to views, create the database
+Given a file which contains all the descriptors (libsvm data) of the dataset, and a file which contain the list of the associated object
+build the database for SVM
 At the end we have 
 - the fully dataset object : contains features X + corresponding path, and its label
 - train_dataset_unlabeled object : contains the train part Features X + label unknown
@@ -363,9 +300,9 @@ At the end we have
 - y_train : label from the train set
 - fully_labeled_train_dataset object : fully dataset features X + label y
 """
-def split_train_test_from_libsvm_data(dataset_filepath,list_objects, test_size_split):
+def split_train_test_from_libsvm_data(descriptors_libsvm_data, list_objects, test_size_split):
     start = time.time()
-    X, y = import_libsvm_sparse(dataset_filepath).format_sklearn()
+    X, y = import_libsvm_sparse(descriptors_libsvm_data).format_sklearn()
     X = MinMaxScaler().fit_transform(X)
     end = time.time()
     print("Time elapsed import libsvm : {} s".format(end - start))
@@ -391,7 +328,6 @@ def split_train_test_from_libsvm_data(dataset_filepath,list_objects, test_size_s
 
     fully_dataset = Dataset(X_dataset_with_path, y)
 
-
     X_train, X_test, y_train, y_test = train_test_split(X_dataset_with_path, y, test_size=test_size_split)
   
     path_list_train_views = list()
@@ -401,10 +337,10 @@ def split_train_test_from_libsvm_data(dataset_filepath,list_objects, test_size_s
         path_list_train_views.append(i[1])
         feature_train.append(i[0])
 
-    path_list_test_views = list()
+    list_objects_test = list()
     feature_test = list()
     for i in X_test:
-        path_list_test_views.append(i[1])
+        list_objects_test.append(i[1])
         feature_test.append(i[0])
 
     feature_test = np.array(feature_test)
@@ -424,21 +360,20 @@ def split_train_test_from_libsvm_data(dataset_filepath,list_objects, test_size_s
 
     
     #return unlabeled train dataset, test dataset, y label train, labeled train dataset, path to views training, path to views testing
-    return fully_dataset,train_dataset_unlabeled, feature_test,y_test, y_train, fully_labeled_train_dataset, path_list_train_views,path_list_test_views
+    return fully_dataset, train_dataset_unlabeled, feature_test,y_test, y_train, fully_labeled_train_dataset, path_list_train_views, list_objects_test
 
 
 """
 Replicate the train_test_split function of scikit but with a cariation
 What we want at the end is a training set (X_train and y_train) and a test set (X_test and y_test)
 But we add a constraint. We get a category_array_result which an array which contain the categories found by similarity search.
-We want to be sure that all the object perteining to the categories belong to the train set and not test set. 
+We want to be sure that all the object belong to the categories are in the train set and not the test set. 
 So if an object belong to test set after splitting, we remove from it and we add it to the train set
 """
-def train_test_split_according_to_categories(X, y,categorie_array_results,test_size = 0.33):
+def train_test_split_according_to_categories(X, y, categorie_array_results,test_size=0.33):
 
     size_array_total = len(X)
 
-    #print("Size X total : {}".format(size_array_total))
     logging.debug(' Size X total : %s  ', size_array_total)
     size_test_data = math.ceil(test_size*size_array_total)
     size_train_data = size_array_total - size_test_data
@@ -466,11 +401,9 @@ def train_test_split_according_to_categories(X, y,categorie_array_results,test_s
             filename = os.path.splitext(filename)[0]
 
             #Check if there is additional data that we don't need . Ex donut3_0_esfgshotgrsdvfh , we want to remove _esfgshotgrsdvfh
-            #print(filename)
             if (filename.count('_') == 2):
                 filename = filename.rsplit('_',1)[0]
-                #print(filename)
-            #print(path2)
+
             #Keep only the name
             #filename = filename.rsplit('_',1)[0]
             if (path1 == filename):
@@ -501,28 +434,30 @@ def check_info_database(database):
     logging.debug('Nbr labeled : %s  ', database.len_labeled())
 
 
-def get_testDataset_binary(X_test,y_test,view_path_file):
+"""
+Given a dataset (X,y) ask the user to choose a category so that we can change change from multi label to binary label
+with 1 the positive category and 0 samples which are not belong to category
+"""
+def get_test_dataset_binary(X_test, y_test, list_objects_file):
     #Get categories name and associated label from file
-    categories_list = get_categories_from_file(view_path_file)
+    categories_list = get_categories_from_file(list_objects_file)
     banner = "[INFO] Which category are you looking for ? Write the ID of the category : \n"
     banner += str(categories_list) + ' ' 
     category_label = input(banner)
     y_test_binary= [1 if y == int(category_label) else -1 for y in y_test]
     
-    y_test_binary = np.array(y_test_binary)
-    #print("[INFO] Y_test binary {}".format(y_test_binary))
-    #print("X test  {}".format(X_test))
-    
+    y_test_binary = np.array(y_test_binary)    
     tst_ds = Dataset(X_test, y_test_binary)
-    #print(tst_ds.data)
 
-    return tst_ds,X_test,y_test_binary,category_label
+    return tst_ds, X_test, y_test_binary, category_label
 
-def get_train_label_binary(y_train,category_label):
+"""
+Given an array of label (not binary), convert to an array of binary label
+"""
+def get_train_label_binary(y_train, category_label):
     #Get categories name and associated label from file    
-    y_train_binary= [1 if y == int(category_label) else -1 for y in y_train]
+    y_train_binary = [1 if y == int(category_label) else -1 for y in y_train]
     y_train_binary = np.array(y_train_binary)
-
 
     return y_train_binary
 
@@ -557,7 +492,9 @@ def minimum_spanning_tree(X, copy_X=True):
         num_visited += 1
     return np.vstack(spanning_edges)
 
-
+"""
+Convert coordinate polar to cartesian
+"""
 def polar_to_cartesian(arr, r):
     a = np.concatenate((np.array([2 * np.pi]), arr))
     si = np.sin(a)

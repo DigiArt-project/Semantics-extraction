@@ -404,7 +404,7 @@ def getparameters_from_models(model):
 
 
 """
-count the number of positive label and negative label displayed to the user
+Count the number of positive label and negative label displayed to the user
 """
 def compute_pourcentage_results(fully_labeled_train_dataset, train_dataset, id_to_display, number_to_consider = 20):
 
@@ -416,10 +416,9 @@ def compute_pourcentage_results(fully_labeled_train_dataset, train_dataset, id_t
     count_positif = 0
     count_negatif = 0
     count_total = 0
-    #Count posiitve and negative display to the user
+    #Count positve and negative display to the user
     for i in range(len(id_to_display)):
         ask_id = id_to_display[i]
-
         lb = ideal_labels.label(X[ask_id])
         if (count_total < number_to_consider):
             if (lb == 1):
@@ -434,7 +433,7 @@ def compute_pourcentage_results(fully_labeled_train_dataset, train_dataset, id_t
     nb_total_positif_annotated = y.count(1)
     nb_total_negatif_annotated = y.count(-1)
 
-    logging.debug("Compute pourcentage result. Count positif : %s Count negatif %s | number to consider %s ", count_positif, count_negatif, number_to_consider)
+    logging.debug("Number positif : %s Number negatif %s | Number to consider %s ", count_positif, count_negatif, number_to_consider)
     if (number_to_consider != 0):
         pourcent_positif_display = (count_positif/number_to_consider) * 100
         pourcent_negatif_display = (count_negatif/number_to_consider) * 100
@@ -455,14 +454,12 @@ def select_most_uncertains_samples_from_decisionfunction(dataset, model_learning
     idx_unlabeled_data, x_pool_unlabeled = zip(*dataset.get_unlabeled_entries())
     decision_function = model_learning.decision_function(features_all)
 
-    if correction_to_apply != 0 :
-        decision_function = [x - correction_to_apply for x in decision_function]
-
+    decision_function = [x - correction_to_apply for x in decision_function]
     
     indices_rank_decision_function_positif, distance_rank_decision_function_positif = utils.sort_ascending_order(decision_function,True)
-    #print("Decision function before take closest 0 {}" .format(decision_function))
+    logging.debug("Decision function before take closest 0 {}" .format(decision_function))
     indices_rank_closest_zero = utils.take_closest_to_zero(decision_function)
-    #print("indices_rank_closest_zero {}" .format(indices_rank_closest_zero))
+    logging.debug("indices_rank_closest_zero {}" .format(indices_rank_closest_zero))
     idx_example_positif_selection = np.take(idx_all,indices_rank_closest_zero)[:m]
     idx_example_positif_selection1 = indices_rank_closest_zero[:m]
 
@@ -575,11 +572,11 @@ def correction(dataset, model, rank):
 Step 3 Interactive Learning
 Preselection
 """
-def preselection(dataset, decision_function, m):
+def preselection(dataset, decision_function, number):
     abs_decision_function = [math.fabs(number) for number in decision_function]
     tmp = copy.copy(abs_decision_function)
-    sorted_indice = (np.array(abs_decision_function).argsort()[::-1])[:m]
-    sorted_values = sorted(tmp,reverse = True)[:m]
+    sorted_indice = (np.array(abs_decision_function).argsort()[::-1])[:number]
+    sorted_values = sorted(tmp,reverse = True)[:number]
     
     return sorted_indice, sorted_values
 
@@ -738,7 +735,7 @@ def basic_interactive_learning_start(descriptor_interactivelearning):
     print("Display data init - time : {} s".format(stop - start))
 
     #Ask the user which category he wants to retrieve - Return the binary dataset to the user
-    test_dataset,x_test,y_test_binary,category_label = utils.get_testDataset_binary(X_test, y_test, OBJECTSLIST_PATH_FILE)
+    test_dataset,x_test,y_test_binary,category_label = utils.get_test_dataset_binary(X_test, y_test, OBJECTSLIST_PATH_FILE)
     y_train_binary_gt = utils.get_train_label_binary(y_train_gt, category_label)
     
     #The users annotates 
