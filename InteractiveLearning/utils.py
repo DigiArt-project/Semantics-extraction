@@ -108,6 +108,19 @@ def decision_function_vector(params, sv, nv, a, b, X):
     
     return np.array(decision_function)
 
+def NN(nb_objects_perclass):
+    k = 1
+    return k
+
+def FT(nb_objects_perclass):
+    k = abs(nb_objects_perclass) - 1
+    return k
+
+def ST(nb_objects_perclass):
+    k = 2*(abs(nb_objects_perclass) - 1)
+    return k
+
+    
 
 """ Timer """
 def startTimer():
