@@ -615,6 +615,10 @@ def basic_interactive_learning_start(descriptor_interactivelearning):
     DESCRIPTORSLIST_PATH_FILE= listDescriptorsFromDataset
     
     score_array, error_array, rank_array = [], [], []
+    #Interval matplotlib
+    reg_interval_y = plticker.MultipleLocator(base=10.0) # this locator puts ticks at regular intervals
+    reg_interval_x = plticker.MultipleLocator(base=1.0) # this locator puts ticks at regular intervals
+
     nb_iterations = 1
     
     dataset_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), DESCRIPTORSLIST_PATH_FILE)
@@ -684,7 +688,8 @@ def basic_interactive_learning_start(descriptor_interactivelearning):
     query_num = np.arange(0, 1)
     ################ GRAPHIC ###################
     if (PLOT_SCORE):
-        fig = plt.figure(figsize=(7, 8))
+        plt.figure(2)
+        fig = plt.figure(2, figsize=(7, 8))
         plt.title(title)
         ax = fig.add_subplot(2, 1, 1)
         p1,= ax.plot(query_num, error_array, 'r', label='Error')
@@ -692,6 +697,7 @@ def basic_interactive_learning_start(descriptor_interactivelearning):
         ax.set_ylabel('Error')
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
                    shadow=True, ncol=5)
+        ax.xaxis.set_major_locator(reg_interval_x)
 
         ay = fig.add_subplot(2, 1, 2)
         p2, = ay.plot(query_num, score_array, 'g', label='Score')
@@ -699,6 +705,7 @@ def basic_interactive_learning_start(descriptor_interactivelearning):
         ay.set_ylabel('Score')
         ay.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
                    shadow=True, ncol=5)
+        ay.xaxis.set_major_locator(reg_interval_x)
       
         plt.show(block=False)
      
@@ -770,10 +777,13 @@ def basic_interactive_learning_start(descriptor_interactivelearning):
         rank_array = np.append(rank_array, rank)
 
         if (PLOT_SCORE):
+            plt.figure(2)
             ax.set_xlim((0, i + 1))
             ax.set_ylim((0, max(error_array) + 0.2))
             ay.set_xlim((0, i + 1))
             ay.set_ylim((0, max(score_array) + 0.2))
+            ax.xaxis.set_major_locator(reg_interval_x)
+            ay.xaxis.set_major_locator(reg_interval_x)
 
             query_num=np.arange(0, i + 2)
 

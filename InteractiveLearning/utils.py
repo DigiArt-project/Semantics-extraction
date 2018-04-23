@@ -450,6 +450,149 @@ def split_train_test_from_libsvm_data(descriptors_libsvm_data, list_objects, tes
 
 
 """
+Optimize with dictionnary
+"""
+def split_train_test_from_training_testing_data_similaritySearch_GT(dataset_filepath, objects_list_path, training_file, testing_file, categorie_array_results, category_label, compute_full=False, ):
+
+
+    print("[INFO] Dataset filepath : {}".format(dataset_filepath))
+    print("[INFO] Training file : {}".format(training_file))
+    print("[INFO] Testing file : {}".format(testing_file))
+    logging.debug('Dataset filepath : %s', dataset_filepath)
+    X, y = import_libsvm_sparse(dataset_filepath).format_sklearn()
+    X = MinMaxScaler(feature_range=(0,1)).fit_transform(X)
+
+    test = ""
+
+    with open(objects_list_path, "r") as ins:
+        array = np.chararray(len(X),itemsize="1500")
+        test_list = list()
+        i = 0
+        for line in ins:
+            #print(line)
+            if "ply" in line or "pcd" in line or "txt" in line: 
+                array[i]=str(line.strip())
+                test_list.append(str(line.strip()))
+                test = line.strip()
+                i = i + 1
+
+    descripteur_and_path_order = OrderedDict(zip(test_list, X))
+    X_dataset_with_path = list(zip(X,  test_list))
+
+    fully_dataset = Dataset(X_dataset_with_path, y)
+
+
+    y_binary = [1 if y_v == int(category_label) else -1 for y_v in y]
+    number_positif_label = y_binary.count(1)
+    number_negatif_label = y_binary.count(-1)
+    #print("[INFO]Number positif from libsvm data : {}".format(number_positif_label))
+    #print("[INFO] Number negatif from libsvm data : {}".format(number_negatif_label))
+
+    fully_dataset_labeled_binary = Dataset(X_dataset_with_path, y_binary)
+
+    X_train = list()
+    X_test = list()
+    y_train = list()
+    y_test = list()
+
+
+    X_dataset_with_path_dict=OrderedDict()
+    for idx,value in enumerate(X_dataset_with_path):
+        base1=os.path.basename(value[1])
+        name_X_desc = os.path.splitext(base1)[0]
+
+        #for desc_name take only name
+        if not compute_full == "true":
+                name_X_desc = name_X_desc.replace('view_','')
+        name_X_desc = name_X_desc.replace('desc_','')
+        X_dataset_with_path_dict[name_X_desc] = X_dataset_with_path[idx][0]
+
+    values = list(X_dataset_with_path_dict.values())
+    keys = list(X_dataset_with_path_dict.keys())
+
+    #training file
+    with open(training_file, "r") as trfile:
+        for line in trfile:
+            base=os.path.basename(line)
+            name_train = os.path.splitext(base)[0]
+            if not compute_full == "true":
+                name_train = name_train.replace('view_','')
+
+            if (name_train in X_dataset_with_path_dict):
+
+               
+                index = list(X_dataset_with_path_dict.keys()).index(name_train)
+                X_value = X_dataset_with_path[index]
+                label = y[index]
+                X_train.append(X_value)
+                y_train.append(label)
+
+    X_train = np.asarray(X_train)
+    y_train = np.asarray(y_train)
+    #print(y_train)
+    #exit()
+    #testing file
+    with open(testing_file, "r") as trfile:
+        for line in trfile:
+            base=os.path.basename(line)
+            name_test = os.path.splitext(base)[0]
+            if not compute_full == "true":
+                name_test = name_test.replace('view_','')
+
+            if (name_test in X_dataset_with_path_dict):
+
+                
+                index = list(X_dataset_with_path_dict.keys()).index(name_test)
+                #X_value = X_dataset_with_path_dict[name_test]
+                X_value = X_dataset_with_path[index]
+                label = y[index]
+                X_test.append(X_value)
+                y_test.append(label)
+
+    print(len(X_dataset_with_path))
+    print(len(X_train))
+    print(len(y_train))
+    print(len(X_test))
+    print(len(y_test))
+
+
+    y_train_binary = [1 if y == int(category_label) else -1 for y in y_train]
+    y_train_binary = np.array(y_train_binary)
+    number_positif_label_train = np.count_nonzero(y_train_binary == 1)
+    number_negatif_label_train = np.count_nonzero(y_train_binary == -1)
+
+
+    train_dataset_binary_labeled = Dataset(X_train, y_train_binary)
+
+
+    path_list_train_views = list()
+    feature_train = list()
+    for i in X_train:
+        path_list_train_views.append(i[1])
+        feature_train.append(i[0])
+
+    path_list_test_views = list()
+    feature_test = list()
+    for i in X_test:
+        path_list_test_views.append(i[1])
+        feature_test.append(i[0])
+
+    feature_test = np.array(feature_test)
+
+    y_test_binary = [1 if y == int(category_label) else -1 for y in y_test]
+    y_test_binary = np.array(y_test_binary)
+    test_dataset_binary_labeled = Dataset(feature_test, y_test_binary)
+
+    y_train_unlabeled = np.concatenate([y_train[:0], [None] * (len(y_train))])
+    train_dataset_unlabeled = Dataset(feature_train, y_train_unlabeled)
+    
+    test_dataset_GT = Dataset(feature_test, y_test)
+
+    #return unlabeled train dataset, test dataset, y label train, labeled train dataset, path to views training, path to views testing
+    return fully_dataset_labeled_binary,train_dataset_unlabeled, train_dataset_binary_labeled, y_train_binary,test_dataset_binary_labeled, path_list_train_views,path_list_test_views
+
+
+"""
 Replicate the train_test_split function of scikit but with a cariation
 What we want at the end is a training set (X_train and y_train) and a test set (X_test and y_test)
 But we add a constraint. We get a category_array_result which an array which contain the categories found by similarity search.

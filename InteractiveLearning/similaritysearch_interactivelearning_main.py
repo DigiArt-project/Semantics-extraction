@@ -36,7 +36,7 @@ import matplotlib.ticker as plticker
 import utils
 
 ####### GLOBAL VARIABLE #######
-PATH_DATASET = "/Users/lironesamoun/digiArt/Datasets/Dataset_pottery_normalized/"
+PATH_DATASET = "/Users/lironesamoun/digiArt/Datasets/Dataset_structuresensor_normalized/"
 TRAINING_FILE_FULL = PATH_DATASET + "train_full.txt"
 TESTING_FILE_FULL =  PATH_DATASET + "test_full.txt"
 TRAINING_FILE_VIEWS =  PATH_DATASET +"train_views.txt"
@@ -47,7 +47,7 @@ COMPUTE_FULL = "false"
 DESCRIPTORS = ['esf','vfh']
 #Location of the dataset directory where the txt file are located. The txt represents the list of all the descriptors and path to descriptors
 ROOT_DATA = "data/"
-NAME_DATASET = 'pottery_views'
+NAME_DATASET = 'structuresensor_views'
 #Where to save the graphics
 OUTPUT_GRAPHICALS_RESULTS = "results_graphics/"
 OUTPUT_JSON_RESULT_SIMILARITYSEARCH = "data/results_similarity.json"
@@ -55,7 +55,7 @@ OUTPUT_JSON_RESULT_SIMILARITYSEARCH = "data/results_similarity.json"
 LOG_FILE = "interactive_learning.log"
 
 #Category label to change for option similarity search interactive learning
-CATEGORY_LABEL = 6
+CATEGORY_LABEL = 3
 #Positive example ranking for display i.e the number of samples ranked from positive to negative, to display to the user 
 NBRE_DATA_SELECTION = 20 #defaut 48
 #Number of uncertain examples close to the margin to choose 
@@ -95,7 +95,7 @@ NUMBER_OF_OBJECTS_TO_SELECT_RANDOMLY = 3
 #Either select full objects or views object for selecting randomly
 SELECT_FULL_OBJECT = False
 
-
+QUERY_CLOUD = ""
 OBJECTSLIST_PATH_FILE = ""
 DESCRIPTORSLIST_PATH_FILE = ""
 
@@ -104,6 +104,9 @@ _ITEM_ALL_LABEL_DATA = list()
 
 USE_NORMALIZATION = True
 PLOT_SCORE = True
+PLOT_CNF_MATRIX = False
+PLOT_CLF_REPORT = False
+PLOT_PR_CURVE = False
 
 """
 Handle the on click event, when the user select example on the screen
@@ -121,29 +124,44 @@ def onpick(event):
 
 
 """
-Display the first data to anotate for the classic interactive learning
+Display the first data to anotate, for the similarity search interactive learning
 """
-def display_data_init(dataset, objectslist_path, number_to_display):
+def display_data_init_similarity_search_classic(list_idx, fully_labeled_train_dataset, display_color = True):
     if 'fig' in locals():
         plt.close(fig)
-    fig = plt.figure(1, figsize=(11, 10))
+    fig = plt.figure(1,figsize=(11, 10))
     fig.canvas.set_window_title('Results')
+    # gridspec inside gridspec
+    idealLabels = IdealLabeler(fully_labeled_train_dataset)
+    X, _ = zip(*fully_labeled_train_dataset.data)
     outer_grid = gridspec.GridSpec(8, 6, wspace=1, hspace=0.8)
-    for i in range(number_to_display):        
-        ax = plt.Subplot(fig, outer_grid[i])
-        filename = utils.get_filename_descriptor_from_path(objectslist_path[i],10)
-        
-        #feature = objectslist_path[i].decode("utf-8").split("/")[7]
-        ax.text(0.1, 0.5, str(filename),
-                size=7)
-        title = "ID {}".format(dataset[i][0])
-        ax.set_title(title, picker=True, bbox=dict(facecolor='blue'))
+    count = 0
+    for idx,id_value in enumerate(list_idx):
+        lb = idealLabels.label(X[id_value])
+        ax = plt.Subplot(fig, outer_grid[count])    
+        #filename_test = utils.get_filename_descriptor_from_path(fully_labeled_train_dataset.data[id_value][0][1],1)
+        #print(filename_test)
+        #exit()
+        filename = utils.get_filename_descriptor_from_path(fully_labeled_train_dataset.data[id_value][0][1],10)
+        ax.text(0.1, 0.5, str(filename),size=7)
+        title = "ID {}".format(id_value)
+        if display_color:
+            if (lb == 1):
+                ax.set_title(title,style='italic', picker=True,  bbox={'facecolor':'limegreen', 'pad':3}, size = 13)
+            else :
+                ax.set_title(title,style='italic', picker=True, bbox={'facecolor':'salmon', 'pad':3}, size = 13)
+        else :
+            ax.set_title(title, picker=True, bbox=dict(facecolor='blue'))
         ax.set_xticks([])
         ax.set_yticks([])
         fig.add_subplot(ax)
-        
+
+        count = count + 1
+
     fig.canvas.mpl_connect('pick_event', onpick)
+    
     plt.show(block=False)
+
 
 
 """
@@ -195,6 +213,145 @@ def display_selected_data(dataset, objectslist_path,id_to_display,id_close_margi
     plt.show(block=False)
 
 
+
+"""
+In this version, we have the ground truth available meaning that we display in green the positive label and in red the negative label
+After the first step, display data :
+- The most uncertaine one i.e close to the margins
+- The positif one i.e the most certains one corresponding to the positif label
+"""
+def display_selected_data_similarity_search_withGT(fully_labeled_train_dataset,train_dataset, path_list_train_views,id_to_display,id_close_margins,display_color = True,save_figures = True):
+    plt.close(plt.figure(1))
+    plt.close(plt.figure(3))
+
+    fig = plt.figure(1,figsize=(9, 7))
+    fig1 = plt.figure(3,figsize=(9, 7))
+    fig.canvas.set_window_title('Results')
+    fig1.canvas.set_window_title('Most uncertain + diversity example')
+    labeled_entry_ids, X_pool_labeled = zip(*train_dataset.get_labeled_entries())
+    X, y = zip(*train_dataset.data)
+    nb_total_positif_annotated = y.count(1)
+    nb_total_negatif_annotated = y.count(-1)
+
+    idealLabels = IdealLabeler(fully_labeled_train_dataset)
+    X, _ = zip(*fully_labeled_train_dataset.data)
+
+    count_positif = 0
+    count_negatif = 0
+    
+    outer_grid = gridspec.GridSpec(5, 6, wspace = 1, hspace=1)
+    outer_grid1 = gridspec.GridSpec(5, 6, wspace=1, hspace=1)
+    for i in range(len(id_to_display)):
+        ask_id = id_to_display[i]
+        ax = plt.Subplot(fig, outer_grid[i])
+
+        filename = utils.get_filename_descriptor_from_path(path_list_train_views[ask_id],10)
+
+        lb = idealLabels.label(X[ask_id])
+
+        ax.text(0.1, 0.4, str(filename),size=10)
+        title = "ID {}".format(ask_id)
+        if display_color:
+            if (lb == 1):
+                ax.set_title(title,style='italic', picker=True,  bbox={'facecolor':'limegreen', 'pad':3}, size = 13)
+            else :
+                ax.set_title(title,style='italic', picker=True, bbox={'facecolor':'salmon', 'pad':3}, size = 13)
+        else :
+            if (lb == 1):
+                count_positif = count_positif + 1
+            else : 
+                count_negatif = count_negatif + 1
+            ax.set_title(title, picker=True, bbox=dict(facecolor='blue'))
+        ax.set_xticks([])
+        ax.set_yticks([])
+        fig.add_subplot(ax)
+    title = "Positives samples where the distance is far from the boundary "
+    fig.suptitle(title, fontsize=8, fontweight='bold')
+
+
+    for i in range(len(id_close_margins)):
+        ask_id = id_close_margins[i]
+        if not ask_id in np.array(labeled_entry_ids):
+            ax = plt.Subplot(fig1, outer_grid1[i])
+       
+            filename = utils.get_filename_descriptor_from_path(path_list_train_views[ask_id],10)
+
+            lb = idealLabels.label(X[ask_id])
+            ax.text(0.1, 0.4, str(filename),
+                            size=8)
+            title = "ID {}".format(ask_id)
+            if display_color:
+                if (lb == 1):
+                    ax.set_title(title,style='italic', picker=True,  bbox={'facecolor':'limegreen', 'pad':3}, size = 13)
+                else :
+                    ax.set_title(title,style='italic', picker=True, bbox={'facecolor':'salmon', 'pad':3}, size = 13)
+            else :
+                ax.set_title(title, picker=True, bbox=dict(facecolor='blue'), size = 13)
+            ax.set_xticks([])
+            ax.set_yticks([])
+            fig1.add_subplot(ax)
+    title = "Samples where the distance is close to the decision boundary (most uncertain one + diversity) "
+    fig1.suptitle(title, fontsize=8, fontweight='bold')
+    
+    fig.canvas.mpl_connect('pick_event', onpick)
+
+    if (save_figures):
+        fig.savefig('results.png', bbox_inches='tight')
+
+    pourcent_positif_display = (count_positif / NBRE_DATA_SELECTION) * 100
+    pourcent_negatif_display = (count_negatif / NBRE_DATA_SELECTION) * 100
+
+    fig1.canvas.mpl_connect('pick_event', onpick)
+    
+    plt.show(block=False)
+
+    return pourcent_positif_display, pourcent_negatif_display
+
+
+
+"""
+Ask user to select positive label
+Return list of ID selected
+"""
+def select_positive_example_onclick(id_unlabeled_selected):
+    banner = "Clicks ID to label as POSITIVE, then when you finish, write ok \n"
+    str_input = input(banner)
+    while (str_input != "ok"):
+        str_input = input(banner)
+        print("If you have finished, write ok")
+
+    positif_label = list()
+    for i in range(len(_item_click_callback)):
+        positif_label.append(1)
+    
+    positive_example = list(zip(_item_click_callback, positif_label))
+    #Remove items selected in the list
+    _item_click_callback.clear()
+
+    return positive_example
+
+"""
+Ask user to select negative label
+Return list of ID selected
+"""
+def select_negative_example_onclick(id_unlabeled_selected):
+    banner = "Clicks ID to label as NEGATIVE then when you finish, write ok \n"
+    str_input = input(banner)
+    while (str_input != "ok"):
+        str_input = input(banner)
+        print("If you have finished, write ok")
+
+    negatif_label = list()
+    for i in range(len(_item_click_callback)):
+        negatif_label.append(-1)
+    
+    negative_example = list(zip(_item_click_callback, negatif_label))
+    #Remove items selected in the list
+    _item_click_callback.clear()
+    
+    return negative_example
+
+
 """
 Ask user to select positive label
 Return list of ID selected
@@ -239,13 +396,13 @@ def select_negative_example_onclick(id_unlabeled_selected):
 
 
 """
-Ask user to annotate positive and negative label
-Return list of positive and negatives label
-"""
+    Ask user to annotate positive and negative label
+    Return list of positive and negatives label
+    """
 def annotate_data(whole_dataset, id_to_display):
     id_selected_positif = select_positive_example_onclick(id_to_display)
     id_selected_negatif = select_negative_example_onclick(id_to_display)
-
+    
     list1 = list()
     list2 = list()
     for id_l,label in id_selected_positif:
@@ -266,6 +423,55 @@ def annotate_data(whole_dataset, id_to_display):
 
     return total_annotated_id_list
 
+
+
+"""
+Ask the user to annotate positive and negative label
+Return list of positive and negatives label
+"""
+def annotate_data_similarity(fully_labeled_train_dataset,whole_dataset_unlabeled, id_to_display):
+    id_selected_positif = select_positive_example_onclick(id_to_display)
+    id_selected_negatif = select_negative_example_onclick(id_to_display)
+    
+    idealLabels = IdealLabeler(fully_labeled_train_dataset)
+    X, y = zip(*fully_labeled_train_dataset.data)
+    
+    while (len(id_selected_negatif) == 0):
+        print("Select one random negatif")
+        id_random = random.randint(0, len(X)-1)
+        feature_random = X[id_random]
+        lb = idealLabels.label(feature_random)
+        if (lb == - 1):
+            id_selected_negatif.append((id_random,lb))
+            _ITEM_ALL_LABEL_DATA.append((id_random,lb))
+    
+    while (len(id_selected_positif) == 0):
+        print("Select one random positif")
+        id_random = random.randint(0, len(X)-1)
+        feature_random = X[id_random]
+                
+        lb = idealLabels.label(feature_random)
+        if (lb == 1):
+            count_annotate_positif = count_annotate_positif + 1
+            id_selected_positif.append((id_random,lb))
+            _ITEM_ALL_LABEL_DATA.append((id_random,lb))
+    
+    list1 = list()
+    list2 = list()
+    for id_l,label in id_selected_positif:
+        logging.debug('ID : %s corresponds to label : %s  ', id_l, label)
+        list1.append((id_l,label))
+        whole_dataset_unlabeled.update(int(id_l), label)
+        _ITEM_ALL_LABEL_DATA.append((id_l,label))
+    for id_l,label in id_selected_negatif:
+        logging.debug('ID : %s corresponds to label : %s  ', id_l, label)
+        list2.append((id_l,label))
+        whole_dataset_unlabeled.update(int(id_l), label)
+        _ITEM_ALL_LABEL_DATA.append((id_l,label))
+    total_annotated_id_list = list1 + list2
+
+
+    return total_annotated_id_list
 
 
 """
@@ -553,8 +759,8 @@ Step 5 Interactive Learning : Diversity
 https://www.aaai.org/Papers/ICML/2003/ICML03-011.pdf
 """
 def diversifier(dataset, param_adjust, batch_number, g, params, pre_selection_data):
-    kernel= params['kernel']
-    gamma= params['gamma']
+    kernel = params['kernel']
+    gamma = params['gamma']
     selection= list()
     idx_all, features_all= zip(*[(idx, entry[0]) for idx, entry in enumerate(dataset.data)])
     labeled_data= np.array(_ITEM_ALL_LABEL_DATA)
@@ -591,6 +797,66 @@ def diversifier(dataset, param_adjust, batch_number, g, params, pre_selection_da
     logging.debug('[INFO] Final selection id : %s  ', selection)
     
     return selection
+
+"""
+At the beginning we need to match the results given by the similarity search with the dataset of unlabeled data.
+So from the similarity search, (from the json) we get an array of categories 
+Then in the fully labeled dataset, we make a loop, extract the path of each object, extract the category and try to match with the categories in the array
+At the end we have a list of ID which will be the first results to display to the user in order to annotate
+"""
+def select_data_similaritySearch(fully_labeled_train_dataset, categorie_array_results):
+    idealLabels = IdealLabeler(fully_labeled_train_dataset)
+    X, _ = zip(*fully_labeled_train_dataset.data)
+    count = 0
+    list_idx_result = list()
+    for idx1,path1 in enumerate(categorie_array_results[:25]):
+        for idx2, path2 in enumerate(fully_labeled_train_dataset.data):
+            filename = os.path.basename(path2[0][1])
+
+            #The initial name is desc_category.pcd. We keep only the part after desc_
+            filename = filename.split('_',1)[1]
+            #Remove extension
+            filename = os.path.splitext(filename)[0]
+
+    
+            if (path1 == filename):
+                
+                if idx2 not in list_idx_result:
+                    list_idx_result.append(idx2)
+
+                    lb = idealLabels.label(X[idx2])
+                    count = count + 1
+
+
+    return list_idx_result
+
+def select_data_similaritySearch_byindex(fully_labeled_train_dataset,categorie_array_results,index_in,index_out):
+    idealLabels = IdealLabeler(fully_labeled_train_dataset)
+    X, _ = zip(*fully_labeled_train_dataset.data)
+    count = 0
+    list_idx_result = list()
+
+    range_categorie_array_results = categorie_array_results[index_in:index_out]
+
+    for idx1,path1 in enumerate(range_categorie_array_results):
+
+        for idx2, path2 in enumerate(fully_labeled_train_dataset.data):
+            filename = os.path.basename(path2[0][1])
+            #The initial name is desc_category.pcd. We keep only the part after desc_
+            filename = filename.split('_',1)[1]
+            #Remove the extension
+            filename = os.path.splitext(filename)[0]
+            #Check if there is additional data that we don't need . Ex donut3_0_esfgshotgrsdvfh , we want to remove _esfgshotgrsdvfh
+            if (filename.count('_') == 2):
+                filename = filename.rsplit('_',1)[0]
+            if (filename == path1):
+                if idx2 not in list_idx_result:
+                    list_idx_result.append(idx2)
+
+                    lb = idealLabels.label(X[idx2])
+                    count = count + 1
+
+    return list_idx_result
 
 
 
@@ -631,154 +897,212 @@ def compute_scores_SVM(X_test, y_test, y_pred):
 
 
 """
-Interactive learning without similarity search
+Main function for interactive learning with similarity search
 """
-def basic_interactive_learning_start(descriptor_interactivelearning):
-    global OBJECTSLIST_PATH_FILE
-    global DESCRIPTORSLIST_PATH_FILE
+def similarity_search_interactive_learning(params):
+    global COMPUTE_FULL, OBJECTSLIST_PATH_FILE, DESCRIPTORSLIST_PATH_FILE, OUTPUT_GRAPHICALS_RESULTS, CATEGORY_LABEL
 
-    iteration_max = 10
+    descriptor_interactive_learning, result_jsonfile, save_figure = params
+
+    categorie_array_results = utils.extract_names_objects_from_result_json(result_jsonfile)
 
     #Get the file which contain the path to every objects of the dataset
-    listObjectsFromDataset= ROOT_DATA + NAME_DATASET + "/dataset_descriptor_" + descriptor_interactivelearning + ".txt"
+    listObjectsFromDataset= ROOT_DATA + NAME_DATASET + "/dataset_descriptor_" + descriptor_interactive_learning + ".txt"
     #Get the file which contain the path to every descriptors of the dataset
-    listDescriptorsFromDataset= ROOT_DATA + NAME_DATASET + "/descriptors_"+ descriptor_interactivelearning + ".txt"
-    OBJECTSLIST_PATH_FILE= listObjectsFromDataset
-    DESCRIPTORSLIST_PATH_FILE= listDescriptorsFromDataset
-    
+    listDescriptorsFromDataset = ROOT_DATA + NAME_DATASET + "/descriptors_"+ descriptor_interactive_learning + ".txt"
+    OBJECTSLIST_PATH_FILE = listObjectsFromDataset
+    DESCRIPTORSLIST_PATH_FILE = listDescriptorsFromDataset
+
+    output_graphicals_result = "results_graphics" + NAME_DATASET + "/"
+    OBJECTSLIST_PATH_FILE = listObjectsFromDataset
+    DESCRIPTORSLIST_PATH_FILE = listDescriptorsFromDataset
+
+    display_color_label = True
+
+    #score of SVM for displaying data
     score_array, error_array, rank_array = [], [], []
-    nb_iterations = 1
-    
+
+    #Interval matplotlib
+    reg_interval_y = plticker.MultipleLocator(base=10.0) # this locator puts ticks at regular intervals
+    reg_interval_x = plticker.MultipleLocator(base=1.0) # this locator puts ticks at regular intervals
+
+    nb_iterations = 0
+
     dataset_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), DESCRIPTORSLIST_PATH_FILE)
-    fully_dataset,train_dataset, X_test,y_test, y_train_gt, fully_labeled_train_dataset, list_objects_train, path_list_test_views = utils.split_train_test_from_libsvm_data(dataset_filepath, OBJECTSLIST_PATH_FILE,  TEST_SIZE)
-    unlabeled_entry_list = list(train_dataset.get_unlabeled_entries())
+
+
+    if COMPUTE_FULL == "true":
+        fully_dataset_labeled_binary, train_dataset_unlabeled, train_dataset_binary_labeled, y_train_binary_GT,test_dataset_binary_labeled, path_list_train_views, path_list_test_views = \
+        utils.split_train_test_from_training_testing_data_similaritySearch_GT(
+            dataset_filepath, OBJECTSLIST_PATH_FILE, TRAINING_FILE_FULL,TESTING_FILE_FULL,
+            categorie_array_results,CATEGORY_LABEL,COMPUTE_FULL
+            )
+            
+    else :
+        fully_dataset_labeled_binary,train_dataset_unlabeled, train_dataset_binary_labeled, y_train_binary_GT,test_dataset_binary_labeled, path_list_train_views, path_list_test_views = \
+        utils.split_train_test_from_training_testing_data_similaritySearch_GT(
+            dataset_filepath, OBJECTSLIST_PATH_FILE, TRAINING_FILE_VIEWS,TESTING_FILE_VIEWS,
+            categorie_array_results,CATEGORY_LABEL, COMPUTE_FULL)
+
+    
+    y_test_binary = [entry[1] for idx, entry in enumerate(test_dataset_binary_labeled.data)]
+
+    unlabeled_entry_list = list(train_dataset_unlabeled.get_unlabeled_entries())
 
     #Initialization rank
-    rank = len(unlabeled_entry_list) / 2
+    rank = len(unlabeled_entry_list)/2
+    print("\nItération : {} ".format(nb_iterations))
 
-    print("[INFO] Initial rank : {} ".format(rank))
-    print("\n=====> Itération : {} ".format(nb_iterations))
-    logging.info('\n=====> Itération : %s  ', nb_iterations)
-
-    start = time.time()
-
-    #Display first data to the user for the first annotation
-    display_data_init(unlabeled_entry_list, list_objects_train, NBRE_DATA_SELECTION)
-    stop = time.time()
-    print("Display data init - time : {} s".format(stop - start))
-
-    #Ask the user which category he wants to retrieve - Return the binary dataset to the user
-    test_dataset,x_test,y_test_binary,category_label = utils.get_test_dataset_binary(X_test, y_test, OBJECTSLIST_PATH_FILE)
-    y_train_binary_gt = utils.get_train_label_binary(y_train_gt, category_label)
+    list_idx_result = select_data_similaritySearch(train_dataset_binary_labeled, categorie_array_results)
+    if (len(list_idx_result) == 0):
+        print("[ERROR] List IDX empty ")
+        logging.error("[ERROR] List IDX empty ")
+        exit()
     
-    #The users annotates 
-    id_unlabeled_display_first= [id_feature for id_feature, feature in enumerate(unlabeled_entry_list[:NBRE_DATA_SELECTION])]
-    total_annotated_id_list= annotate_data(train_dataset, id_unlabeled_display_first)
+    display_data_init_similarity_search_classic(list_idx_result, train_dataset_binary_labeled, display_color_label)
+
+    
+    #Annotate first data
+    id_unlabeled_display_first = [id_feature for id_feature, feature in enumerate(unlabeled_entry_list[:NBRE_DATA_SELECTION])]
+
+    total_annotated_id_list = annotate_data_similarity(train_dataset_binary_labeled, train_dataset_unlabeled, id_unlabeled_display_first)
     
     ################ FIRST TRAINING ###################
-    model_learning = svm.SVC(kernel=KERNEL_SVM,C=C, gamma = GAM, class_weight = 'balanced', probability = True)
-    training_data(train_dataset, model_learning)
+    model_learning = svm.SVC(kernel=KERNEL_SVM, C = C, gamma = GAM, class_weight='balanced', probability=True)
+    training_data(train_dataset_unlabeled, model_learning)
 
+    
     #Get parameters from the svm model
     _params = model_learning.get_params()
     _sv = model_learning.support_vectors_
     _nv = model_learning.n_support_
-    _a = model_learning.dual_coef_
-    _b = model_learning._intercept_
+    _a  = model_learning.dual_coef_
+    _b  = model_learning._intercept_
     _cs = model_learning.classes_
 
     #Get the id and features from unlabeled data
-    idx_unlabeled_data, x_pool_unlabeled = zip(*train_dataset.get_unlabeled_entries())
+    idx_unlabeled_data, X_pool_unlabeled = zip(*train_dataset_unlabeled.get_unlabeled_entries())
     #Get the id and features from all the data
-    idx_all_data, x_pool_all= zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset.data)])
-    #Get the probabilities result and decision function of all the data
-    probabilities_samples_unlabeled = model_learning.predict_proba(x_pool_unlabeled)
-    decision_function= model_learning.decision_function(x_pool_unlabeled)
+    idx_all_data, X_pool_all =  zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset_unlabeled.data)])
 
-    #Get the score
-    score = model_learning.score(*(test_dataset.format_sklearn()))
+    #Get the probabilities result and decision function of all the data
+    probabilities_samples_unlabeled = model_learning.predict_proba(X_pool_unlabeled)
+    decision_function = model_learning.decision_function(X_pool_unlabeled)
+
+    X_test, y = zip(*test_dataset_binary_labeled.get_labeled_entries())
+    X_test =  np.array(X_test)
     y_pred = model_learning.predict(X_test)
-    f1score, AP, precision, recall, precision_curve,recall_curve,report_classification, cnf_matrix = compute_scores_SVM(X_test,y_test_binary,y_pred)
+
+    f1score, AP, precision, recall, precision_curve,recall_curve,report_classification, cnf_matrix = compute_scores_SVM(X_test, y_test_binary, y_pred)
 
     print("Precision = {}".format(precision))
     print("Recall = {}".format(recall))
     print("F1-Score = {}".format(f1score))
 
+    
+    ################ GRAPHIC ###################
     #Add the score to the chart
+    score = model_learning.score(*(test_dataset_binary_labeled.format_sklearn()))
     error_array = np.append(error_array, 1 - score)
     score_array = np.append(score_array,score)
-    score_ok = model_learning.score(*(test_dataset.format_sklearn())) * 100
-    score_error = (1 - model_learning.score(*(test_dataset.format_sklearn()))) * 100
-    
+    score_ok = model_learning.score(*(test_dataset_binary_labeled.format_sklearn()))*100
+    score_error = (1 - model_learning.score(*(test_dataset_binary_labeled.format_sklearn())))*100
     title = "Score Success : " + str(score_ok)  + " Score Error : " + str(score_error) + " \n Rank : " + str(rank)
     rank_array = np.append(rank_array, rank)
 
-    query_num = np.arange(0, 1)
-    ################ GRAPHIC ###################
     if (PLOT_SCORE):
-        fig = plt.figure(figsize=(7, 8))
-        plt.title(title)
+        plt.figure(2)
+        query_num = np.arange(0, 1)
+        fig = plt.figure(2,figsize=(7, 8))
         ax = fig.add_subplot(2, 1, 1)
-        p1,= ax.plot(query_num, error_array, 'r', label='Error')
+        p1, = ax.plot(query_num, error_array, 'r', label='Error')
         ax.set_xlabel('Number of steps')
         ax.set_ylabel('Error')
+        ax.xaxis.set_major_locator(reg_interval_x)
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
                    shadow=True, ncol=5)
+
 
         ay = fig.add_subplot(2, 1, 2)
         p2, = ay.plot(query_num, score_array, 'g', label='Score')
         ay.set_xlabel('Number of steps ')
         ay.set_ylabel('Score')
+        ay.xaxis.set_major_locator(reg_interval_x)
         ay.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
                    shadow=True, ncol=5)
-      
-        plt.show(block=False)
-     
+   
+    
+    if PLOT_PR_CURVE:
+        # Plot Precision-Recall curve
+        plt.figure(4)
+        plt.plot(recall, precision, lw=2, color='navy',label='Precision-Recall curve')
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        plt.ylim([0.0, 1.05])
+        plt.xlim([0.0, 1.0])
+        plt.title('Precision-Recall example: Average Precision Score AUC={0:0.2f}'.format(AP))
+        plt.legend(loc="lower left")
+
+    if PLOT_CNF_MATRIX:
+        # Plot non-normalized confusion matrix
+        plt.figure(5)
+        class_names = ['Positif','Negatif']
+        plotting.plot_confusion_matrix(cnf_matrix, classes=class_names, title='Confusion matrix, without normalization')
+
+    
+    if PLOT_CLF_REPORT:
+        plotting.plot_classification_report(report_classification)
+
+
+    plt.show(block = False)
+ 
     if (USE_NORMALIZATION):
         decision_function = MinMaxScaler(feature_range=(-1, 1)).fit_transform(decision_function)
 
-    #Sort the result in descending order so that we get the most certains results, i.e the most further samples in the positive side
-    indices_ranking_descending_order, distance_ranking_descending_order = utils.sort_descending_order(decision_function,False)
+    
+    #Sort the result in descending order so that we get the most certains results, i.e further point in the positive side
+    indices_ranking_descending_order, distance_ranking_descending_order = utils.sort_descending_order(decision_function, False)
     idx_example_positif_selection = np.take(idx_unlabeled_data, indices_ranking_descending_order)[:NBRE_DATA_SELECTION]
 
     ################ SELECTION UNCERTAINTY ###################
-    #ids_example_close_margin,_ = select_most_uncertains_samples_from_probabilities(train_dataset, probabilities_samples_unlabeled,NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY,True)
-    start = time.time()
-    ids_example_close_margin = select_most_uncertains_samples_from_decisionfunction(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)
-    stop = time.time()
-    print("Select queries uncertainty decision - time : {} s".format(stop - start))
+    #ids_example_close_margin,_ = select_most_uncertains_samples_from_probabilities(train_dataset, probabilities_samples_unlabeled,nbre_data_margins_selection_uncertainty,True)
+    ids_example_close_margin = select_most_uncertains_samples_from_decisionfunction(train_dataset_unlabeled, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)
     total_id_annotation = list(itertools.chain(idx_example_positif_selection, ids_example_close_margin))
-    #Display to the user the positives samples and the most uncertains one
-    display_selected_data(train_dataset, list_objects_train, idx_example_positif_selection, ids_example_close_margin[:NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY_DISPLAY])
+    
+    display_selected_data_similarity_search_withGT(
+        train_dataset_binary_labeled,train_dataset_unlabeled, path_list_train_views,
+        idx_example_positif_selection, ids_example_close_margin[:NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY_DISPLAY],
+        display_color_label, save_figure)
 
     ###########=====>>>> SECOND STEP UPDATE  ###########
-    #Ask the user to annotate data
-    total_annotated_id_list = annotate_data(train_dataset,total_id_annotation)
-    idx_unlabeled_data,x_pool_unlabeled = zip(*train_dataset.get_unlabeled_entries())
-    decision_function = model_learning.decision_function(x_pool_unlabeled)
-    decision_function_custom = utils.decision_function_vector(_params, _sv, _nv, _a, _b, x_pool_unlabeled)
+    total_annotated_id_list = annotate_data(train_dataset_unlabeled,total_id_annotation)
+    idx_unlabeled_data, X_pool_unlabeled = zip(*train_dataset_unlabeled.get_unlabeled_entries())
+    idx_all_data, X_pool_all =  zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset_unlabeled.data)])
+    decision_function = model_learning.decision_function(X_pool_unlabeled)
+    decision_function_custom = utils.decision_function_vector(_params, _sv, _nv, _a, _b, X_pool_unlabeled)
 
-    decision_func = copy.copy(decision_function)
-    
     i = 0
-    while nb_iterations < iteration_max :
-        
+    while nb_iterations < NB_ITERATIONS_MAX :
         nb_iterations = nb_iterations + 1
-        print("\n=====>[INFO] Itération : ({}/{}) ".format(nb_iterations,iteration_max))
-        
-        startStep2=time.time()
+        print("\n=====>[INFO] Itération : ({}/{}) ".format(nb_iterations, NB_ITERATIONS_MAX))
 
-        ################ 1. FEEDBACK STEP ###################
-        rank = feedback(train_dataset, rank, model_learning, total_annotated_id_list)
-        training_data(train_dataset, model_learning)
+        ################ 1. FEEDBACK ###################
+        rank = feedback(train_dataset_unlabeled, rank,model_learning, total_annotated_id_list)
+        training_data(train_dataset_unlabeled, model_learning)
+
+        # Get parameters from model
+        _params = model_learning.get_params()
+        _sv = model_learning.support_vectors_
+        _nv = model_learning.n_support_
+        _a  = model_learning.dual_coef_
+        _b  = model_learning._intercept_
+        _cs = model_learning.classes_
 
 
-        X_test, y = zip(*test_dataset.get_labeled_entries())
+        X_test, y = zip(*test_dataset_binary_labeled.get_labeled_entries())
         X_test =  np.array(X_test)
-        #Get the score
-        score = model_learning.score(*(test_dataset.format_sklearn()))
         y_pred = model_learning.predict(X_test)
-        f1score, AP, precision, recall, precision_curve,recall_curve,report_classification, cnf_matrix = compute_scores_SVM(X_test,y_test_binary,y_pred)
+        f1score, AP, precision, recall,precision_curve,recall_curve, report_classification, cnf_matrix = compute_scores_SVM(X_test, y_test_binary, y_pred)
 
         print("Score = {}".format(precision))
         print("Precision = {}".format(precision))
@@ -786,73 +1110,91 @@ def basic_interactive_learning_start(descriptor_interactivelearning):
         print("F1-Score = {}".format(f1score))
 
 
-        # Get parameters from model
-        params = model_learning.get_params()
-        _sv = model_learning.support_vectors_
-        _nv = model_learning.n_support_
-        _a = model_learning.dual_coef_
-        _b = model_learning._intercept_
-        _cs = model_learning.classes_
-
         # Add score to the chart
+        score = model_learning.score(*(test_dataset_binary_labeled.format_sklearn()))
         error_array = np.append(error_array, 1 - score)
         score_array = np.append(score_array, score)
-        score_ok = model_learning.score(*(test_dataset.format_sklearn()))*100
-        score_error = (1 - model_learning.score(*(test_dataset.format_sklearn())))*100
+        score_ok = model_learning.score(*(test_dataset_binary_labeled.format_sklearn()))*100
+        score_error = (1 - model_learning.score(*(test_dataset_binary_labeled.format_sklearn())))*100
+
         rank_array = np.append(rank_array, rank)
 
+        query_num = np.arange(0, i + 2)
         if (PLOT_SCORE):
+            plt.figure(2)
             ax.set_xlim((0, i + 1))
             ax.set_ylim((0, max(error_array) + 0.2))
             ay.set_xlim((0, i + 1))
             ay.set_ylim((0, max(score_array) + 0.2))
-
-            query_num=np.arange(0, i + 2)
-
+            ax.xaxis.set_major_locator(reg_interval_x)
+            ay.xaxis.set_major_locator(reg_interval_x)
+            
             p1.set_xdata(query_num)
             p1.set_ydata(error_array)
             p2.set_xdata(query_num)
             p2.set_ydata(score_array)
 
-            plt.show(block=False)
+        
+        if PLOT_PR_CURVE:
+            # Plot Precision-Recall curve
+            plt.figure(4)
+            plt.plot(recall, precision, lw=2, color='navy', label='Precision-Recall curve')
+            plt.xlabel('Recall')
+            plt.ylabel('Precision')
+            plt.ylim([0.0, 1.05])
+            plt.xlim([0.0, 1.0])
+            plt.title('Precision-Recall example: Average Precision Score AUC={0:0.2f}'.format(AP))
+            plt.legend(loc="lower left")
 
-        idx_unlabeled_data,x_pool_unlabeled = zip(*train_dataset.get_unlabeled_entries())
-        idx_all_data,x_pool_all = zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset.data)])
-        #Get the probabilities/decision function from the SVM
-        probabilities_samples_unlabeled = model_learning.predict_proba(x_pool_unlabeled)
-        decision_function = model_learning.decision_function(x_pool_unlabeled)
+        if PLOT_CNF_MATRIX:
+            # Plot non-normalized confusion matrix
+            plt.figure(5)
+            class_names = ['Positif','Negatif']
+            plotting.plot_confusion_matrix(cnf_matrix, classes=class_names, title='Confusion matrix, without normalization')
 
-        indices_rank_decision_function_positif_without_correction,_= utils.sort_descending_order(decision_function,True)
-        idx_example_positif_selection_without_correction = np.take(idx_unlabeled_data, indices_rank_decision_function_positif_without_correction)[:NBRE_DATA_SELECTION]
+    
+        if PLOT_CLF_REPORT:
+            plot_classification_report(report_classification)
+
+        plt.show(block = False)
+
+        
+        idx_unlabeled_data, X_pool_unlabeled = zip(*train_dataset_unlabeled.get_unlabeled_entries())
+        idx_all_data, X_pool_all =  zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset_unlabeled.data)])
+        probabilities_samples_unlabeled = model_learning.predict_proba(X_pool_unlabeled)
+        decision_function = model_learning.decision_function(X_pool_unlabeled)
+
+        indices_rank_decision_function_positif_without_correction, _ = utils.sort_descending_order(decision_function, True)
+        idx_example_positif_selection_without_correction = np.take(idx_unlabeled_data,indices_rank_decision_function_positif_without_correction)[:NBRE_DATA_SELECTION]
 
         ################ 2. CORRECTION STEP ###################
-        decision_function, number_to_remove = correction(train_dataset, model_learning, rank)
-        indices_rank_new_decision_function_positif, distance_rank_decision_function_positif = utils.sort_descending_order(decision_function,True)
-        idx_example_positif_selection = np.take(idx_unlabeled_data, indices_rank_new_decision_function_positif)[:NBRE_DATA_SELECTION]
+        decision_function, number_to_remove = correction(train_dataset_unlabeled, model_learning, rank)
+        indices_rank_new_decision_function_positif, distance_rank_decision_function_positif = utils.sort_descending_order(decision_function, True)
+        idx_example_positif_selection = np.take(idx_unlabeled_data,indices_rank_new_decision_function_positif)[:NBRE_DATA_SELECTION]
 
         ################ 3. PRESELECTION STEP ###################
-        ids_example_close_margin_correction = select_most_uncertains_samples_from_decisionfunction(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY, number_to_remove)
-        ids_example_close_margin_without_correction = select_most_uncertains_samples_from_decisionfunction(train_dataset, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)
+        ids_example_close_margin_correction = select_most_uncertains_samples_from_decisionfunction(train_dataset_unlabeled, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY,number_to_remove)
+        ids_example_close_margin_without_correction = select_most_uncertains_samples_from_decisionfunction(train_dataset_unlabeled, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)
 
         ################ 4. SELECTION STEP ###################
         kernel_ = 0
-        cost_g = selectioner(train_dataset, model_learning,kernel_, y_train_binary_gt, decision_function, ids_example_close_margin_correction)
+        cost_g = selectioner(train_dataset_unlabeled, model_learning, kernel_, y_train_binary_GT, decision_function, ids_example_close_margin_correction)
 
 
         ################ 5. DIVERSIFIER STEP ###################
-        id_selection_diversification = diversifier(train_dataset, DIVERSIFICATION_LAMBDA, NBRE_DATA_FINAL_SELECTION, cost_g,params, ids_example_close_margin_correction)
+        id_selection_diversification = diversifier(train_dataset_unlabeled, DIVERSIFICATION_LAMBDA, NBRE_DATA_FINAL_SELECTION, cost_g, _params, ids_example_close_margin_correction)
 
+        save_figure = False
 
-        stopStep2 = time.time()
-        print("Computation time : {} s".format(stopStep2 - startStep2 ))
-        
-        #Display to the user the positive sample and the most uncertain one
-        display_selected_data(train_dataset,list_objects_train, idx_example_positif_selection, id_selection_diversification)
-        
+        display_selected_data_similarity_search_withGT(
+            train_dataset_binary_labeled,train_dataset_unlabeled, path_list_train_views, 
+            idx_example_positif_selection,id_selection_diversification, display_color_label, save_figure)
+
         total_id_annotation = list(itertools.chain(idx_example_positif_selection, id_selection_diversification))
-        total_annotated_id_list = annotate_data(train_dataset, total_id_annotation)
+        total_annotated_id_list = annotate_data(train_dataset_unlabeled,total_id_annotation)
 
         i = i + 1
+    
     
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -950,7 +1292,7 @@ def main():
 
         save_figure = False
         params = (descriptor_interactivelearning,OUTPUT_JSON_RESULT_SIMILARITYSEARCH,save_figure)
-        #similarity_search_interactiveLearning(params)
+        similarity_search_interactive_learning(params)
 
     #Run automatic interactive learning with similarity search and by sumbittming one point cloud
     elif current_option == option_interactiveLearning.similaritySearch_automatic_oneobject:

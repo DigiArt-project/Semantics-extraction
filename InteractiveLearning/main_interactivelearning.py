@@ -1523,7 +1523,7 @@ def basic_interactiveLearning3DStart(params):
 """
 Main function for interactive learning with similarity search
 """
-def similarity_search_interactiveLearning(params):
+def similarity_search_interactive_learning(params):
     global compute_full
     global view_path_file
     global dataset_descriptor
