@@ -7,6 +7,7 @@ import time
 import warnings
 import argparse
 import math
+import random
 
 import copy
 import itertools
@@ -34,6 +35,7 @@ import matplotlib.ticker as plticker
 #Activate on the server or when using multi thread
 #matplotlib.use('Agg')
 import utils
+import plotting
 
 ####### GLOBAL VARIABLE #######
 PATH_DATASET = "/Users/lironesamoun/digiArt/Datasets/Dataset_structuresensor_normalized/"
@@ -162,6 +164,47 @@ def display_data_init_similarity_search_classic(list_idx, fully_labeled_train_da
     
     plt.show(block=False)
 
+"""
+    Display the first data to anotate, for the automatic similarity search interactive learning
+    From a list of ID, display the data to the user in order to do the first annotation
+    Thank to the groundtruth, if an object is positive, it will be displayed in green. Otherwise in red
+    """
+def automatic_display_data_init_similarity_search(list_idx, fully_labeled_train_dataset, display_color=True):
+    if 'fig' in locals():
+        plt.close(fig)
+    #fig = plt.figure(1,figsize=(11, 7)) defaut
+    fig = plt.figure(1,figsize=(9, 7))
+    fig.canvas.set_window_title('Results')
+    # gridspec inside gridspec
+    idealLabels = IdealLabeler(fully_labeled_train_dataset)
+    X, _ = zip(*fully_labeled_train_dataset.data)
+    #outer_grid = gridspec.GridSpec(8, 6, wspace=1, hspace=0.8)
+    outer_grid = gridspec.GridSpec(5, 6, wspace=1, hspace=0.8)
+    if (len(list_idx) > 48 ):
+        list_idx = list_idx[:48]
+    count = 0
+
+    for idx, id_value in enumerate(list_idx):
+        lb = idealLabels.label(X[id_value])
+        ax = plt.Subplot(fig, outer_grid[count])
+        filename = utils.get_filename_descriptor_from_path(fully_labeled_train_dataset.data[id_value][0][1],10)
+        ax.text(0.1, 0.4, str(filename),size=8)
+        title = "ID {}".format(id_value)
+        if display_color:
+            if (lb == 1):
+                ax.set_title(title,style='italic', picker=True,  bbox={'facecolor':'limegreen', 'pad':3}, size = 13)
+            else :
+                ax.set_title(title,style='italic', picker=True, bbox={'facecolor':'salmon', 'pad':3}, size = 13)
+        else :
+            ax.set_title(title, picker=True, bbox=dict(facecolor='blue'))
+        ax.set_xticks([])
+        ax.set_yticks([])
+        fig.add_subplot(ax)
+
+        count = count + 1
+
+    fig.canvas.mpl_connect('pick_event', onpick)
+    plt.show(block=False)
 
 
 """
@@ -472,6 +515,143 @@ def annotate_data_similarity(fully_labeled_train_dataset,whole_dataset_unlabeled
 
 
     return total_annotated_id_list
+
+
+"""
+For the automatic labelling, take care of the labelling of the first step
+i.e select some positive and negative label
+We select 
+"""
+def automatic_annotate_first_step(fully_labeled_train_dataset, train_dataset_unlabeled, id_candidates, query_cloud):
+    #Loop over the first ID to annotate positively and negatively
+    id_selected_positif = list()
+    id_selected_negatif = list()
+
+    idealLabels = IdealLabeler(fully_labeled_train_dataset)
+    X, y = zip(*fully_labeled_train_dataset.data)
+
+    count_annotate_positif = 0
+    count_annotate_negatif = 0
+    total_count = 0
+
+    logging.debug('IDX candidates %s ',id_candidates)
+    for idx in id_candidates:
+        current_id = idx
+        lb = idealLabels.label(X[current_id])
+        if (lb == 1):
+            logging.debug('1. [Positif] Ask ID %s corresponds to label %s ',current_id,lb)
+            id_selected_positif.append((current_id,lb))
+            _ITEM_ALL_LABEL_DATA.append((current_id,lb))
+            train_dataset_unlabeled.update(int(current_id), lb)
+
+            count_annotate_positif = count_annotate_positif + 1
+        else : 
+            logging.debug('1. [Negatif] Ask ID %s corresponds to label %s ',current_id,lb)
+            
+            id_selected_negatif.append((current_id,lb))
+            _ITEM_ALL_LABEL_DATA.append((current_id,lb))
+            train_dataset_unlabeled.update(int(current_id), lb)
+
+            count_annotate_negatif = count_annotate_negatif + 1
+
+
+    #If not negative result in similarity search, take randomly one example negatif in the unlabeleded dataset
+    if (count_annotate_negatif == 0):
+        while (count_annotate_negatif == 0):
+            id_random = random.randint(0, len(X)-1)
+            feature_random = X[id_random]
+
+            lb = idealLabels.label(feature_random)
+            if (lb == - 1):
+                count_annotate_negatif = count_annotate_negatif + 1
+                id_selected_negatif.append((id_random,lb))
+                _ITEM_ALL_LABEL_DATA.append((id_random,lb))
+                train_dataset_unlabeled.update(int(id_random), lb)
+                logging.debug('Label %s for ID %s , negative has been selected randomly',id_random,lb)
+
+    if (count_annotate_positif == 0):
+
+        logging.debug('Still none positive')
+        while (count_annotate_positif == 0):
+            id_random = random.randint(0, len(X)-1)
+            feature_random = X[id_random]
+            lb = idealLabels.label(feature_random)
+            if (lb == 1):
+                count_annotate_positif = count_annotate_positif + 1
+                id_selected_positif.append((id_random,lb))
+                _ITEM_ALL_LABEL_DATA.append((id_random,lb))
+                train_dataset_unlabeled.update(int(id_random), lb)
+                logging.debug('Label %s for ID %s ,positive has been selected randomly',id_random,lb)
+        
+
+    #If still we did not find posiitf and negative, raise error because we couldn't train the svm
+    if (count_annotate_positif == 0 or count_annotate_negatif == 0):
+        #print("No positive or negative could be selected result similarity")
+        logging.error('No positive or negative label could be selected ')
+        exit(1)
+
+
+    total_annotated_id_list = id_selected_positif + id_selected_negatif
+
+
+    return total_annotated_id_list
+        
+"""
+During the main loop, this function take care of automatically label positive and negative label among the most uncertain one
+We take the first one and we look for its label
+"""
+def automatic_annotate_most_uncertain_second_step(fully_labeled_train_dataset,train_dataset_unlabeled,id_unlabeled_most_uncertain,number_to_annotate = 5):
+    #Loop over the first ID to annotate positively and negatively
+    id_selected_positif = list()
+    id_selected_negatif = list()
+
+    number_positif_to_annotate = 3
+    number_negatif_to_annotate = 3
+    
+    if (number_to_annotate > len(id_unlabeled_most_uncertain)):
+        number_to_annotate = len(id_unlabeled_most_uncertain) - 1
+
+    idealLabels = IdealLabeler(fully_labeled_train_dataset)
+    X, _ = zip(*fully_labeled_train_dataset.data)
+
+    count_annotate_positif = 0
+    count_annotate_negatif = 0
+    for i in range(number_to_annotate):
+        current_id_unlabeled = id_unlabeled_most_uncertain[i]
+        lb = idealLabels.label(X[current_id_unlabeled])
+        
+        if (lb == 1):
+            logging.debug('[Positif] Ask ID %s corresponds to label %s ',current_id_unlabeled,lb)
+                
+            id_selected_positif.append((current_id_unlabeled,lb))
+            _ITEM_ALL_LABEL_DATA.append((current_id_unlabeled,lb))
+            train_dataset_unlabeled.update(int(current_id_unlabeled), lb)
+
+            count_annotate_positif = count_annotate_positif + 1
+        else : 
+            
+            logging.debug('[Negatif] Ask ID %s corresponds to label %s ',current_id_unlabeled,lb)
+                
+            id_selected_negatif.append((current_id_unlabeled,lb))
+            _ITEM_ALL_LABEL_DATA.append((current_id_unlabeled,lb))
+            train_dataset_unlabeled.update(int(current_id_unlabeled), lb)
+
+            count_annotate_negatif = count_annotate_negatif + 1
+
+    if (count_annotate_positif == 0):
+        logging.warning('No positive label could be selected ')
+    if (count_annotate_negatif == 0):
+        logging.warning('No negative label could be selected ')
+
+    total_annotated_id_list = id_selected_positif + id_selected_negatif
+
+    logging.debug('Update Nbr unlabeled : : %s',train_dataset_unlabeled.len_unlabeled())
+    logging.debug('Update Nbr labeled : : %s',train_dataset_unlabeled.len_labeled())
+    logging.debug('===> Step selection positif : %s',id_selected_positif)
+    logging.debug('===> Step selection negatif : %s',id_selected_negatif)
+
+    return total_annotated_id_list
+
 
 
 """
@@ -926,7 +1106,7 @@ def similarity_search_interactive_learning(params):
     reg_interval_y = plticker.MultipleLocator(base=10.0) # this locator puts ticks at regular intervals
     reg_interval_x = plticker.MultipleLocator(base=1.0) # this locator puts ticks at regular intervals
 
-    nb_iterations = 0
+    nb_iterations = 1
 
     dataset_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), DESCRIPTORSLIST_PATH_FILE)
 
@@ -954,6 +1134,7 @@ def similarity_search_interactive_learning(params):
     print("\nItération : {} ".format(nb_iterations))
 
     list_idx_result = select_data_similaritySearch(train_dataset_binary_labeled, categorie_array_results)
+    
     if (len(list_idx_result) == 0):
         print("[ERROR] List IDX empty ")
         logging.error("[ERROR] List IDX empty ")
@@ -961,7 +1142,6 @@ def similarity_search_interactive_learning(params):
     
     display_data_init_similarity_search_classic(list_idx_result, train_dataset_binary_labeled, display_color_label)
 
-    
     #Annotate first data
     id_unlabeled_display_first = [id_feature for id_feature, feature in enumerate(unlabeled_entry_list[:NBRE_DATA_SELECTION])]
 
@@ -1196,6 +1376,343 @@ def similarity_search_interactive_learning(params):
         i = i + 1
     
     
+
+"""
+Main function for interactive learning with similarity search - Automatic labelling (no user required)
+"""
+def automatic_interactive_learning(params, save_figures = True):
+    global COMPUTE_FULL, OBJECTSLIST_PATH_FILE, DESCRIPTORSLIST_PATH_FILE, OUTPUT_GRAPHICALS_RESULTS, CATEGORY_LABEL
+
+    descriptor_interactive_learning, result_jsonfile, number_to_annotate_first_step, number_to_annotate_uncertain, nb_iterations_max, repetition_experiment = params    
+
+    categorie_array_results = utils.extract_names_objects_from_result_json(result_jsonfile)
+
+    #Get the file which contain the path to every objects of the dataset
+    listObjectsFromDataset= ROOT_DATA + NAME_DATASET + "/dataset_descriptor_" + descriptor_interactive_learning + ".txt"
+    #Get the file which contain the path to every descriptors of the dataset
+    listDescriptorsFromDataset = ROOT_DATA + NAME_DATASET + "/descriptors_"+ descriptor_interactive_learning + ".txt"
+    OBJECTSLIST_PATH_FILE = listObjectsFromDataset
+    DESCRIPTORSLIST_PATH_FILE = listDescriptorsFromDataset
+
+    #score of SVM for displaying data
+    score_array, error_array, score_pourcent_array, error_pourcent_array, rank_array, positif_display_pourcent_array, negatif_display_pourcent_array = [], [], [], [], [], [], []
+    f1score_array, AP_array, precision_array, recall_array,precision_curve_array, recall_curve_array, report_classification_array, cnf_matrix_array = [], [], [], [], [], [], [], []
+    #Result final
+    results_error = []
+    results_score = []
+
+    nb_iterations = 1
+
+    display_graphic_each_step = False
+    displayColor = True
+
+    
+    start = time.time()
+    #Repeat the experiment
+    for T in range(repetition_experiment):
+
+        dataset_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), DESCRIPTORSLIST_PATH_FILE)
+    
+        if COMPUTE_FULL == "true":
+            print("[INFO] Training - testing on full object")
+            fully_dataset_labeled_binary,train_dataset_unlabeled, train_dataset_binary_labeled, y_train_binary_GT,test_dataset_binary_labeled, path_list_train_views,path_list_test_views = \
+            utils.split_train_test_from_training_testing_data_similaritySearch_GT(
+                dataset_filepath, OBJECTSLIST_PATH_FILE, TRAINING_FILE_FULL,TESTING_FILE_FULL,
+                categorie_array_results,CATEGORY_LABEL,COMPUTE_FULL)
+            
+        else :
+            print("[INFO] Training - testing on views object")
+            fully_dataset_labeled_binary,train_dataset_unlabeled, train_dataset_binary_labeled, y_train_binary_GT,test_dataset_binary_labeled, path_list_train_views,path_list_test_views = \
+            utils.split_train_test_from_training_testing_data_similaritySearch_GT(
+                dataset_filepath, OBJECTSLIST_PATH_FILE, TRAINING_FILE_VIEWS,TESTING_FILE_VIEWS,
+                categorie_array_results,CATEGORY_LABEL, COMPUTE_FULL)
+        
+        unlabeled_entry_list = list(train_dataset_unlabeled.get_unlabeled_entries())
+
+        #Initialization rank
+        rank = len(unlabeled_entry_list)/2
+
+        print("=====>Itération : ({}/{}) ".format(nb_iterations,nb_iterations_max))
+
+        #list_idx_candidate = select_data_similaritySearch(train_dataset_binary_labeled,categorie_array_results)
+        list_idx_result = select_data_similaritySearch(train_dataset_binary_labeled,categorie_array_results)  
+
+        list_idx_result_first_three = select_data_similaritySearch_byindex(train_dataset_binary_labeled,categorie_array_results, 0, 3)
+        list_idx_result_last_three = select_data_similaritySearch_byindex(train_dataset_binary_labeled,categorie_array_results,len(categorie_array_results) - 4, len(categorie_array_results))
+        list_idx_candidate = list_idx_result_first_three + list_idx_result_last_three
+        
+        
+        if display_graphic_each_step:
+            automatic_display_data_init_similarity_search(list_idx_result, train_dataset_binary_labeled, displayColor)
+
+        #Annotate first data
+        id_unlabeled_display_first = [id_feature for id_feature, feature in enumerate(unlabeled_entry_list[:NBRE_DATA_SELECTION])]
+        
+        #total_annotated_id_list = automatic_annotate_first_step_long(train_dataset_binary_labeled,train_dataset_unlabeled,list_idx_result,number_to_annotate_first_step)
+        total_annotated_id_list = automatic_annotate_first_step(train_dataset_binary_labeled, train_dataset_unlabeled, list_idx_candidate, QUERY_CLOUD)
+        
+        ################ FIRST TRAINING ###################
+        model_learning = svm.SVC(kernel=KERNEL_SVM, C=C, gamma=GAM, class_weight='balanced',probability=True)
+
+        training_data(train_dataset_unlabeled,model_learning)
+
+        #Get parameters from the svm model
+        _params = model_learning.get_params()
+        _sv = model_learning.support_vectors_
+        _nv = model_learning.n_support_
+        _a  = model_learning.dual_coef_
+        _b  = model_learning._intercept_
+        _cs = model_learning.classes_
+
+        #Get the id and features from unlabeled data
+        idx_unlabeled_data, X_pool_unlabeled = zip(*train_dataset_unlabeled.get_unlabeled_entries())
+        #Get the id and features from all the data
+        idx_all_data, X_pool_all =  zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset_unlabeled.data)])
+
+        #Get the probabilities result and decision function of all the data
+        probabilities_samples_unlabeled = model_learning.predict_proba(X_pool_unlabeled)
+        decision_function = model_learning.decision_function(X_pool_unlabeled)
+
+        X_test, y_test_binary = zip(*test_dataset_binary_labeled.get_labeled_entries())
+        X_test =  np.array(X_test)
+        y_pred = model_learning.predict(X_test)
+        f1score, AP, precision, recall, precision_curve,recall_curve,report_classification, cnf_matrix = compute_scores_SVM(X_test, y_test_binary, y_pred)
+
+        print("Score = {}".format(precision))
+        print("Precision = {}".format(precision))
+        print("Recall = {}".format(recall))
+        print("F1-Score = {}".format(f1score))
+
+        ################ Score ###################
+        #Add the score to the chart
+        score = model_learning.score(*(test_dataset_binary_labeled.format_sklearn()))
+        error_array = np.append(error_array, 1 - score)
+        score_array = np.append(score_array, score)
+        score_ok = model_learning.score(*(test_dataset_binary_labeled.format_sklearn()))*100
+        score_error = (1 - model_learning.score(*(test_dataset_binary_labeled.format_sklearn())))*100
+        score_pourcent_array = np.append(score_pourcent_array, score_ok)
+        error_pourcent_array = np.append(error_pourcent_array, score_error)
+        rank_array = np.append(rank_array, rank)
+        precision_array = np.append(precision_array, precision)
+        recall_array = np.append(recall_array, recall)
+
+        
+        if display_graphic_each_step:
+            if PLOT_SCORE:
+                plt.figure(2)
+                query_num = np.arange(0, 1)
+                fig = plt.figure(2,figsize=(5, 5))
+                ax = fig.add_subplot(2, 1, 1)
+                p1, = ax.plot(query_num, error_array,'r', label='Error', linewidth = 2)
+                ax.set_xlabel('Number of steps')
+                ax.set_ylabel('Error')
+                ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
+                           shadow=True, ncol=5)
+
+
+                ay = fig.add_subplot(2, 1, 2)
+                p2, = ay.plot(query_num, score_array,'g', label='Score', linewidth = 2)
+                ay.set_xlabel('Number of steps ')
+                ay.set_ylabel('Score')
+                ay.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
+                           shadow=True, ncol=5)
+
+
+            if PLOT_PR_CURVE:
+                plt.figure(4)
+                plotting.plot_precision_recall(recall,precision,AP)
+
+            if PLOT_CNF_MATRIX:
+                # Plot non-normalized confusion matrix
+                plt.figure(5)
+                class_names = ['Positif','Negatif']
+                plot_conf = plotting.plot_confusion_matrix(cnf_matrix, classes=class_names,title='Confusion matrix, without normalization')
+                title = "confusion_matrix_" + str(category_label) + ".png"
+                plot_conf.savefig(title)
+
+            plt.show(block=True)
+
+     
+        if (USE_NORMALIZATION):
+            decision_function = MinMaxScaler(feature_range=(-1, 1)).fit_transform(decision_function)
+
+        #Sort the result in descending order so that we get the most certains results, i.e further point in the positive side
+        indices_ranking_descending_order, distance_ranking_descending_order = utils.sort_descending_order(decision_function, False)
+        idx_example_positif_selection = np.take(idx_unlabeled_data,indices_ranking_descending_order)[:NBRE_DATA_SELECTION]
+
+        pourcent_positif_displayed, pourcent_negatif_displayed = compute_pourcentage_results(train_dataset_binary_labeled, train_dataset_unlabeled, idx_example_positif_selection, 20)
+        positif_display_pourcent_array = np.append(positif_display_pourcent_array, pourcent_positif_displayed)
+        negatif_display_pourcent_array = np.append(negatif_display_pourcent_array, pourcent_negatif_displayed)
+
+
+        ################ SELECTION UNCERTAINTY ###################
+        ids_example_close_margin = select_most_uncertains_samples_from_decisionfunction(train_dataset_unlabeled, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)        
+        total_id_annotation = list(itertools.chain(idx_example_positif_selection, ids_example_close_margin))
+        
+        if display_graphic_each_step:
+            save_figure = False
+            display_color = True
+            display_selected_data_similarity_search_withGT(
+                train_dataset_binary_labeled, train_dataset_unlabeled, path_list_train_views,
+                 idx_example_positif_selection,ids_example_close_margin[:NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY_DISPLAY],
+                 display_color,save_figure)
+
+        ###########=====>>>> SECOND STEP UPDATE  ###########
+        print("\n")
+        total_annotated_id_list = automatic_annotate_most_uncertain_second_step(
+            train_dataset_binary_labeled, train_dataset_unlabeled,
+            ids_example_close_margin[:NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY_DISPLAY], 
+            number_to_annotate_uncertain)
+
+        idx_unlabeled_data, X_pool_unlabeled = zip(*train_dataset_unlabeled.get_unlabeled_entries())
+        decision_function = model_learning.decision_function(X_pool_unlabeled)
+        decision_function_custom = utils.decision_function_vector(_params, _sv, _nv, _a, _b, X_pool_unlabeled)
+
+        i = 0
+        #run_onelabel(trn_ds, tst_ds, idealLabeler, model, id_list_uncertain)
+        while nb_iterations < nb_iterations_max :
+            nb_iterations = nb_iterations + 1
+            print("\nAutomatique =====>Itération : ({}/{}) ".format(nb_iterations, nb_iterations_max))
+
+            ################ 1. FEEDBACK ###################
+            rank = feedback(train_dataset_unlabeled,rank,model_learning, total_annotated_id_list)
+            training_data(train_dataset_unlabeled, model_learning)
+
+            # Get parameters from model
+            _params = model_learning.get_params()
+            _sv = model_learning.support_vectors_
+            _nv = model_learning.n_support_
+            _a = model_learning.dual_coef_
+            _b = model_learning._intercept_
+            _cs = model_learning.classes_
+
+            pourcent_positif_displayed, pourcent_negatif_displayed = compute_pourcentage_results(train_dataset_binary_labeled, train_dataset_unlabeled, idx_example_positif_selection, 20)
+
+            X_test, y_test_binary = zip(*test_dataset_binary_labeled.get_labeled_entries())
+            X_test =  np.array(X_test)
+            y_pred = model_learning.predict(X_test)
+
+            f1score, AP, precision, recall, precision_curve,recall_curve,report_classification, cnf_matrix = compute_scores_SVM(X_test,y_test_binary,y_pred)
+            print("Score = {}".format(precision))
+            print("Precision = {}".format(precision))
+            print("Recall = {}".format(recall))
+            print("F1-Score = {}".format(f1score))
+
+            # Add score to the chart
+            score = model_learning.score(*(test_dataset_binary_labeled.format_sklearn()))
+            error_array = np.append(error_array, 1 - score)
+            score_array = np.append(score_array, score)
+            score_ok = model_learning.score(*(test_dataset_binary_labeled.format_sklearn())) * 100
+            score_error = (1 - model_learning.score(*(test_dataset_binary_labeled.format_sklearn()))) * 100
+            score_pourcent_array = np.append(score_pourcent_array, score_ok)
+            error_pourcent_array = np.append(error_pourcent_array, score_error)
+            print("[INFO]  ==> SCORE : {}".format(score_ok))
+            rank_array = np.append(rank_array, rank)
+            precision_array = np.append(precision_array, precision)
+            recall_array = np.append(recall_array, recall)
+
+            positif_display_pourcent_array = np.append(positif_display_pourcent_array, pourcent_positif_displayed)
+            negatif_display_pourcent_array = np.append(negatif_display_pourcent_array, pourcent_negatif_displayed)
+            
+            idx_unlabeled_data, X_pool_unlabeled = zip(*train_dataset_unlabeled.get_unlabeled_entries())
+            idx_all_data, X_pool_all =  zip(*[(idx, entry[0]) for idx, entry in enumerate(train_dataset_unlabeled.data)])
+            probabilities_samples_unlabeled = model_learning.predict_proba(X_pool_unlabeled)
+            decision_function = model_learning.decision_function(X_pool_unlabeled)
+
+            indices_rank_decision_function_positif_without_correction, _ = utils.sort_descending_order(decision_function, True)
+            idx_example_positif_selection_without_correction = np.take(idx_unlabeled_data, indices_rank_decision_function_positif_without_correction)[:NBRE_DATA_SELECTION]
+
+            ################ 2. CORRECTION STEP ###################
+            decision_function, number_to_remove = correction(train_dataset_unlabeled, model_learning, rank)
+            indices_rank_new_decision_function_positif, distance_rank_decision_function_positif = utils.sort_descending_order(decision_function, True)
+            idx_example_positif_selection = np.take(idx_unlabeled_data,indices_rank_new_decision_function_positif)[:NBRE_DATA_SELECTION]
+
+            ################ 3. PRESELECTION STEP ###################
+            ids_example_close_margin_correction = select_most_uncertains_samples_from_decisionfunction(train_dataset_unlabeled, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY, number_to_remove)
+            ids_example_close_margin_without_correction = select_most_uncertains_samples_from_decisionfunction(train_dataset_unlabeled, model_learning, NBRE_DATA_MARGINS_SELECTION_UNCERTAINTY)
+
+            ################ 4. SELECTION STEP ###################
+            kernel_ = 0
+            cost_g = selectioner(train_dataset_unlabeled,model_learning,kernel_,y_train_binary_GT, decision_function, ids_example_close_margin_correction)
+
+            ################ 5. DIVERSIFIER STEP ###################
+            id_selection_diversification = diversifier(train_dataset_unlabeled, DIVERSIFICATION_LAMBDA, NBRE_DATA_FINAL_SELECTION, cost_g, _params, ids_example_close_margin_correction)
+
+            
+            if display_graphic_each_step:
+                save_figure = False
+                display_color = True
+                display_selected_data_similarity_search_withGT(
+                    train_dataset_binary_labeled,train_dataset_unlabeled,
+                     path_list_train_views, idx_example_positif_selection, id_selection_diversification,
+                     display_color,save_figure)
+
+                quota = nb_iterations - 1
+                query_num = np.arange(0, quota + 1)
+                                
+                fig = plt.figure(1,figsize=(10,7))
+                figure_colour=["g","b"]
+                figure_data = [score_pourcent_array, positif_display_pourcent_array ]
+                figure_label = ['Score','Positif display']
+                figure_subtitle = ['Score of SVM testing over iterations','Number of positif samples displayed to the user in the top 20']
+
+
+                plotting.plot_curves(query_num, figure_data, figure_colour, figure_label, figure_subtitle, "Curves results", save_figures)
+                
+                if PLOT_PR_CURVE:
+                    plotting.plot_curves_precision_recall(query_num,recall_array, precision_array, recall_curve_array, precision_curve_array, AP_array, save_figures)
+
+                if PLOT_CNF_MATRIX:
+                    # Plot non-normalized confusion matrix
+                    plt.figure(5)
+                    class_names = ['Positif','Negatif']
+                    plotting.plot_confusion_matrix(cnf_matrix, classes=class_names,title='Confusion matrix, without normalization')
+                    #plotting.plot_classification_report(report_classification)
+                
+                plt.show(block=True)
+
+
+            total_id_annotation = list(itertools.chain(idx_example_positif_selection, id_selection_diversification))
+
+            total_annotated_id_list = automatic_annotate_most_uncertain_second_step(
+                train_dataset_binary_labeled, train_dataset_unlabeled,
+                 id_selection_diversification, number_to_annotate_uncertain)
+
+
+            i = i + 1
+
+        results_error.append(error_pourcent_array.tolist())
+        results_score.append(score_pourcent_array.tolist())
+    
+    #Display graphic and save it
+    end = time.time()
+    time_experiment_elapsed = end - start
+    title = "Time experiment = " + str(time_experiment_elapsed) + " s"+\
+            "\n Score Max : " + str(max(score_pourcent_array))  + " %\n Current Score : " + str(score_pourcent_array[len(score_pourcent_array)-1]) +\
+            " %\n Current Error : " + str(error_pourcent_array[len(error_pourcent_array)-1]) + " %"
+    quota = nb_iterations_max - 1
+    query_num = np.arange(0, quota + 1)
+        
+    fig = plt.figure(1,figsize=(10,7))
+    plt.suptitle(title, fontsize=8, fontweight='bold')
+
+    figure_colour=["g","b"]
+    figure_data = [score_pourcent_array, positif_display_pourcent_array ]
+    figure_label = ['Score','Positif display']
+    figure_subtitle = ['Score of SVM testing over iterations','Number of positif samples displayed to the user in the top 20']
+
+    plotting.plot_curves(query_num, figure_data, figure_colour, figure_label, figure_subtitle,"Curves results", save_figures)
+    plotting.plot_curves_precision_recall(query_num, recall_array, precision_array,recall_curve_array, precision_curve_array,AP_array, save_figures)
+        
+    display_selected_data_similarity_search_withGT(
+        train_dataset_binary_labeled, train_dataset_unlabeled,
+         path_list_train_views, idx_example_positif_selection, id_selection_diversification,
+         True, save_figures)
+    
+    plt.show(block=True)
+    
+
+
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
@@ -1232,7 +1749,7 @@ def main():
         similaritySearch_automatic_alltesting = 3
 
     #Choose here the option you want
-    current_option = option_interactiveLearning.similaritySearch_manuel
+    current_option = option_interactiveLearning.similaritySearch_automatic_oneobject
 
     if not os.path.isfile("cloudRetrieval_main"):
         print("\n [ERROR] Cloud Retrieval main binary does not exist - Please check the path")
@@ -1256,7 +1773,7 @@ def main():
     k = ''
     leaf_resolution = ''
     output_json_result_similaritysearch = ''
-    query_cloud = args["query"]
+    QUERY_CLOUD = args["query"]
     trained_dataset = args["trained"]
     if args["descriptorSimilarity"] is not None:
         descriptor_similaritySearch = args["descriptorSimilarity"]
@@ -1296,8 +1813,12 @@ def main():
 
     #Run automatic interactive learning with similarity search and by sumbittming one point cloud
     elif current_option == option_interactiveLearning.similaritySearch_automatic_oneobject:
-        params = (descriptor_interactiveLearning,output_json_result,number_to_annotate_first_step,number_to_annotate_second_step,nb_iterations_max,repetition_experiment)
-        #automatic_interactiveLearning(params,True)
+        params = (
+            DESCRIPTOR_INTERACTIVELEARNING, OUTPUT_JSON_RESULT_SIMILARITYSEARCH, 
+            NUMBER_TO_ANNOTATE_FIRST_STEP, NUMBER_TO_ANNOTATE_SECOND_STEP, 
+            NB_ITERATIONS_MAX,NB_REPETITION_EXPERIMENT)
+        
+        automatic_interactive_learning(params,True)
 
     elif current_option == option_interactiveLearning.similaritySearch_automatic_alltesting:
         nb_iterations_max = 20
