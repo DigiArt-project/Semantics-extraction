@@ -6,21 +6,107 @@ __all__ = ['inherit_docstring_from', 'seed_random_state', 'zip']
 
 zip = zip
 
+
+
 """
-Check is a string is encoded in ASCII or not
+Compute RBF or linear Kernel using two points
 """
-def is_ascii(text):
-    if isinstance(text, unicode):
-        try:
-            text.encode('ascii')
-        except UnicodeEncodeError:
-            return False
-    else:
-        try:
-            text.decode('ascii')
-        except UnicodeDecodeError:
-            return False
-    return True
+def simple_kernel(kernel, gamma, x1, x2, coef0=0, degree=3):
+    if kernel == 'linear':
+        #sv = support vectors
+        return np.dot(x1, x2)
+    elif kernel == 'rbf':
+        return math.exp(-gamma * np.dot(x1 - x2, x1 - x2))
+    elif kernel == 'sigmoid':
+        return [np.tanh(gamma * np.dot(x1, x2) + coef0 )]
+    elif kernel == 'sigmoid':
+        return [np.tanh(gamma * np.dot(x1, x2) + coef0 )]
+    elif kernel == 'poly':
+        return [math.pow((gamma * np.dot(x1, x2) + coef0), degree )]
+
+
+"""
+Compute RBF or linear Kernel using vector
+"""
+def kernel(params, sv, X, coef0=0, degree=3):
+    if params['kernel'] == 'linear':
+        #sv = support vectors
+        return [np.dot(vi, X) for vi in sv]
+    elif params['kernel'] == 'rbf':
+        gamma = params['gamma']
+        return [math.exp(-gamma * np.dot(vi - X, vi - X)) for vi in sv]
+    elif params['kernel'] == 'sigmoid':
+        gamma = params['gamma']
+        return [np.tanh(gamma * np.dot(vi, X) + coef0 ) for vi in sv]
+    elif params['kernel'] == 'poly':
+        gamma = params['gamma']
+        return [math.pow((gamma * np.dot(vi, X) + coef0), degree ) for vi in sv ]
+
+"""
+Compute diveristy with the angle kernel
+Brinker : https://www.aaai.org/Papers/ICML/2003/ICML03-011.pdf
+"""
+def angle_kernel(kernel, gamma, x1, x2):
+    simple_kernel_i_j = simple_kernel(kernel,gamma,x1,x2)
+    simple_kernel_i_i = simple_kernel(kernel,gamma,x1,x1)
+    simple_kernel_j_j = simple_kernel(kernel,gamma,x2,x2)
+
+    if (isinstance(simple_kernel_i_j, list)):
+        simple_kernel_i_j = simple_kernel_i_j[0]
+        simple_kernel_i_i = simple_kernel_i_i[0]
+        simple_kernel_j_j = simple_kernel_j_j[0]
+
+    abs_kernel = math.fabs(simple_kernel_i_j)
+
+    angle_kernel_result = (abs_kernel/ math.sqrt(simple_kernel_i_i * simple_kernel_j_j) )
+
+    return angle_kernel_result
+
+
+"""
+Replicate the decision function of scikit : clf.decision_function(X)
+Give the decision function of a specific point X
+"""
+def decision_function_point(params, sv, nv, a, b, X):
+    # calculate the kernels
+    k= kernel(params, sv, X)
+
+    # define the start and end index for support vectors for each class
+    start= [sum(nv[:i]) for i in range(len(nv))]
+    end= [start[i] + nv[i] for i in range(len(nv))]
+
+    # calculate: sum(a_p * k(x_p, x)) between every 2 classes
+    c= [ sum(a[ i ][p] * k[p] for p in range(start[j], end[j])) +
+          sum(a[j-1][p] * k[p] for p in range(start[i], end[i]))
+                for i in range(len(nv)) for j in range(i+1,len(nv))]
+
+    #add the intercept
+    return [sum(x) for x in zip(c, b)]
+
+"""
+Replicate the decision function of scikit : clf.decision_function(X)
+Give the decision function of a given Vector X (which contains many points)
+"""
+def decision_function_vector(params, sv, nv, a, b, X):
+    decision_function = []
+    # define the start and end index for support vectors for each class
+    start = [sum(nv[:i]) for i in range(len(nv))]
+    end = [start[i] + nv[i] for i in range(len(nv))]
+
+    k = []
+    for idx, value in enumerate(X):
+        k_current = kernel(params, sv, value)
+        k.insert(idx,k_current)
+
+        c = [ sum(a[i][p] * k_current[p] for p in range(start[j], end[j])) + sum(a[j-1][p] * k_current[p] for p in range(start[i], end[i]))
+                for i in range(len(nv)) for j in range(i+1,len(nv))]
+
+        for x in zip(c, b):
+            som = sum(x)
+        
+        decision_function.insert(idx,som)
+    
+    return np.array(decision_function)
 
 
 """ Timer """
@@ -503,3 +589,20 @@ def polar_to_cartesian(arr, r):
     co = np.cos(a)
     co = np.roll(co, -1)
     return si * co * r
+
+
+"""
+Check is a string is encoded in ASCII or not
+"""
+def is_ascii(text):
+    if isinstance(text, unicode):
+        try:
+            text.encode('ascii')
+        except UnicodeEncodeError:
+            return False
+    else:
+        try:
+            text.decode('ascii')
+        except UnicodeDecodeError:
+            return False
+    return True

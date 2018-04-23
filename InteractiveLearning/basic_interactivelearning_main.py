@@ -235,105 +235,6 @@ def annotate_data(whole_dataset, id_to_display):
     return total_annotated_id_list
 
 
-"""
-Compute RBF or linear Kernel using two points
-"""
-def simple_kernel(kernel,gamma,x1,x2,coef0 = 0, degree = 3):
-    if kernel == 'linear':
-        #sv = support vectors
-        return np.dot(x1, x2)
-    elif kernel == 'rbf':
-        return math.exp(-gamma * np.dot(x1 - x2, x1 - x2))
-    elif kernel == 'sigmoid':
-        return [np.tanh(gamma * np.dot(x1, x2) + coef0 )]
-    elif kernel == 'sigmoid':
-        return [np.tanh(gamma * np.dot(x1, x2) + coef0 )]
-    elif kernel == 'poly':
-        return [math.pow((gamma * np.dot(x1, x2) + coef0), degree )]
-
-
-"""
-Compute RBF or linear Kernel using vector
-"""
-def kernel(params, sv, X,coef0 = 0, degree = 3 ):
-    if params['kernel'] == 'linear':
-        #sv = support vectors
-        return [np.dot(vi, X) for vi in sv]
-    elif params['kernel'] == 'rbf':
-        gamma = params['gamma']
-        return [math.exp(-gamma * np.dot(vi - X, vi - X)) for vi in sv]
-    elif params['kernel'] == 'sigmoid':
-        gamma = params['gamma']
-        return [np.tanh(gamma * np.dot(vi, X) + coef0 ) for vi in sv]
-    elif params['kernel'] == 'poly':
-        gamma = params['gamma']
-        return [math.pow((gamma * np.dot(vi, X) + coef0), degree ) for vi in sv ]
-
-"""
-Compute diveristy with the angle kernel
-Brinker : https://www.aaai.org/Papers/ICML/2003/ICML03-011.pdf
-"""
-def angle_kernel(kernel, gamma, x1,x2):
-    simple_kernel_i_j = simple_kernel(kernel,gamma,x1,x2)
-    simple_kernel_i_i = simple_kernel(kernel,gamma,x1,x1)
-    simple_kernel_j_j = simple_kernel(kernel,gamma,x2,x2)
-
-    if (isinstance(simple_kernel_i_j, list)):
-        simple_kernel_i_j = simple_kernel_i_j[0]
-        simple_kernel_i_i = simple_kernel_i_i[0]
-        simple_kernel_j_j = simple_kernel_j_j[0]
-
-    abs_kernel = math.fabs(simple_kernel_i_j)
-
-    angle_kernel_result = (abs_kernel/ math.sqrt(simple_kernel_i_i * simple_kernel_j_j) )
-
-    return angle_kernel_result
-
-
-"""
-Replicate the decision function of scikit : clf.decision_function(X)
-Give the decision function of a specific point X
-"""
-def decision_function_point(params, sv, nv, a, b, X):
-    # calculate the kernels
-    k= kernel(params, sv, X)
-
-    # define the start and end index for support vectors for each class
-    start= [sum(nv[:i]) for i in range(len(nv))]
-    end= [start[i] + nv[i] for i in range(len(nv))]
-
-    # calculate: sum(a_p * k(x_p, x)) between every 2 classes
-    c= [ sum(a[ i ][p] * k[p] for p in range(start[j], end[j])) +
-          sum(a[j-1][p] * k[p] for p in range(start[i], end[i]))
-                for i in range(len(nv)) for j in range(i+1,len(nv))]
-
-    #add the intercept
-    return [sum(x) for x in zip(c, b)]
-
-"""
-Replicate the decision function of scikit : clf.decision_function(X)
-Give the decision function of a given Vector X (which contains many points)
-"""
-def decision_function_vector(params, sv, nv, a, b, X):
-    decision_function = []
-    # define the start and end index for support vectors for each class
-    start = [sum(nv[:i]) for i in range(len(nv))]
-    end = [start[i] + nv[i] for i in range(len(nv))]
-
-    k = []
-    for idx, value in enumerate(X):
-        k_current = kernel(params, sv, value)
-        k.insert(idx,k_current)
-
-        c = [ sum(a[i][p] * k_current[p] for p in range(start[j], end[j])) + sum(a[j-1][p] * k_current[p] for p in range(start[i], end[i]))
-                for i in range(len(nv)) for j in range(i+1,len(nv))]
-
-        for x in zip(c, b):
-            som = sum(x)
-        
-        decision_function.insert(idx,som)
-    
-    return np.array(decision_function)
 
 """
 Replicate the predict function of scikit :  clf.predict(X)
@@ -370,7 +271,7 @@ def predict_vector(params, sv, nv, a, b, cs, x):
     '''
     result_prediction= list()
     for idx, value in enumerate(X):
-        decision = decision_function_point(params, sv, nv, a, b, value)
+        decision = utils.decision_function_point(params, sv, nv, a, b, value)
         votes = [(i if decision[p] < 0 else j) for p,(i,j) in enumerate((i,j) 
                                            for i in range(len(cs))
                                            for j in range(i+1,len(cs)))]
@@ -636,7 +537,7 @@ def diversifier(dataset, param_adjust, batch_number, g, params, pre_selection_da
             for j, value_id_j in enumerate(selection):
                 feature_selected_j = features_all[value_id_j]
                 #Compute angle diversity
-                similarity_measure= angle_kernel(kernel, gamma, feature_selected_i, feature_selected_j)
+                similarity_measure= utils.angle_kernel(kernel, gamma, feature_selected_i, feature_selected_j)
                 similarities_i_j.append(similarity_measure)
 
             if similarities_i_j:
@@ -823,7 +724,7 @@ def basic_interactive_learning_start(descriptor_interactivelearning):
     total_annotated_id_list = annotate_data(train_dataset,total_id_annotation)
     idx_unlabeled_data,x_pool_unlabeled = zip(*train_dataset.get_unlabeled_entries())
     decision_function = model_learning.decision_function(x_pool_unlabeled)
-    decision_function_custom = decision_function_vector(_params, _sv, _nv, _a, _b, x_pool_unlabeled)
+    decision_function_custom = utils.decision_function_vector(_params, _sv, _nv, _a, _b, x_pool_unlabeled)
 
     decision_func = copy.copy(decision_function)
     
