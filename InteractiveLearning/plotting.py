@@ -9,18 +9,20 @@ from collections import OrderedDict
 reg_interval_y = plticker.MultipleLocator(base=10.0) # this locator puts ticks at regular intervals
 reg_interval_x = plticker.MultipleLocator(base=1.0) # this locator puts ticks at regular intervals
 
-def plot_precision_recall(recall,precision,AP):
+def plot_precision_recall(recall, precision, AP, save_figure=False, name_figure="Precision_Recall_Curve.png"):
     # Plot Precision-Recall curve
-    plt.figure()
-    plt.plot(recall, precision, lw=3, color='navy',label='Precision-Recall curve')
+    fig = plt.figure(figsize=(6, 6))
+    plt.plot(recall, precision, lw=3, color='navy', label='Precision-Recall curve')
     plt.xlabel('Recall')
     plt.ylabel('Precision')
     plt.ylim([0.0, 1.05])
     plt.xlim([0.0, 1.0])
     plt.title('Precision-Recall example: Average Precision Score AUC={0:0.2f}'.format(AP))
     plt.legend(loc="lower left")
+    if save_figure:
+        fig.savefig(name_figure, bbox_inches='tight')
 
-def plot_curves(query_num,figure_data,figure_colour,figure_label,figure_subtitle,main_title = "Curves result",save_figure = False,name_figure = "result.png" ):
+def plot_curves(query_num, figure_data, figure_colour, figure_label, figure_subtitle, main_title="Curves result", save_figure=False, name_figure="result.png" ):
     nb_figures = len(figure_data)
     fig = plt.figure(figsize=(6, 6))
     plt.suptitle(main_title, fontsize=8, fontweight='bold')
@@ -36,20 +38,24 @@ def plot_curves(query_num,figure_data,figure_colour,figure_label,figure_subtitle
         ax.xaxis.set_major_locator(reg_interval_x)
         
     plt.tight_layout()
-    # Add space at top
     plt.subplots_adjust(top=0.85)
 
     if (save_figure):
         fig.savefig(name_figure, bbox_inches='tight')
 
-def plot_curves_2(query_num,figure_data,figure_colour,figure_label,figure_subtitle,main_title,name_figure,name_dataset,name_category,name_descriptor,output_graphicals_result,save_figure = False ):
+def plot_curves_2(
+    query_num, figure_data, figure_colour,
+    figure_label, figure_subtitle, main_title,
+    name_figure, name_dataset, name_category,
+    name_descriptor, output_graphicals_result,
+    save_figure = False ):
     nb_figures = len(figure_data)
     fig = plt.figure(figsize=(11, 8))
     for i in range(nb_figures):
         ax = fig.add_subplot(nb_figures, 1, i+1)
         plt.suptitle(main_title, fontsize=8, fontweight='bold')
         #ax = f1.add_subplot(111)
-        ax.plot(query_num, figure_data[i], figure_colour[i], label=figure_label[i],lw = 3)
+        ax.plot(query_num, figure_data[i], figure_colour[i], label=figure_label[i], lw = 3)
         ax.set_title(figure_subtitle[i],fontsize=7,fontweight='bold')
         lgd_ax = ax.legend(bbox_to_anchor=(1.05, 1),loc=2, borderaxespad=0.,fancybox=True, shadow=True)
         ax.set_xlabel("Iterations")
@@ -69,7 +75,10 @@ def plot_curves_2(query_num,figure_data,figure_colour,figure_label,figure_subtit
             paht_to_save = output_graphicals_result + title_points
             utils.save_list_points(figure_data[i],paht_to_save)
         
-def plot_curves_final(query_num,figure_data,figure_colour,figure_label,figure_subtitle,main_title,name_figure,name_dataset,name_descriptor,output_graphicals_result,save_figure = False ):
+def plot_curves_final(
+    query_num, figure_data, figure_colour, figure_label,
+    figure_subtitle, main_title, name_figure, name_dataset,
+    name_descriptor, output_graphicals_result, save_figure = False ):
     nb_figures = len(figure_data)
     fig = plt.figure(figsize=(11, 8))
     for i in range(nb_figures):
@@ -99,9 +108,52 @@ def plot_curves_final(query_num,figure_data,figure_colour,figure_label,figure_su
         title_figure = name_dataset + "_" + name_descriptor + ".png"
         paht_to_save = output_graphicals_result + title_figure
         fig.savefig(paht_to_save, bbox_inches='tight')
+
+
+def plot_curves_NN_FT_ST(
+    query_num,NN_score, FT_score, ST_score,
+    main_title, name_dataset, name_category,
+    name_descriptor, output_graphicals_result
+    save_figure=False):
+
+    fig2 = plt.figure(figsize=(11, 8))
+    plt.suptitle(main_title, fontsize=14, fontweight='bold')
+    ax = fig2.add_subplot(3, 1, 1)
+    p1, = ax.plot(query_num, NN_score, lw=3, color='g')
+    #ax.set_xlabel('Number of steps')
+    ax.set_ylabel('Score')
+    ax.set_title("NN over iterations")
+    ax.set_ylim([0.0, 101.5])
+    ax.xaxis.set_major_locator(reg_interval_x)
+    #ax.set_title('Precision-Recall example: Average Precision Score AUC={0:0.2f}'.format(mean_average_precision))
+    lgd_ax = ax.legend(loc="lower left")
+
+    ay = fig2.add_subplot(3, 1, 2)
+    p2, = ay.plot(query_num, FT_score, 'g', label='FT', lw = 3)
+    ay.set_ylim([0.0, 101.5])
+    ay.xaxis.set_major_locator(reg_interval_x)
+    ay.set_title("FT over iterations")
+    #ay.set_xlabel('Number of steps ')
+    ay.set_ylabel('Score')
+    lgd_ay = ay.legend(loc="lower left")
+
+    az = fig2.add_subplot(3, 1, 3)
+    p3, = az.plot(query_num, ST_score, 'g', label='ST', lw = 3)
+    az.set_ylim([0.0, 101.5])
+    az.xaxis.set_major_locator(reg_interval_x)
+    az.set_title("ST over iterations")
+    #ay.set_xlabel('Number of steps ')
+    az.set_ylabel('Score')
+    title_figure = name_dataset + "_" + name_category + "_" + name_descriptor + "_NN_FT_ST.png"
+    if save_figure:
+        paht_to_save = output_graphicals_result + title_figure
+        fig2.savefig(paht_to_save, bbox_inches='tight')
         
 
-def plot_curves_precision_recall(query_num,recall_array,precision_array,recall_curve,precision_curve,AP,save_figure = False,name_figure = "result_curve_precision_recall.png"):
+def plot_curves_precision_recall(
+    query_num, recall_array, precision_array, ecall_curve,
+    precision_curve, AP, save_figure=False,
+    name_figure = "Result_curve_precision_recall.png"):
 
     # Plot Precision-Recall curve
     fig1 = plt.figure(figsize=(10,7))
@@ -136,8 +188,12 @@ def plot_curves_precision_recall(query_num,recall_array,precision_array,recall_c
         fig1.savefig(name_figure, bbox_inches='tight')
         
 
-def plot_f1_precision_recall_final(query_num,f1_score,precision_score,recall_score,recall_curve,precision_curve,average_precision,name_dataset,name_category,name_descriptor,output_graphicals_result,title,save_figure = False):
-    
+def plot_f1_precision_recall_final(
+    query_num, f1_score, precision_score, recall_score,
+    recall_curve, precision_curve, average_precision,
+    name_dataset, name_category, name_descriptor,
+    output_graphicals_result, title, save_figure = False):
+
     fig = plt.figure(figsize=(11, 8))
     plt.suptitle(title, fontsize=16, fontweight='bold')
 
@@ -150,7 +206,6 @@ def plot_f1_precision_recall_final(query_num,f1_score,precision_score,recall_sco
     ax.xaxis.set_major_locator(reg_interval_x)
     #ax.set_title('Precision-Recall example: Average Precision Score AUC={0:0.2f}'.format(mean_average_precision))
     lgd_ax = ax.legend(loc="lower left")
-    
 
     ay = fig.add_subplot(2, 2, 2)
     p2, = ay.plot(query_num, precision_score, 'g', label='Precision',lw = 3)
@@ -159,9 +214,7 @@ def plot_f1_precision_recall_final(query_num,f1_score,precision_score,recall_sco
     ay.set_title("Precision over iterations")
     #ay.set_xlabel('Number of steps ')
     ay.set_ylabel('Precision')
-        
     lgd_ay = ay.legend(loc="lower left")
-
     
     az = fig.add_subplot(2, 2, 3)
     p3, = az.plot(query_num,f1_score, 'c', label='F1 Score',lw = 3)
@@ -186,12 +239,14 @@ def plot_f1_precision_recall_final(query_num,f1_score,precision_score,recall_sco
         paht_to_save = output_graphicals_result + title_figure
         fig.savefig(paht_to_save, bbox_inches='tight')
 
-
     plt.tight_layout()
     # Add space at top
     plt.subplots_adjust(top=0.83)
 
-def plot_f1_precision_recall(query_num,f1_score,precision_score,recall_score,recall_curve,precision_curve,average_precision,name_dataset,name_category,name_descriptor,output_graphicals_result,title,save_figure = False):
+def plot_f1_precision_recall(
+    query_num, f1_score, precision_score, recall_score, recall_curve,
+    precision_curve, average_precision, name_dataset, name_category,
+    name_descriptor, output_graphicals_result, title, save_figure = False):
     fig2 = plt.figure(figsize=(11, 8))
     plt.suptitle(title, fontsize=16, fontweight='bold')
 
@@ -204,7 +259,6 @@ def plot_f1_precision_recall(query_num,f1_score,precision_score,recall_score,rec
     ax.xaxis.set_major_locator(reg_interval_x)
     #ax.set_title('Precision-Recall example: Average Precision Score AUC={0:0.2f}'.format(mean_average_precision))
     lgd_ax = ax.legend(loc="lower left")
-    
 
     ay = fig2.add_subplot(2, 2, 2)
     p2, = ay.plot(query_num, precision_score, 'g', label='Precision', lw = 4)
@@ -213,9 +267,7 @@ def plot_f1_precision_recall(query_num,f1_score,precision_score,recall_score,rec
     ay.set_title("Precision over iterations")
     #ay.set_xlabel('Number of steps ')
     ay.set_ylabel('Precision')
-        
     lgd_ay = ay.legend(loc="lower left")
-
     
     az = fig2.add_subplot(2, 2, 3)
     p3, = az.plot(query_num,f1_score, 'c', label='F1 Score')
@@ -224,7 +276,6 @@ def plot_f1_precision_recall(query_num,f1_score,precision_score,recall_score,rec
     az.set_ylabel('F1 score')
     az.xaxis.set_major_locator(reg_interval_x)
     lgd_az = az.legend(loc="lower left")
-
 
     aw = fig2.add_subplot(2, 2, 4)
     p3, = aw.plot(recall_curve,precision_curve, lw=4, color='navy',label='Precision Recall curve')
@@ -239,8 +290,6 @@ def plot_f1_precision_recall(query_num,f1_score,precision_score,recall_score,rec
         title_figure = name_dataset + "_" + name_category + "_" + name_descriptor + "_averageprecision.png"
         paht_to_save = output_graphicals_result + title_figure
         fig2.savefig(paht_to_save, bbox_inches='tight')
-
-       
        
 
 def get_cmap(n, name='Set1'):
@@ -248,61 +297,7 @@ def get_cmap(n, name='Set1'):
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name,n)
 
-'''
-def plot_bar(descriptors_array,categories_array,score_array, multiple = True,save = True):
-    
-    len_category = len(categories_array)
 
-    # create plot
-    fig, ax = plt.subplots(figsize = (9,9))
-    index = np.arange(len_category)
-    if multiple:
-        bar_width = 0.05
-    else :
-        bar_width = 1.5
-    opacity = 1.0
-
-    cmap = get_cmap(len(descriptors_array))
-
-    if multiple:
-        count = 0
-        for i in range(len(descriptors_array)):
-            count = count + 1
-            current_label = descriptors_array[i]
-            rects = plt.bar(index-0.2+bar_width*i, score_array[i], bar_width,
-                             alpha=opacity,
-                             color=np.random.rand(3,1),
-                             label=current_label )
-            
-            max_score_current = max(score_array[i])
-            print("Max Score : {}".format(max_score_current))
-
-    
-    else :
-        count = 0
-        opacity = 1
-        for i in range(len(descriptors_array)):
-
-            count = count + 1
-            current_label = descriptors_array[i]
-            rects = plt.bar(index+bar_width, score_array[i], width=0.5*bar_width,
-                             alpha=opacity,
-                             color=cmap(i),
-                             label=current_label
-                             )
-            opacity = opacity - 0.05
-
-    plt.xlabel('Categories')
-    plt.ylabel('Scores')
-    plt.title('Scores by Categories')
-    plt.xticks(index + bar_width, categories_array)
-    plt.legend()        
-     
-    plt.tight_layout()
-    plt.show()
-
-    return fig
-'''
 def plot_bar(descriptors_array,categories_array,score_array,title):
     len_category = len(categories_array)
     bar_width = 0.05
@@ -342,7 +337,7 @@ def plot_bar(descriptors_array,categories_array,score_array,title):
 
     return fig
 
-def plot_points(descriptors_array,categories_array,score_array,title):
+def plot_points(descriptors_array, categories_array, score_array, title):
     len_category = len(categories_array)
     bar_width = 0.05
     opacity = 1.0
@@ -383,7 +378,7 @@ def plot_points(descriptors_array,categories_array,score_array,title):
 """
 Visualize high dimensional data
 """
-def visualisation_high_dimensional(X,y,model_learning):
+def visualisation_high_dimensional(X, y, model_learning):
     db = DBPlot(model_learning,PCA(n_components=2),acceptance_threshold=0.03, n_decision_boundary_keypoints=10, n_generated_testpoints_per_keypoint=15)
     X_train = np.array(X)
     y_train = np.array(y)
@@ -580,8 +575,6 @@ def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels, figure_width=4
 
     # resize 
     fig = plt.gcf()
-    #fig.set_size_inches(cm2inch(40, 20))
-    #fig.set_size_inches(cm2inch(40*4, 20*4))
     fig.set_size_inches(cm2inch(figure_width, figure_height))
 
 
@@ -630,9 +623,6 @@ if __name__ == '__main__':
         test_mean = [random.uniform(0,1) for _ in range (len_category)]
         score_array.append(test_mean)
 
-    #print(score_array)
-    #print(type(score_array))
-
     category_list_name_array = list()
     for i in range(len_category):
         current_category = "Cat " + str(i+1)
@@ -640,3 +630,59 @@ if __name__ == '__main__':
     fig = plot_points(descriptors,category_list_name_array,score_array,"title")
     #plot_bar(descriptors,category_list_name_array,score_array, multiple = True)
  
+
+ '''
+def plot_bar(descriptors_array,categories_array,score_array, multiple = True,save = True):
+    
+    len_category = len(categories_array)
+
+    # create plot
+    fig, ax = plt.subplots(figsize = (9,9))
+    index = np.arange(len_category)
+    if multiple:
+        bar_width = 0.05
+    else :
+        bar_width = 1.5
+    opacity = 1.0
+
+    cmap = get_cmap(len(descriptors_array))
+
+    if multiple:
+        count = 0
+        for i in range(len(descriptors_array)):
+            count = count + 1
+            current_label = descriptors_array[i]
+            rects = plt.bar(index-0.2+bar_width*i, score_array[i], bar_width,
+                             alpha=opacity,
+                             color=np.random.rand(3,1),
+                             label=current_label )
+            
+            max_score_current = max(score_array[i])
+            print("Max Score : {}".format(max_score_current))
+
+    
+    else :
+        count = 0
+        opacity = 1
+        for i in range(len(descriptors_array)):
+
+            count = count + 1
+            current_label = descriptors_array[i]
+            rects = plt.bar(index+bar_width, score_array[i], width=0.5*bar_width,
+                             alpha=opacity,
+                             color=cmap(i),
+                             label=current_label
+                             )
+            opacity = opacity - 0.05
+
+    plt.xlabel('Categories')
+    plt.ylabel('Scores')
+    plt.title('Scores by Categories')
+    plt.xticks(index + bar_width, categories_array)
+    plt.legend()        
+     
+    plt.tight_layout()
+    plt.show()
+
+    return fig
+'''
