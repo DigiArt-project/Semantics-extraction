@@ -2388,6 +2388,95 @@ def main():
             func = partial(automatic_interactiveLearning_objectlist, params)
 
             results_accuracy_score, results_positif_display = zip(*pool.map(func, DESCRIPTORS))
+
+            #### MAKE A FINAL DRAW FOR SUMMARIZE THE SCORE
+            results_accuracy_score = list(results_accuracy_score)
+            results_positif_display = list(results_positif_display)
+                
+            #svm score      
+            score = results_accuracy_score[1][1]
+            #Positif results displayed to the user
+            positif_disp = results_positif_display[1][1]
+            positif_disp_NN = results_positif_display[1][2]
+            positif_disp_FT = results_positif_display[1][3]
+            positif_disp_ST = results_positif_display[1][4]
+                
+
+            score_array = list()
+            for i in range(len(results_accuracy_score)):
+                item = results_accuracy_score[i]
+                score = item[1]
+                score = score[:,score.shape[1]-1]
+                score_array.append(score)
+
+            score_display_array = list()
+            score_display_array_NN = list()
+            score_display_array_FT = list()
+            score_display_array_ST = list()
+            for i in range(len(results_positif_display)):
+                item = results_positif_display[i]
+                score = item[1]
+                    
+                score_NN = item[2]
+                score_FT = item[3]
+                score_ST = item[4]
+                score = score[:,score.shape[1]-1]
+                score_NN = score_NN[:,score_NN.shape[1]-1]
+                score_FT = score_FT[:,score_FT.shape[1]-1]
+                score_ST = score_ST[:,score_ST.shape[1]-1]
+                    
+                score_display_array.append(score)
+                    
+                score_display_array_NN.append(score_NN)
+                score_display_array_FT.append(score_FT)
+                score_display_array_ST.append(score_ST)
+                    
+
+                title = "Score by categories | Number iterations : " + str(nb_iterations_max)
+                #figure = plotting.plot_bar(descriptors,category_list_name_array,score_array,title)
+                figure = plotting.plot_points(descriptors,category_list_name_array,score_array,title)
+                output_graphicals_result = "Results_graphics "+ name_dataset+"/"
+
+                name_save_figure = output_graphicals_result + name_dataset + "_score_accuracy_bar.png"
+                print("1.Saving to {}".format(name_save_figure))
+                figure.savefig(name_save_figure)
+                
+                #Save points
+                title_points = output_graphicals_result + name_dataset + "_score_accuracy_bar.txt"
+                utils.save_list_points(score_array,title_points)
+
+                title = "Positif display by categories | Top : " + str(nb_max_positif_display)
+                title_NN = "Positif display NN by categories | Top : " + str(nb_max_positif_display)
+                title_FT = "Positif display FT by categories | Top : " + str(nb_max_positif_display)
+                title_ST = "Positif display FT by categories | Top : " + str(nb_max_positif_display)
+
+                figure1 = plotting.plot_points(descriptors,category_list_name_array,score_display_array,title)
+                figure2 = plotting.plot_points(descriptors,category_list_name_array,score_display_array_NN,title_NN)
+                figure3 = plotting.plot_points(descriptors,category_list_name_array,score_display_array_FT,title_FT)
+                figure4 = plotting.plot_points(descriptors,category_list_name_array,score_display_array_ST,title_ST)
+
+                name_save_figure = output_graphicals_result + name_dataset + "_score_display_bar.png"
+                name_save_figure_NN = output_graphicals_result + name_dataset + "_score_display_NN_bar.png"
+                name_save_figure_FT = output_graphicals_result + name_dataset + "_score_display_FT_bar.png"
+                name_save_figure_ST = output_graphicals_result + name_dataset + "_score_display_ST_bar.png"
+
+                #Save points
+                title_points = output_graphicals_result + name_dataset + "_score_display_bar.txt"
+                utils.save_list_points(score_display_array,title_points)
+
+                title_points_NN = output_graphicals_result + name_dataset + "_score_display_NN_bar.txt"
+                title_points_FT = output_graphicals_result + name_dataset + "_score_display_FT_bar.txt"
+                title_points_ST = output_graphicals_result + name_dataset + "_score_display_ST_bar.txt"
+                utils.save_list_points(score_display_array,title_points)
+                utils.save_list_points(score_display_array_NN,title_points_NN)
+                utils.save_list_points(score_display_array_FT,title_points_FT)
+                utils.save_list_points(score_display_array_ST,title_points_ST)
+
+                print("2.Saving to {}".format(name_save_figure))
+                figure1.savefig(name_save_figure)
+                figure2.savefig(name_save_figure_NN)
+                figure3.savefig(name_save_figure_FT)
+                figure4.savefig(name_save_figure_ST)
     
 
 if __name__ == '__main__':
