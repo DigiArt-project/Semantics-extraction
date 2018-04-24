@@ -9,7 +9,8 @@ Given a point cloud acquired by a scanner device, our CB3R retrieve similar shap
 Interactive Learning algorithms in based on SVM which requires very simple positive-negative annotations from the users.
 We have evaluated our system on several standard 3D datasets (Cat10, Cat31, Cat60, RGB-D, ModelNet10, and our own low-resolution shape dataset made with the manual Occipital Structure Sensor considering 8 state-of-the-art descriptors. 
 
-* **main_interactivelearning.py** —> Main function for running Interactive Learning process
+* **basic\_interactivelearning\_main.py** ==> Main function for running basic Interactive Learning
+* **similaritysearch\_interactivelearning\_main.py** —> Main function for running Interactive Learning with Similarity Search
 
 
 ## Requirements 
@@ -114,6 +115,21 @@ If you just want to work with partials views, you will just have the views folde
 
 ==Those files are necessary for the interactive Learning process==
 `
+### D. Running the Scripts for generating training and testing file
+
+Inside the dataset, you need to run the following script inside your dataset folder:
+
+	generate_train_test_files.sh
+	
+It will generate the training and testing file.
+You will end up with the following files :
+
+* categories.txt
+* list.txt
+* test_full.txt
+* test_views.txt
+* train_full.txt
+* test_full.txt
 
 ## How to run the code for interactive learning
 
@@ -154,32 +170,51 @@ if you want to perform interactive learning on full objects with the Dataset\_ca
 
 You can choose among four options.
 
-In the main function, you have the following :
+* **1. Basic Interactive Learning** : you choose the category you want to retrieve and then you select positives and negatives samples
+* **2. Similarity Search Interactive Learning** : given a query point cloud, similarity search is performed, and then you have to select positives and negatives samples
+* **3. Similarity Search Interactive Learning - One object** : given a query point cloud, similarity search is performed, and then the computer selects automatically positives and negatives samples until the number max of iteration is attained
+* **4. Similarity Search Interactive Learning - All testing** : given a dataset, similarity search is performed for each objects of each category, and then the computer selects automatically positives and negatives samples until the number max of iteration is attained and there is no more category to process.
 
+
+### 1. **Basic Interactive Learning**
+
+You need to run the following program:
+
+		python3 basic_interactivelearning_main.py 		
+Description: Basic process of interactive learning. The user chooses the categories and then he needs to label positively and negatively samples that are displayed.
+
+Per defaut, it works with ESF descriptor, wut you can change it by using the parameter `-descriptorInteractive`
+
+You need as well to choose the dataset you want to process :
+
+		NAME_DATASET = 'pottery_views'
+
+### 2. **Interactive Learning with Similarity Search - Manual version**
+
+For the next three points, all the options are inside the file similaritysearch\_interactivelearning\_main.py
+
+    
     class option_interactiveLearning:
-        without_similaritySearch = 0
         similaritySearch_manuel = 1
         similaritySearch_automatic_oneobject = 2
         similaritySearch_automatic_alltesting = 3
 
     #Choose here the option you want
-    current_option = option_interactiveLearning.similaritySearch_automatic_oneobject
+    current_option = option_interactiveLearning.similaritySearch_automatic_alltesting
 
-### 1. **Basic Interactive Learning**
-
-Option **without_similaritySearch**
-
-		python3 main_interactivelearning.py [-descriptorInteractive]
-		
-Description: Basic process of interactive learning. The user chooses the categories and then he needs to label positively and negatively samples that are displayed.
-
-Per defaut, it works with ESF descriptor, wut you can change it by using the parameter `-descriptorInteractive`
-
-### 2. **Interactive Learning with Similarity Search - Manual version**
 
 Option **similaritySearch_manuel**
 
-Description: Given a point cloud query, similarity search is performed. For visual display you need to comment `matplotlib.use('Agg')`. After similarity search, the user need to label manually positives and negatives samples.
+Description: Given a point cloud query, similarity search is performed and then you have to select positives and negatives samples/
+For visual display you need to comment `matplotlib.use('Agg')`. 
+
+You need to change the following parameters depending of your dataset 
+
+		PATH_DATASET = "./Datasets/Dataset_cat10_normalized/"
+		COMPUTE_FULL = "false"
+		NAME_DATASET = 'cat10_views'
+		
+--
 
 		python3 main_interactivelearning.py
 
@@ -208,7 +243,7 @@ Description: Given a point cloud query, similarity search is performed. For visu
 	
 ==_Exemple_== :
 	
-			python3 interactivelearning3D.py -query ../Datasets/Dataset_cat10_normalized/bottle/views/view_bottle1_1.ply -trained ../Datasets/Dataset_cat10_normalized/
+			python3 similaritysearch_interactivelearning_main.py -query ./chair_view1.ply -trained ../Datasets/Dataset_cat10_normalized/
 			
 Per defaut, it works with ESF descriptor, wut you can change it by using the parameter `-descriptorInteractive`. Same with similarity search.
 
@@ -216,8 +251,17 @@ Per defaut, it works with ESF descriptor, wut you can change it by using the par
 
 Option **similaritySearch\_automatic\_oneobject**
 
-Description: Given a point cloud query, similarity search is performed and then Interactive Learning is performed automatically without any help from the user. Visual display possible if you comment `matplotlib.use('Agg')`. Images of the results are save automatically.
+Description: Given a point cloud query, similarity search is performed and then Interactive Learning is performed automatically without any help from the user (the computer selects automatically positives and negatives samples until the number max of iteration is attained)
 
+Visual display possible if you comment `matplotlib.use('Agg')`.Images of the results are save automatically if you activate the option.
+
+You need to change the following parameters depending of your dataset 
+
+		PATH_DATASET = "./Datasets/Dataset_cat10_normalized/"
+		COMPUTE_FULL = "false"
+		NAME_DATASET = 'cat10_views'
+
+-
 		python3 main_interactivelearning.py
 	
 		  -query QUERY, --query QUERY
@@ -242,7 +286,7 @@ Description: Given a point cloud query, similarity search is performed and then 
 
 ==_Exemple_== :
 
-		python3 interactivelearning3D.py -query ../Datasets/Dataset_cat10_normalized/bottle/views/view_bottle1_1.ply -trained ../Datasets/Dataset_cat10_normalized/
+		python3 similaritysearch_interactivelearning_main.py -query ./chair_view1.ply -trained ../Datasets/Dataset_cat10_normalized/
 		
 Per defaut, it works with ESF descriptor, wut you can change it by using the parameter `-descriptorInteractive`. Same with similarity search.
 
@@ -250,34 +294,23 @@ Per defaut, it works with ESF descriptor, wut you can change it by using the par
 
 Option **similaritySearch\_automatic\_alltesting**
 
-Description : Interactive Learning process is run automatically according to the number of iteration the user want to use.
-On the parameters, the user need to choose the database. After each iteration, images of results are saved automatically.
+Description : Given a dataset, similarity search is performed for each objects of each category, and then the computer selects automatically positives and negatives samples until the number max of iteration is attained and there is no more category to process. This part is long because there is a lot of metrics which are computed. All the score can be savec if the option is activated
 No display during the process.
+
 The descriptors are the one from the array 
 
 			#Descriptors you want to use
 			descriptors = ['esf','pointnet']
+			
+You need to change the following parameters depending of your dataset 
+
+		PATH_DATASET = "./Datasets/Dataset_cat10_normalized/"
+		COMPUTE_FULL = "false"
+		NAME_DATASET = 'cat10_views'
 -
 
-		python3 main_interactivelearning.py -nbiterations - multiprocessing - cores
-		
-		 -nbiterations ITERATIONS, --iterations ITERATIONS
-		                        Number of iterations max for each interactive learning
-		                        session (Per defaut : 20)
-		  -cores NUMCORES, --numcores NUMCORES
-		                        Number of cores to use (Per defaut : cpu_count())
-			
-	
-==_Exemple_== :
-				
-	python3 interactivelearning3D.py -nbiterations 2 -cores 2
-				
-It will run the whole process of interactive learning with ESF and PointNet descriptor, with 2 cores and 2 steps of interactive learning.
-
-For any help :
-		
-	python3 main_interactivelearning.py --help
-
+		python3 similaritysearch_interactivelearning_main.py 			
+You can change the number of cores for multiprocessing. Per defaut, it is set to the number of cores available on your computer.
 
 		
 
