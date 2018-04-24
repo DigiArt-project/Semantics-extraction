@@ -4,12 +4,13 @@
 
 ## Overview
 =======
-There are three folders.
+There are five folders.
 
 * Tools
 * Interactive Learning
 * Visual Search iOS
 * make database annotation
+* Dataset_example
 
 In each folder, you will find a README which will explain deeper the functionality. 
 
@@ -30,5 +31,9 @@ This is the code for the iOS App on iPad. It allows to capture 3D data and then 
 ### 4. Make database annotation
 
 This is the code for the iOs App on iPad which 
+
+### 5. Dataset example
+
+Example of dataset ready for Interactive Learning. Check the README inside Tools or Interactive Leaning in order to know how to do it.
 
 
