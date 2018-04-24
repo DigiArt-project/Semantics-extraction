@@ -2366,10 +2366,10 @@ def main():
             NUMBER_TO_ANNOTATE_FIRST_STEP, NUMBER_TO_ANNOTATE_SECOND_STEP, 
             NB_ITERATIONS_MAX,NB_REPETITION_EXPERIMENT)
         
-        automatic_interactive_learning(params,True)
+        automatic_interactive_learning(params, True)
 
     elif current_option == option_interactiveLearning.similaritySearch_automatic_alltesting:
-        num_cores = 1 #num_cores = mp.cpu_count() 
+        num_cores = mp.cpu_count() 
         use_multiprocessing = True
         
         pool = mp.Pool(processes=num_cores) 
