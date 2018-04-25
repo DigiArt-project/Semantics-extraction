@@ -42,7 +42,7 @@ import multiprocessing as mp
 from functools import partial
 
 ####### GLOBAL VARIABLE #######
-PATH_DATASET = "/Users/lironesamoun/digiArt/Datasets/Dataset_structuresensor_normalized/"
+PATH_DATASET = "/Users/lironesamoun/digiArt/Datasets/Dataset_pottery_normalized/"
 TRAINING_FILE_FULL = PATH_DATASET + "train_full.txt"
 TESTING_FILE_FULL =  PATH_DATASET + "test_full.txt"
 TRAINING_FILE_VIEWS =  PATH_DATASET +"train_views.txt"
@@ -53,7 +53,7 @@ COMPUTE_FULL = "false"
 DESCRIPTORS = ['esf','vfh']
 #Location of the dataset directory where the txt file are located. The txt represents the list of all the descriptors and path to descriptors
 ROOT_DATA = "data/"
-NAME_DATASET = 'structuresensor_views'
+NAME_DATASET = 'pottery_views'
 #Where to save the graphics
 OUTPUT_GRAPHICALS_RESULTS = "results_graphics/"
 OUTPUT_JSON_RESULT_SIMILARITYSEARCH = "data/results_similarity.json"
@@ -61,7 +61,7 @@ OUTPUT_JSON_RESULT_SIMILARITYSEARCH = "data/results_similarity.json"
 LOG_FILE = "interactive_learning.log"
 
 #Category label to change for option similarity search interactive learning
-CATEGORY_LABEL = 3
+CATEGORY_LABEL = 1
 #Positive example ranking for display i.e the number of samples ranked from positive to negative, to display to the user 
 NBRE_DATA_SELECTION = 20 #defaut 48
 #Number of uncertain examples close to the margin to choose 
@@ -91,7 +91,7 @@ NUMBER_TO_ANNOTATE_FIRST_STEP = 6
 #Number uncertain samples to select at the second step (if = 5, will take the first 5 uncertains)
 NUMBER_TO_ANNOTATE_SECOND_STEP = 5
 #Number iterations max of interactive learning step i.e, number of steps the user want to select uncertain sample
-NB_ITERATIONS_MAX = 2
+NB_ITERATIONS_MAX = 20
 #Number of experiment to run of each interactive learning session. 1 is okay, more will take more time
 NB_REPETITION_EXPERIMENT = 1
 #Number of top result for pourcentage computation
@@ -1534,7 +1534,7 @@ def automatic_interactive_learning(params, save_figures = True):
                 title = "confusion_matrix_" + str(category_label) + ".png"
                 plot_conf.savefig(title)
 
-            plt.show(block=True)
+            plt.show(block=False)
 
      
         if (USE_NORMALIZATION):
@@ -1673,7 +1673,7 @@ def automatic_interactive_learning(params, save_figures = True):
                     plotting.plot_confusion_matrix(cnf_matrix, classes=class_names,title='Confusion matrix, without normalization')
                     #plotting.plot_classification_report(report_classification)
                 
-                plt.show(block=True)
+                #plt.show(block=True)
 
 
             total_id_annotation = list(itertools.chain(idx_example_positif_selection, id_selection_diversification))
@@ -1713,7 +1713,7 @@ def automatic_interactive_learning(params, save_figures = True):
          path_list_train_views, idx_example_positif_selection, id_selection_diversification,
          True, save_figures)
     
-    plt.show(block=True)
+    plt.show(block=False)
     
 """
 Main function for interactive learning with similarity search - Automatic labelling (no user required) with as an input list of object
@@ -2297,7 +2297,7 @@ def main():
         similaritySearch_automatic_alltesting = 3
 
     #Choose here the option you want
-    current_option = option_interactiveLearning.similaritySearch_automatic_alltesting
+    current_option = option_interactiveLearning.similaritySearch_automatic_oneobject
 
     if not os.path.isfile("cloudRetrieval_main"):
         print("\n [ERROR] Cloud Retrieval main binary does not exist - Please check the path")

@@ -113,7 +113,7 @@ def plot_curves_final(
 def plot_curves_NN_FT_ST(
     query_num,NN_score, FT_score, ST_score,
     main_title, name_dataset, name_category,
-    name_descriptor, output_graphicals_result
+    name_descriptor, output_graphicals_result,
     save_figure=False):
 
     fig2 = plt.figure(figsize=(11, 8))
@@ -151,7 +151,7 @@ def plot_curves_NN_FT_ST(
         
 
 def plot_curves_precision_recall(
-    query_num, recall_array, precision_array, ecall_curve,
+    query_num, recall_array, precision_array, recall_curve,
     precision_curve, AP, save_figure=False,
     name_figure = "Result_curve_precision_recall.png"):
 
@@ -163,7 +163,7 @@ def plot_curves_precision_recall(
     ax.set_ylabel('Precision')
     ax.set_ylim([0.0, 1.05])
     ax.set_xlim([0.0, 1.0])
-    ax.set_title('Precision-Recall example: Average Precision Score AUC={0:0.2f}'.format(AP))
+    ax.set_title("Precision-Recall example: Average Precision Score AUC={}".format(AP))
     lgd_ax = ax.legend(loc="lower left")
         
 
@@ -631,7 +631,7 @@ if __name__ == '__main__':
     #plot_bar(descriptors,category_list_name_array,score_array, multiple = True)
  
 
- '''
+'''
 def plot_bar(descriptors_array,categories_array,score_array, multiple = True,save = True):
     
     len_category = len(categories_array)

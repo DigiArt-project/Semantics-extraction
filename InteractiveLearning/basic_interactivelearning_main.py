@@ -121,9 +121,9 @@ After the first step, display data :
 """
 def display_selected_data(dataset, objectslist_path,id_to_display,id_close_margins):
     plt.close(plt.figure(1))
-    plt.close(plt.figure(3))
+    plt.close(plt.figure(2))
     fig = plt.figure(1,figsize=(9, 7))
-    fig1 = plt.figure(3,figsize=(9, 7))
+    fig1 = plt.figure(2,figsize=(9, 7))
     fig.canvas.set_window_title('Results')
     fig1.canvas.set_window_title('Most uncertain + diversity example')
     labeled_entry_ids, X_pool_labeled = zip(*dataset.get_labeled_entries())
@@ -682,31 +682,23 @@ def basic_interactive_learning_start(descriptor_interactivelearning):
     score_ok = model_learning.score(*(test_dataset.format_sklearn())) * 100
     score_error = (1 - model_learning.score(*(test_dataset.format_sklearn()))) * 100
     
-    title = "Score Success : " + str(score_ok)  + " Score Error : " + str(score_error) + " \n Rank : " + str(rank)
+    title = "Score SVM : " + str(max(score_array)) 
     rank_array = np.append(rank_array, rank)
 
     query_num = np.arange(0, 1)
+
     ################ GRAPHIC ###################
     if (PLOT_SCORE):
-        plt.figure(2)
-        fig = plt.figure(2, figsize=(7, 8))
+        fig = plt.figure(3,figsize=(7, 8))
         plt.title(title)
-        ax = fig.add_subplot(2, 1, 1)
-        p1,= ax.plot(query_num, error_array, 'r', label='Error')
+        ax = fig.add_subplot(1, 1, 1)
+        p1, = ax.plot(query_num, score_array, 'g', lw='3', label='Score')
         ax.set_xlabel('Number of steps')
-        ax.set_ylabel('Error')
+        ax.set_ylabel('Score')
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
                    shadow=True, ncol=5)
-        ax.xaxis.set_major_locator(reg_interval_x)
 
-        ay = fig.add_subplot(2, 1, 2)
-        p2, = ay.plot(query_num, score_array, 'g', label='Score')
-        ay.set_xlabel('Number of steps ')
-        ay.set_ylabel('Score')
-        ay.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True,
-                   shadow=True, ncol=5)
-        ay.xaxis.set_major_locator(reg_interval_x)
-      
+
         plt.show(block=False)
      
     if (USE_NORMALIZATION):
@@ -772,26 +764,26 @@ def basic_interactive_learning_start(descriptor_interactivelearning):
         # Add score to the chart
         error_array = np.append(error_array, 1 - score)
         score_array = np.append(score_array, score)
-        score_ok = model_learning.score(*(test_dataset.format_sklearn()))*100
-        score_error = (1 - model_learning.score(*(test_dataset.format_sklearn())))*100
+        score_ok = model_learning.score(*(test_dataset.format_sklearn())) * 100
+        score_error = (1 - model_learning.score(*(test_dataset.format_sklearn()))) * 100
         rank_array = np.append(rank_array, rank)
 
-        if (PLOT_SCORE):
-            plt.figure(2)
-            ax.set_xlim((0, i + 1))
-            ax.set_ylim((0, max(error_array) + 0.2))
-            ay.set_xlim((0, i + 1))
-            ay.set_ylim((0, max(score_array) + 0.2))
-            ax.xaxis.set_major_locator(reg_interval_x)
-            ay.xaxis.set_major_locator(reg_interval_x)
+        query_num=np.arange(0, i + 2)
+        print("Query num : {}".format(query_num))
 
-            query_num=np.arange(0, i + 2)
+        if (PLOT_SCORE):
+            title = "Score SVM : " + str(max(score_array)) 
+            plt.title(title)
+            ax.set_xlim((0, i + 1))
+            ax.set_ylim((0, max(score_array) + 0.2))
 
             p1.set_xdata(query_num)
-            p1.set_ydata(error_array)
-            p2.set_xdata(query_num)
-            p2.set_ydata(score_array)
+            p1.set_ydata(score_array)
 
+            fig.canvas.draw()
+
+            print("Error array : {}".format(error_array))
+            print("Score array : {}".format(score_array))
             plt.show(block=False)
 
         idx_unlabeled_data,x_pool_unlabeled = zip(*train_dataset.get_unlabeled_entries())
