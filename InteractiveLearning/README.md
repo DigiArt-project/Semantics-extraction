@@ -53,8 +53,26 @@ Globally, the dataset folder contains the categories of each object and inside e
 
 For example : 
 
-* Dataset\_cat10\_normalized/bottle/full/bottle1.ply 
-* Dataset\_cat10\_normalized/bottle/views/views_bottle0\_0.ply 
+```shell
+Dataset_cat10_normalized
+    |-- bottle
+        |-- full
+            |-- bottle1.ply
+            |-- descriptors
+            		|-- esf
+            		...
+        |-- views
+            |-- views_bottle0_0.ply
+            |-- descriptors
+            		|-- esf
+            		...
+    |-- mug
+        |-- full
+            |- mug1.ply  
+        |-- views
+            |-- views_mug0_0.ply
+            ...
+```
 
 At this point, you may face up to two cases :
 
@@ -106,10 +124,17 @@ Once generated, those two files need to be added in the `Data`folder of Interact
 
 So after this step you need to have for Cat10 dataset (or other dataset):
 
-* Cat10_views/dataset\_descriptors\_esf.txt
-* Cat10_views/descriptors\_esf.txt
-* Cat10_full/dataset\_descriptors\_esf.txt
-* Cat10_full/descriptors\_esf.txt
+```shell
+Data
+    |-- cat10_views
+        |-- dataset_descriptors_esf.txt
+        |-- descriptors_esf.txt
+
+    |-- cat10_full
+        |-- dataset_descriptors_esf.txt
+        |-- descriptors_esf.txt
+            		
+```           		
 
 If you just want to work with partials views, you will just have the views folder, and same things with full folders.
 

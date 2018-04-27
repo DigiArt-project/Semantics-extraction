@@ -63,16 +63,40 @@ Here the necessary binary files (with a brief explanation) which have been compi
 #### 1. Prepare the dataset (structure + format point cloud)
 
 You need first to build the right structure for the dataset. It must follow the following structure :
-**name\_dataset/category\_i/object\_j**
+
+```shell
+Dataset_name
+    |-- <category_id>
+        |-- <object_id>.ply
+
+```  
+
 i.e inside a dataset, you need to have multiple objects categories and inside each category, you have multiple 3D point cloud in **PLY** format.
 
 **Depending of your dataset, you may want to run the right script :**
 
-If the dataset has the following structure (like the [3DNet datasets](https://repo.acin.tuwien.ac.at/tmp/permanent/3d-net.org/)) : categories_i/object\_j.ply, use this command line
+a. If the dataset has the following structure (like the [3DNet datasets](https://repo.acin.tuwien.ac.at/tmp/permanent/3d-net.org/)) 
+
+```shell
+Dataset_name
+    |-- <category_id>
+        |-- <object_id>.ply
+            		
+```  
+
+ Use this command line
 
 	./rename_objects_dataset.sh -d Dataset_Cat10_normalized -s true 
 	
-If the dataset has the following structure (like the structure sensor dataset) : categories\_i/Object\_j/object.ply, use this command line
+b. If the dataset has the following structure (like the structure sensor dataset) : 
+
+```shell
+Dataset_name
+    |-- <category_id>
+        |-- <object_id>
+        		|-- <object_id>.ply
+            		
+```  
 
 	./rename_objects_structure_sensor.sh dataset_path 
 	
@@ -192,10 +216,17 @@ Once generated, those two files need to be added in the `Data`folder of Interact
 
 So after this step you need to have for Cat31 dataset (or other dataset):
 
-* Cat31_views/dataset\_descriptors\_esf.txt
-* Cat31_views/descriptors\_esf.txt
-* Cat31_full/dataset\_descriptors\_esf.txt
-* Cat31_full/descriptors\_esf.txt
+```shell
+Data
+    |-- cat31_views
+        |-- dataset_descriptors_esf.txt
+        |-- descriptors_esf.txt
+
+    |-- cat31_full
+        |-- dataset_descriptors_esf.txt
+        |-- descriptors_esf.txt
+            		
+```    
 
 If you just want to work with partials views, you will just have the views folder, and same things with full folders.
 
