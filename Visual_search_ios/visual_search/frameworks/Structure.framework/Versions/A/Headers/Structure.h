@@ -16,10 +16,20 @@
 #   error "Structure framework requires the C++ runtime. See Structure SDK Reference."
 # endif
 
-// Make sure the deployment target is higher or equal to iOS 8.
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_8_0)
-#   error This version of Structure SDK only supports iOS 8 or higher.
+// Make sure the deployment target is higher or equal to iOS 9.
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_9_0)
+#   error This version of Structure SDK only supports iOS 9 or higher.
 #endif
+
+typedef struct {
+    const int major;
+    const int minor;
+    const int patch;
+    const char* version;
+} SDKVersion;
+
+/** Returns a string specifying the current SDK version */
+SDKVersion currentSDKVersion(void);
 
 //------------------------------------------------------------------------------
 #pragma mark - Sensor Controller Constants
@@ -162,6 +172,12 @@ extern NSString* const kSTColorCameraFixedLensPositionKey;
 //------------------------------------------------------------------------------
 #pragma mark - STDepthFrame
 
+typedef struct
+{
+    int width, height;
+    float fx, fy, cx, cy, k1, k2;
+} STIntrinsics;
+
 /** Color Frame
 
 Formatted color data for the color image captured
@@ -206,6 +222,14 @@ This matrix can be used to render a scene by simulating the same camera properti
 @return A projection matrix.
 */
 - (GLKMatrix4)glProjectionMatrix;
+
+/** Intrinsic camera parameters.
+ 
+ This struct can be used to get the intrinsic parameters of the current DepthFrame.
+ 
+ @return A set of STIntrinsics intrinsic parameters.
+ */
+- (STIntrinsics) intrinsics;
 
 /** Get the rigid body transformation (RBT) between the iOS color camera and the depth image viewpoint.
  
@@ -285,6 +309,14 @@ This matrix can be used to render a scene by simulating the same camera properti
 @return A projection matrix.
 */
 - (GLKMatrix4)glProjectionMatrix;
+
+/** Intrinsic camera parameters.
+ 
+ This struct can be used to get the intrinsic parameters of the current ColorFrame.
+ 
+ @return A set of STIntrinsics intrinsic parameters.
+ */
+- (STIntrinsics) intrinsics;
 
 @end
 

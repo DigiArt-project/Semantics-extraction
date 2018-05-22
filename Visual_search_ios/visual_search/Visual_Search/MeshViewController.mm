@@ -433,7 +433,7 @@ namespace
     [self.mailViewController setMessageBody:messageBody isHTML:NO];
     
     // Request a zipped OBJ file, potentially with embedded MTL and texture.
-    NSDictionary* options = @{ kSTMeshWriteOptionFileFormatKey: @(STMeshWriteOptionFileFormatObjFileZip) };
+    NSDictionary* options = @{ kSTMeshWriteOptionFileFormatKey: @(STMeshWriteOptionFileFormatObjFileZip),kSTMeshWriteOptionUseXRightYUpConventionKey:@YES };
     
     NSError* error;
     STMesh* meshToSend = _mesh;
@@ -559,7 +559,7 @@ namespace
     // Request an OBJ file
     STMesh* meshToOpen = _mesh;
     NSError* error;
-    NSDictionary* options = @{ kSTMeshWriteOptionFileFormatKey: @(STMeshWriteOptionFileFormatObjFile) };
+    NSDictionary* options = @{ kSTMeshWriteOptionFileFormatKey: @(STMeshWriteOptionFileFormatObjFile),kSTMeshWriteOptionUseXRightYUpConventionKey:@YES };
     
     BOOL success = [meshToOpen writeToFile:filePath options:options error:&error];
     

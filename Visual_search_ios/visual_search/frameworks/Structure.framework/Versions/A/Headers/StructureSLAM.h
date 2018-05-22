@@ -15,6 +15,7 @@
 
 // Dictionary keys for [STMesh writeToFile:options:error:].
 extern NSString* const kSTMeshWriteOptionFileFormatKey;
+extern NSString* const kSTMeshWriteOptionUseXRightYUpConventionKey;
 
 /** Constants specifying a file format for storing an STMesh on disk.
 
@@ -139,7 +140,8 @@ Sample usage:
 @param filePath Path to output file.
 @param options Dictionary of options. The valid keys are:
 
-- `kSTMeshWriteOptionFileFormatKey`: STMeshWriteOptionFileFormat value to specify the output file format. Required. 
+- `kSTMeshWriteOptionFileFormatKey`: STMeshWriteOptionFileFormat value to specify the output file format. Required.
+- `kSTMeshWriteOptionUseXRightYUpConventionKey`: Sets the exported mesh coordinate frame to be X right, Y Up, and Z inwards (right handed).
 
 @param error will contain detailed information if the provided options are incorrect.
 */
@@ -193,6 +195,8 @@ Sample usage:
  @param origin The origin of ray.
  @param end The end of ray.
  @param intersection The intersection point to the mesh if intersection happens.
+ @param normal The vector describing the surface normal.
+ @param ignoreBackFace whether to ignore the back face when computing the intersection.
  @return TRUE if there is an intersection, FALSE otherwise
  */
 - (BOOL)intersectWithRayOrigin:(GLKVector3)origin rayEnd:(GLKVector3)end intersection:(GLKVector3 *)intersection normal:(GLKVector3 *)normal ignoreBackFace:(BOOL)ignoreBackFace;
@@ -274,6 +278,34 @@ Only `kCVPixelFormatType_420YpCbCr8BiPlanarFullRange` is supported for the color
     STTrackerDepthAndColorBased = 1,
 };
 
+/** Constants that specify profiles to optimize the tracker for.
+ 
+ See also:
+ 
+ - [STTracker initWithScene:options:]
+ - [STTracker setOptions:]
+ */
+typedef NS_ENUM(NSInteger, STTrackerSceneType)
+{
+/** Specifies a profile that optimizes for scanning objects.
+
+Assumes that the sensor is moving and can rotate and translate.
+*/
+    STTrackerSceneTypeObject,
+    
+/** Specifies a profile that optimizes for scanning objects on a turntable.
+
+Assumes that the sensor is stationary and the object itself rotates.
+*/
+    STTrackerSceneTypeObjectOnTurntable,
+    
+/** Specifies a profile that optimizes for scanning rooms
+
+Assumes that the sensor is moving and can rotate and translate. The scene captured should be on the scale of a typical room scan.
+*/
+    STTrackerSceneTypeRoom,
+};
+
 /** Constants specifying a tracking quality hint to STTracker.
 
 See also:
@@ -294,8 +326,8 @@ typedef NS_ENUM(NSInteger, STTrackerQuality)
 
 See also:
 
- - [STTracker poseAccuracy]
- - [STTracker trackerHints]
+- [STTracker poseAccuracy]
+- [STTracker trackerHints]
 */
 typedef NS_ENUM(NSInteger, STTrackerPoseAccuracy)
 {
@@ -323,6 +355,8 @@ extern NSString* const kSTTrackerAvoidPitchRollDriftKey;
 extern NSString* const kSTTrackerAvoidHeightDriftKey;
 extern NSString* const kSTTrackerAcceptVaryingColorExposureKey;
 extern NSString* const kSTTrackerBackgroundProcessingEnabledKey;
+extern NSString* const kSTTrackerSceneTypeKey;
+extern NSString* const kSTTrackerLegacyKey;
 
 /** Tracker Hints
 
@@ -393,7 +427,9 @@ Sample usage:
         kSTTrackerQualityKey                    = @(STTrackerQualityAccurate),
         kSTTrackerTrackAgainstModelKey          = @YES,
         kSTTrackerAcceptVaryingColorExposureKey = @NO,
-        kSTTrackerBackgroundProcessingEnabledKey= @YES
+        kSTTrackerBackgroundProcessingEnabledKey= @YES,
+        kSTTrackerLegacyKey                     = @NO,
+        kSTTrackerSceneTypeKey                  = @(STTrackerSceneTypeObject)
     };
     STTracker* tracker = [[STTracker alloc] initWithScene:myScene options:options];
 
@@ -437,6 +473,18 @@ Sample usage:
   - Defaults to `@NO`.
   - To ensure the optimal robustness, it is recommended to lock the iOS color camera exposure during tracking if the `STTrackerDepthAndColorBased` tracker type is being used.
   - By default, the tracker will return an error if it detects a change in the exposure settings, but it can be forced to accept it by enabling this option.
+- `kSTTrackerLegacyKey`:
+  - As of SDK 0.8, improved tracking is enabled by default. Set this to @YES if you want to enable the pre-0.8 tracking behavior.
+  - Defaults to `@NO`.
+  - This setting affects all tracker types, i.e. both STTrackerDepthBased and STTrackerDepthAndColorBased.
+- `kSTTrackerSceneTypeKey`
+  - Specifies a general "<span>scene</span> type" to account for tracker-specific presets.
+  - NSNumber integral value equal to one of the STTrackerSceneType constants.
+  - Defaults to STTrackerSceneTypeObject.
+  - You will get better tracking if this matches the scene you are tracking against.
+  - STTrackerSceneTypeObject assumes the target is to scan objects or people (e.g. Scanner).
+  - STTrackerSceneTypeObjectOnTurntable assumes the target is an object or person on a moving platform and that the device (iOS device + Sensor) are not moving.
+  - STTrackerSceneTypeRoom assumes the target is to scan a room (e.g. RoomCapture).
 */
 - (instancetype)initWithScene:(STScene *)scene options:(NSDictionary*)options;
 
@@ -625,13 +673,13 @@ typedef struct STCameraPoseInitializerOutput
 @property (nonatomic, readonly) struct STCameraPoseInitializerOutput lastOutput;
 
 /// Most recent estimated camera pose, taking Structure Sensor as a reference.
-@property (nonatomic, readonly) GLKMatrix4 cameraPose; __deprecated_msg("use lastOutput instead.");
+@property (nonatomic, readonly) GLKMatrix4 cameraPose __deprecated_msg("use lastOutput instead.");
 
 /// Whether the pose initializer could find a good pose.
-@property (nonatomic, readonly) BOOL hasValidPose; __deprecated_msg("use lastOutput instead.");
+@property (nonatomic, readonly) BOOL hasValidPose __deprecated_msg("use lastOutput instead.");
 
 /// Whether the last cube placement was made with a supporting plane. Useful for STMapper.
-@property (nonatomic, readonly) BOOL hasSupportPlane; __deprecated_msg("use lastOutput instead.");
+@property (nonatomic, readonly) BOOL hasSupportPlane __deprecated_msg("use lastOutput instead.");
 
 /** Initialize with all the required fields.
 

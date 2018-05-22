@@ -13,13 +13,13 @@
 		0E121E3620693B8300DA286E /* categories_potterymix.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0E121E3320693B8300DA286E /* categories_potterymix.plist */; };
 		0E121E3720693B8300DA286E /* categories_pottery.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0E121E3420693B8300DA286E /* categories_pottery.plist */; };
 		0E121E3820693B8300DA286E /* categories_structure.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0E121E3520693B8300DA286E /* categories_structure.plist */; };
-		0E1BB96A1E3796BC00A9112C /* Structure.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E1BB9691E3796BC00A9112C /* Structure.framework */; };
 		0E1BB96C1E3796C700A9112C /* libboost.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E1BB96B1E3796C700A9112C /* libboost.a */; };
 		0E41A5F11D9AB169005D1C3C /* converter.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0E41A5F01D9AB169005D1C3C /* converter.mm */; };
 		0E5018E41E2F67380013713A /* Category.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5018E31E2F67380013713A /* Category.m */; };
 		0E5018E71E2F67410013713A /* Object.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5018E61E2F67410013713A /* Object.m */; };
 		0E50190A1E30F56F0013713A /* ParametersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5019081E30F56F0013713A /* ParametersViewController.m */; };
 		0E50190B1E30F56F0013713A /* ParametersViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0E5019091E30F56F0013713A /* ParametersViewController.xib */; };
+		0E710C5620B40F050097A164 /* Structure.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E1BB9691E3796BC00A9112C /* Structure.framework */; };
 		0EA1A98C1DBE4275003CC521 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0EA1A98B1DBE4274003CC521 /* AssetsLibrary.framework */; };
 		0EA1DC4A1DA634230072AC54 /* Helper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0EA1DC491DA634220072AC54 /* Helper.mm */; };
 		0EA1DC4E1DA63B7E0072AC54 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0EA1DC4C1DA63B7E0072AC54 /* Timer.cpp */; };
@@ -187,10 +187,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0E710C5620B40F050097A164 /* Structure.framework in Frameworks */,
 				0EF9E6B51DBF9A650044907F /* ExternalAccessory.framework in Frameworks */,
 				2DC7D69718438E1D005BEE8B /* ImageIO.framework in Frameworks */,
 				2DC7D69A18438E42005BEE8B /* Accelerate.framework in Frameworks */,
-				0E1BB96A1E3796BC00A9112C /* Structure.framework in Frameworks */,
 				0EA1A98C1DBE4275003CC521 /* AssetsLibrary.framework in Frameworks */,
 				77AAADA51CA5AFC500D91B6C /* Metal.framework in Frameworks */,
 				7EAD26B3198B47DA00638C9C /* libz.dylib in Frameworks */,
