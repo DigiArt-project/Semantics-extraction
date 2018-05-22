@@ -15,6 +15,7 @@
 
 // Dictionary keys for [STMesh writeToFile:options:error:].
 extern NSString* const kSTMeshWriteOptionFileFormatKey;
+extern NSString* const kSTMeshWriteOptionUseXRightYUpConventionKey;
 
 /** Constants specifying a file format for storing an STMesh on disk.
 
@@ -43,7 +44,7 @@ The archive will also embed the MTL and JPEG file if the mesh has a texture.
 
 Stores mesh data as a collection of vertices and faces. STMesh objects are references, and access to the underlying data should be protected by locks in case multiple threads may be accessing it.
 
-Since OpenGL ES only supports 16 bits unsigned short for face indices, meshes larges than 65535 faces have to be split into smaller submeshes. STMesh is therefore a reference to a collection of partial meshes, each of them having less than 65k faces.
+Since OpenGL ES only supports 16 bits unsigned short for face indices, meshes larger than 65535 faces have to be split into smaller sub-meshes. STMesh is therefore a reference to a collection of partial meshes, each of them having less than 65k faces.
 */
 @interface STMesh : NSObject
 
@@ -127,18 +128,6 @@ Each line is represented by two vertex indices. These lines can be used for wire
 */
 - (unsigned short *)meshLines:(int)meshIndex;
 
-/** Intersect the mesh with a ray specified by the origin and end points.
-
-If TRUE is returned, `intersection` will contain the first (x, y, z) coordinate on the mesh that the ray intersects when traveling from the origin to the end.
-
-@param origin The origin of ray.
-@param end The end of ray.
-@param intersection The intersection point to the mesh if intersection happens.
-
-@return TRUE if there is an intersection, FALSE otherwise
-*/
-- (BOOL)intersectWithRayOrigin:(GLKVector3)origin rayEnd:(GLKVector3)end intersection:(GLKVector3 *)intersection;
-
 /** Save the STMesh to a file.
 
 Sample usage:
@@ -151,7 +140,8 @@ Sample usage:
 @param filePath Path to output file.
 @param options Dictionary of options. The valid keys are:
 
-- `kSTMeshWriteOptionFileFormatKey`: STMeshWriteOptionFileFormat value to specify the output file format. Required. 
+- `kSTMeshWriteOptionFileFormatKey`: STMeshWriteOptionFileFormat value to specify the output file format. Required.
+- `kSTMeshWriteOptionUseXRightYUpConventionKey`: Sets the exported mesh coordinate frame to be X right, Y Up, and Z inwards (right handed).
 
 @param error will contain detailed information if the provided options are incorrect.
 */
@@ -195,6 +185,26 @@ Sample usage:
 @end
 
 //------------------------------------------------------------------------------
+#pragma mark - STMeshIntersector
+/** A utility class to compute the intersection of a ray to the mesh
+ */
+@interface STMeshIntersector : NSObject
+- (instancetype)initWithMesh:(STMesh*)inputMesh;
+/** Intersect the mesh with a ray specified by the origin and end points.
+ If TRUE is returned, `intersection` will contain the first (x, y, z) coordinate on the mesh that the ray intersects when traveling from the origin to the end.
+ @param origin The origin of ray.
+ @param end The end of ray.
+ @param intersection The intersection point to the mesh if intersection happens.
+ @param normal The vector describing the surface normal.
+ @param ignoreBackFace whether to ignore the back face when computing the intersection.
+ @return TRUE if there is an intersection, FALSE otherwise
+ */
+- (BOOL)intersectWithRayOrigin:(GLKVector3)origin rayEnd:(GLKVector3)end intersection:(GLKVector3 *)intersection normal:(GLKVector3 *)normal ignoreBackFace:(BOOL)ignoreBackFace;
+- (BOOL)intersectWithRayOrigin:(GLKVector3)origin rayEnd:(GLKVector3)end intersection:(GLKVector3 *)intersection intersectionFaceIndex:(int *) intersectionFaceIndex ignoreBackFace:(BOOL)ignoreBackFace;
+- (BOOL)faceIsOnAPlane:(int)faceIndex normal:(GLKVector3 *)normal;
+@end
+
+//------------------------------------------------------------------------------
 #pragma mark - STScene
 
 /** Common data shared and updated by the SLAM pipeline.
@@ -209,10 +219,8 @@ In particular, STMesh objects should be properly locked.
 /** Mandatory initializer for STScene.
 
 @param glContext a valid EAGLContext.
-@param textureUnit A GL_TEXTUREX unit which will be used when SLAM objects need to render meshes to an OpenGL texture.
 */
-- (instancetype)initWithContext:(EAGLContext *)glContext
-              freeGLTextureUnit:(GLenum)textureUnit;
+- (instancetype)initWithContext:(EAGLContext *)glContext;
 
 /** Reference to the current scene mesh.
 
@@ -270,6 +278,34 @@ Only `kCVPixelFormatType_420YpCbCr8BiPlanarFullRange` is supported for the color
     STTrackerDepthAndColorBased = 1,
 };
 
+/** Constants that specify profiles to optimize the tracker for.
+ 
+ See also:
+ 
+ - [STTracker initWithScene:options:]
+ - [STTracker setOptions:]
+ */
+typedef NS_ENUM(NSInteger, STTrackerSceneType)
+{
+/** Specifies a profile that optimizes for scanning objects.
+
+Assumes that the sensor is moving and can rotate and translate.
+*/
+    STTrackerSceneTypeObject,
+    
+/** Specifies a profile that optimizes for scanning objects on a turntable.
+
+Assumes that the sensor is stationary and the object itself rotates.
+*/
+    STTrackerSceneTypeObjectOnTurntable,
+    
+/** Specifies a profile that optimizes for scanning rooms
+
+Assumes that the sensor is moving and can rotate and translate. The scene captured should be on the scale of a typical room scan.
+*/
+    STTrackerSceneTypeRoom,
+};
+
 /** Constants specifying a tracking quality hint to STTracker.
 
 See also:
@@ -290,8 +326,8 @@ typedef NS_ENUM(NSInteger, STTrackerQuality)
 
 See also:
 
- - [STTracker poseAccuracy]
- - [STTracker trackerHints]
+- [STTracker poseAccuracy]
+- [STTracker trackerHints]
 */
 typedef NS_ENUM(NSInteger, STTrackerPoseAccuracy)
 {
@@ -319,6 +355,8 @@ extern NSString* const kSTTrackerAvoidPitchRollDriftKey;
 extern NSString* const kSTTrackerAvoidHeightDriftKey;
 extern NSString* const kSTTrackerAcceptVaryingColorExposureKey;
 extern NSString* const kSTTrackerBackgroundProcessingEnabledKey;
+extern NSString* const kSTTrackerSceneTypeKey;
+extern NSString* const kSTTrackerLegacyKey;
 
 /** Tracker Hints
 
@@ -341,6 +379,8 @@ typedef struct
     bool modelOutOfView;
 }
 STTrackerHints;
+
+STTrackerHints STTrackerHints_init (void);
 
 /** A STTracker instance tracks the 3D position of the Structure Sensor.
 
@@ -387,7 +427,9 @@ Sample usage:
         kSTTrackerQualityKey                    = @(STTrackerQualityAccurate),
         kSTTrackerTrackAgainstModelKey          = @YES,
         kSTTrackerAcceptVaryingColorExposureKey = @NO,
-        kSTTrackerBackgroundProcessingEnabledKey= @YES
+        kSTTrackerBackgroundProcessingEnabledKey= @YES,
+        kSTTrackerLegacyKey                     = @NO,
+        kSTTrackerSceneTypeKey                  = @(STTrackerSceneTypeObject)
     };
     STTracker* tracker = [[STTracker alloc] initWithScene:myScene options:options];
 
@@ -431,6 +473,18 @@ Sample usage:
   - Defaults to `@NO`.
   - To ensure the optimal robustness, it is recommended to lock the iOS color camera exposure during tracking if the `STTrackerDepthAndColorBased` tracker type is being used.
   - By default, the tracker will return an error if it detects a change in the exposure settings, but it can be forced to accept it by enabling this option.
+- `kSTTrackerLegacyKey`:
+  - As of SDK 0.8, improved tracking is enabled by default. Set this to @YES if you want to enable the pre-0.8 tracking behavior.
+  - Defaults to `@NO`.
+  - This setting affects all tracker types, i.e. both STTrackerDepthBased and STTrackerDepthAndColorBased.
+- `kSTTrackerSceneTypeKey`
+  - Specifies a general "<span>scene</span> type" to account for tracker-specific presets.
+  - NSNumber integral value equal to one of the STTrackerSceneType constants.
+  - Defaults to STTrackerSceneTypeObject.
+  - You will get better tracking if this matches the scene you are tracking against.
+  - STTrackerSceneTypeObject assumes the target is to scan objects or people (e.g. Scanner).
+  - STTrackerSceneTypeObjectOnTurntable assumes the target is an object or person on a moving platform and that the device (iOS device + Sensor) are not moving.
+  - STTrackerSceneTypeRoom assumes the target is to scan a room (e.g. RoomCapture).
 */
 - (instancetype)initWithScene:(STScene *)scene options:(NSDictionary*)options;
 
@@ -593,20 +647,39 @@ __Note:__ This strategy does not require depth information.
     STCameraPoseInitializerStrategyGravityAlignedAtVolumeCenter = 2,
 };
 
+typedef struct STCameraPoseInitializerOutput
+{
+    /// Whether the pose initializer could find a good pose.
+    BOOL hasValidPose;
+    
+    /// Estimated camera pose, taking Structure Sensor as a reference.
+    GLKMatrix4 cameraPose;
+    
+    /// Whether the last cube placement was made with a supporting plane. Useful for STMapper.
+    BOOL hasSupportPlane;
+    
+    /// Equation of the detected support plane (if hasSupportPlane is true)
+    GLKVector4 supportPlane;
+    
+} STCameraPoseInitializerOutput;
+
 /// Determine an initial camera pose to make the best use of the cuboid scanning volume.
 @interface STCameraPoseInitializer : NSObject
 
 /// Width, height and depth of the volume cuboid.
 @property (nonatomic) GLKVector3 volumeSizeInMeters;
 
+/// Return the last estimated pose. This is the recommended thread-safe way to get the output.
+@property (nonatomic, readonly) struct STCameraPoseInitializerOutput lastOutput;
+
 /// Most recent estimated camera pose, taking Structure Sensor as a reference.
-@property (nonatomic, readonly) GLKMatrix4 cameraPose;
+@property (nonatomic, readonly) GLKMatrix4 cameraPose __deprecated_msg("use lastOutput instead.");
 
 /// Whether the pose initializer could find a good pose.
-@property (nonatomic, readonly) BOOL hasValidPose;
+@property (nonatomic, readonly) BOOL hasValidPose __deprecated_msg("use lastOutput instead.");
 
 /// Whether the last cube placement was made with a supporting plane. Useful for STMapper.
-@property (nonatomic, readonly) BOOL hasSupportPlane;
+@property (nonatomic, readonly) BOOL hasSupportPlane __deprecated_msg("use lastOutput instead.");
 
 /** Initialize with all the required fields.
 
@@ -623,13 +696,13 @@ __Note:__ This strategy does not require depth information.
 
 /** Update the current pose estimate from a depth frame and a CoreMotion gravity vector, using the strategy specified at init.
 
-@param gravity a gravity vector in IMU coordinates, e.g. as provided by CMDeviceMotion.gravity.
+@param gravityInDeviceFrame a gravity vector in IMU coordinates, e.g. as provided by CMDeviceMotion.gravity.
 @param depthFrame the current processed depth from Structure Sensor. Can be `nil` if using the strategies `STCameraPoseInitializerStrategyGravityAlignedAtOrigin` or `STCameraPoseInitializerStrategyGravityAlignedAtVolumeCenter`.
 @param error will contain detailed information if the estimation failed.
 
 @return TRUE on success, FALSE on failure.
 */
-- (BOOL)updateCameraPoseWithGravity:(GLKVector3)gravity depthFrame:(STDepthFrame *)depthFrame error:(NSError* __autoreleasing *)error;
+- (BOOL)updateCameraPoseWithGravity:(GLKVector3)gravityInDeviceFrame depthFrame:(STDepthFrame *)depthFrame error:(NSError* __autoreleasing *)error;
 
 /** Determine which pixels of a depth frame are inside the current scanning volume.
  

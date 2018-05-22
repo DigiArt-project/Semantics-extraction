@@ -55,8 +55,7 @@ namespace // anonymous namespace for local functions
         return;
     
     // Initialize the scene.
-    _slamState.scene = [[STScene alloc] initWithContext:_display.context
-                                      freeGLTextureUnit:GL_TEXTURE2];
+    _slamState.scene = [[STScene alloc] initWithContext:_display.context];
     
     // Initialize the camera pose tracker.
     NSDictionary* trackerOptions = @{

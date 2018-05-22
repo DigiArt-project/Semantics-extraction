@@ -419,6 +419,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "AnnotationTool/annotation_tool-Prefix.pch";
 				INFOPLIST_FILE = "AnnotationTool/annotation_tool-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.3;
 				OTHER_LDFLAGS = (
 					"-framework",
 					ExternalAccessory,
@@ -464,6 +465,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "AnnotationTool/annotation_tool-Prefix.pch";
 				INFOPLIST_FILE = "AnnotationTool/annotation_tool-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.3;
 				OTHER_LDFLAGS = (
 					"-framework",
 					ExternalAccessory,

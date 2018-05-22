@@ -16,10 +16,20 @@
 #   error "Structure framework requires the C++ runtime. See Structure SDK Reference."
 # endif
 
-// Make sure the deployment target is higher or equal to iOS 8.
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_8_0)
-#   error This version of Structure SDK only supports iOS 8 or higher.
+// Make sure the deployment target is higher or equal to iOS 9.
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_9_0)
+#   error This version of Structure SDK only supports iOS 9 or higher.
 #endif
+
+typedef struct {
+    const int major;
+    const int minor;
+    const int patch;
+    const char* version;
+} SDKVersion;
+
+/** Returns a string specifying the current SDK version */
+SDKVersion currentSDKVersion(void);
 
 //------------------------------------------------------------------------------
 #pragma mark - Sensor Controller Constants
@@ -78,7 +88,7 @@ typedef NS_ENUM(NSInteger, STStreamConfig)
     STStreamConfigDepth320x240 = 0,
 
 /// QVGA depth at 30 FPS, aligned to the color camera.
-    STStreamConfigRegisteredDepth320x240,
+    STStreamConfigRegisteredDepth320x240 __attribute__((deprecated("Please use STStreamConfigDepth320x240 with registeredToColorFrame instead."))),
 
 /// QVGA depth and infrared at 30 FPS.
     STStreamConfigDepth320x240AndInfrared320x248,
@@ -96,11 +106,13 @@ typedef NS_ENUM(NSInteger, STStreamConfig)
     STStreamConfigDepth640x480AndInfrared640x488,
 
 /// VGA depth at 30 FPS, aligned to the color camera.
-    STStreamConfigRegisteredDepth640x480,
+    STStreamConfigRegisteredDepth640x480 __attribute__((deprecated("Please use STStreamConfigDepth640x480 with registeredToColorFrame instead."))),
     
 /// QVGA depth at 60 FPS. Note: frame sync is not supported with this mode.
     STStreamConfigDepth320x240_60FPS
 };
+
+
 
 /** Frame Sync Configuration.
 
@@ -160,6 +172,12 @@ extern NSString* const kSTColorCameraFixedLensPositionKey;
 //------------------------------------------------------------------------------
 #pragma mark - STDepthFrame
 
+typedef struct
+{
+    int width, height;
+    float fx, fy, cx, cy, k1, k2;
+} STIntrinsics;
+
 /** Color Frame
 
 Formatted color data for the color image captured
@@ -204,6 +222,14 @@ This matrix can be used to render a scene by simulating the same camera properti
 @return A projection matrix.
 */
 - (GLKMatrix4)glProjectionMatrix;
+
+/** Intrinsic camera parameters.
+ 
+ This struct can be used to get the intrinsic parameters of the current DepthFrame.
+ 
+ @return A set of STIntrinsics intrinsic parameters.
+ */
+- (STIntrinsics) intrinsics;
 
 /** Get the rigid body transformation (RBT) between the iOS color camera and the depth image viewpoint.
  
@@ -283,6 +309,14 @@ This matrix can be used to render a scene by simulating the same camera properti
 @return A projection matrix.
 */
 - (GLKMatrix4)glProjectionMatrix;
+
+/** Intrinsic camera parameters.
+ 
+ This struct can be used to get the intrinsic parameters of the current ColorFrame.
+ 
+ @return A set of STIntrinsics intrinsic parameters.
+ */
+- (STIntrinsics) intrinsics;
 
 @end
 
@@ -520,7 +554,7 @@ When a synchronized frame is found, one of the optional synchronized STSensorCon
 /// Check whether the controlled sensor is connected.
 - (BOOL)isConnected;
 
-/// Check whether the controlled sensor is in low-power mode.
+/// Check whether the controlled sensor is in low-power mode. Low-power mode is used when the sensor is in an idle state, and is entered when the Structure Sensor is out of battery.
 - (BOOL)isLowPower;
 
 /// Return an integer in 0..100 representing the battery charge.
