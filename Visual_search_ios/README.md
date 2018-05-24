@@ -37,20 +37,24 @@ If you want to use another port, open the file **app.js** in the server folder a
 Then open **Utils.hpp** file in iOS app and change port number.
 `"http://ip:8080/";`
 
-Change as well the ip with the IP of your server.
+Change as well 'ip' with the IP of your server.
 
 ### Send to the server the appropriate code
 
-Thank to the `scp` command line, send to the server at the location `/var/www` all the code.
+Using the `scp` command line, send all the code to the server at the location `/var/www`.
 
 At the end of the process you need to have
+
+```shell
+/var/
+    |-- www/
+    	|-- core/
+		|-- Datasets/
+    |-- server/
+    |-- svm/
+```
 	
-	/var/www/core
-	/var/www/Datasets
-	/var/server
-	/var/svm
-	
-For example, assume that my code are in my HOME folder. In order to send to my server called **adressServer** the folder core I will have to execute this following command line  :
+For example, assume that the code is located in my HOME folder. In order to send to the server called **adressServer** you will have to execute the following command line  :
 
 `scp -r core/ username@adressServer:/var/www/core/
 `
@@ -82,6 +86,19 @@ Then :
 	make
 	
 If all the dependecies are okay, the program will compile with succees and you should see lots of binaries programms in the build folder.
+
+Move all the binaries inside the binaries folder of the server folder.
+
+```shell
+/core/
+/Dataset/
+/svm/
+/scripts/
+/svm/
+/server/
+    |-- binaries/
+    ...
+```
 
 #### Compilation of libsvm
 
