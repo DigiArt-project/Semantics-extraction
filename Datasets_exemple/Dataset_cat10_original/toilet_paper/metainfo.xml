@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metainfo>
+	<min_boundingbox dx="10" dy="5" dz="5"/>
+	<max_boundingbox dx="500" dy="500" dz="500"/>
+	<hypernym description=" (a soft thin absorbent paper for use in toilets) " wordnet_id="15099708">
+		entity
+	</hypernym>
+	<functional_category>
+		graspable
+	</functional_category>
+	<classname>
+		toilet paper
+	</classname>
+	<translation classname="туалетная бумага" language="ru"/>
+	<translation classname="Toilettenpapier" language="de"/>
+	<translation classname="卫生纸" language="zh-CN"/>
+	<translation classname="टॉयलेट पेपर" language="hi"/>
+	<translation classname="ورق تواليت" language="ar"/>
+	<translation classname="トイレットペーパー" language="ja"/>
+	<translation classname="papel higiénico" language="es"/>
+	<keyword>
+		toilet roll
+	</keyword>
+	<keyword>
+		toilet tissue
+	</keyword>
+	<keyword>
+		bathroom tissue
+	</keyword>
+</metainfo>

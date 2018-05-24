@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<metainfo>
+	<min_boundingbox dx="10" dy="5" dz="5"/>
+	<max_boundingbox dx="500" dy="500" dz="500"/>
+	<hypernym description=" (with handle and usually cylindrical) " wordnet_id="3797390">
+		container
+	</hypernym>
+	<functional_category>
+		graspable
+	</functional_category>
+	<classname>
+		mug
+	</classname>
+	<translation classname="кружка" language="ru"/>
+	<translation classname="Becher" language="de"/>
+	<translation classname="杯" language="zh-CN"/>
+	<translation classname="मग" language="hi"/>
+	<translation classname="كشر" language="ar"/>
+	<translation classname="マグカップ" language="ja"/>
+	<translation classname="taza" language="es"/>
+	<keyword>
+		beer mug
+	</keyword>
+	<keyword>
+		coffee mug
+	</keyword>
+</metainfo>

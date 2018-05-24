@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metainfo>
+	<min_boundingbox dx="10" dy="5" dz="5"/>
+	<max_boundingbox dx="500" dy="500" dz="500"/>
+	<hypernym description=" (a small ring-shaped friedcake) " wordnet_id="7654678">
+		food
+	</hypernym>
+	<functional_category>
+		graspable
+	</functional_category>
+	<classname>
+		donut
+	</classname>
+	<translation classname="пончик" language="ru"/>
+	<translation classname="Krapfen" language="de"/>
+	<translation classname="油炸圈饼" language="zh-CN"/>
+	<translation classname="डोनट" language="hi"/>
+	<translation classname="دونات" language="ar"/>
+	<translation classname="ドーナツ" language="ja"/>
+	<translation classname="buñuelo" language="es"/>
+	<keyword>
+		raised doughnut
+	</keyword>
+	<keyword>
+		doughnut
+	</keyword>
+</metainfo>

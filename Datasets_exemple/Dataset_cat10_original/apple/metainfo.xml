@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<metainfo>
+	<min_boundingbox dx="10" dy="5" dz="5"/>
+	<max_boundingbox dx="500" dy="500" dz="500"/>
+	<hypernym description=" (fruit with red or yellow or green skin and sweet to tart crisp whitish flesh) " wordnet_id="7739125">
+		edible fruit
+	</hypernym>
+	<functional_category>
+		graspable
+	</functional_category>
+	<classname>
+		apple
+	</classname>
+	<translation classname="Apple" language="ru"/>
+	<translation classname="Apfel" language="de"/>
+	<translation classname="苹果" language="zh-CN"/>
+	<translation classname="सेब" language="hi"/>
+	<translation classname="تفاحة" language="ar"/>
+	<translation classname="リンゴ" language="ja"/>
+	<translation classname="manzana" language="es"/>
+</metainfo>

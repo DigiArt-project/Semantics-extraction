@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<metainfo>
+	<min_boundingbox dx="10" dy="5" dz="5"/>
+	<max_boundingbox dx="500" dy="500" dz="500"/>
+	<hypernym description=" (a dish that is round and open at the top for serving foods) " wordnet_id="2880940">
+		tableware
+	</hypernym>
+	<functional_category>
+		graspable
+	</functional_category>
+	<classname>
+		bowl
+	</classname>
+	<translation classname="миска" language="ru"/>
+	<translation classname="Schüssel" language="de"/>
+	<translation classname="碗" language="zh-CN"/>
+	<translation classname="कटोरा" language="hi"/>
+	<translation classname="زبدية" language="ar"/>
+	<translation classname="ボウル" language="ja"/>
+	<translation classname="cuenco" language="es"/>
+	<keyword>
+		cereal bowl
+	</keyword>
+	<keyword>
+		mixing bowl
+	</keyword>
+	<keyword>
+		salad bowl
+	</keyword>
+	<keyword>
+		soup bowl
+	</keyword>
+</metainfo>

@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<metainfo>
+	<min_boundingbox dx="10" dy="5" dz="5"/>
+	<max_boundingbox dx="500" dy="500" dz="500"/>
+	<hypernym description="" wordnet_id="0">
+		container
+	</hypernym>
+	<functional_category>
+		graspable
+	</functional_category>
+	<classname>
+		tetra pak
+	</classname>
+	<translation classname="Тетра Пак" language="ru"/>
+	<translation classname="Tetra Pak" language="de"/>
+	<translation classname="利乐" language="zh-CN"/>
+	<translation classname="tetra पाक" language="hi"/>
+	<translation classname="تتراباك" language="ar"/>
+	<translation classname="テトラパック" language="ja"/>
+	<translation classname="Tetra Pak" language="es"/>
+	<keyword>
+		milk carton
+	</keyword>	
+	<keyword>
+		milk box
+	</keyword>	
+	<keyword>
+		juice carton
+	</keyword>	
+	<keyword>
+		juice box
+	</keyword>	
+	<keyword>
+		juice box
+	</keyword>	
+	<keyword>
+		tetra brik
+	</keyword>	
+
+</metainfo>

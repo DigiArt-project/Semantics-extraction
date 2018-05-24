@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<metainfo>
+	<min_boundingbox dx="10" dy="5" dz="5"/>
+	<max_boundingbox dx="500" dy="500" dz="500"/>
+	<hypernym description=" (a hand tool with a heavy rigid head and a handle; used to deliver an impulsive force by striking) " wordnet_id="3481172">
+		tool
+	</hypernym>
+	<functional_category>
+		graspable
+	</functional_category>
+	<classname>
+		hammer
+	</classname>
+	<translation classname="молоток" language="ru"/>
+	<translation classname="Hammer" language="de"/>
+	<translation classname="锤" language="zh-CN"/>
+	<translation classname="हथौड़ा" language="hi"/>
+	<translation classname="مطرقة" language="ar"/>
+	<translation classname="ハンマー" language="ja"/>
+	<translation classname="martillo" language="es"/>
+	<keyword>
+		tack hammer
+	</keyword>
+	<keyword>
+		sledgehammer
+	</keyword>
+	<keyword>
+		maul
+	</keyword>
+	<keyword>
+		mallet
+	</keyword>
+	<keyword>
+		clawhammer
+	</keyword>
+	<keyword>
+		claw hammer
+	</keyword>
+	<keyword>
+		carpenter's hammer
+	</keyword>
+	<keyword>
+		ball-peen hammer
+	</keyword>
+	<keyword>
+		bricklayer's hammer
+	</keyword>
+</metainfo>

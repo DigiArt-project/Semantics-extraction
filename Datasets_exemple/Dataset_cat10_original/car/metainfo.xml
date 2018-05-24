@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+<metainfo>
+	<min_boundingbox dx="10" dy="5" dz="5"/>
+	<max_boundingbox dx="500" dy="500" dz="500"/>
+	<hypernym description=" (a motor vehicle with four wheels; usually propelled by an internal combustion engine) " wordnet_id="2958343">
+		vehicle
+	</hypernym>
+	<functional_category>
+		graspable
+	</functional_category>
+	<classname>
+		car
+	</classname>
+	<translation classname="автомобиль" language="ru"/>
+	<translation classname="Auto" language="de"/>
+	<translation classname="车" language="zh-CN"/>
+	<translation classname="कार" language="hi"/>
+	<translation classname="سيارة" language="ar"/>
+	<translation classname="車" language="ja"/>
+	<translation classname="coche" language="es"/>
+	<keyword>
+		ambulance
+	</keyword>
+	<keyword>
+		wagon
+	</keyword>
+	<keyword>
+		cab
+	</keyword>
+	<keyword>
+		taxi
+	</keyword>
+	<keyword>
+		convertible
+	</keyword>
+	<keyword>
+		police car
+	</keyword>
+	<keyword>
+		hardtop
+	</keyword>
+	<keyword>
+		limousine
+	</keyword>
+	<keyword>
+		minivan
+	</keyword>
+	<keyword>
+		sedan
+	</keyword>
+	<keyword>
+		sports car
+	</keyword>
+</metainfo>

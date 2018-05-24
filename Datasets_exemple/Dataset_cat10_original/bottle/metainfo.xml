@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<metainfo>
+	<min_boundingbox dx="10" dy="5" dz="5"/>
+	<max_boundingbox dx="500" dy="500" dz="500"/>
+	<hypernym description=" (a glass or plastic vessel used for storing drinks or other liquids; typically cylindrical without handles and with a narrow neck that can be plugged or capped) " wordnet_id="2876657">
+		container
+	</hypernym>
+	<functional_category>
+		graspable
+	</functional_category>
+	<classname>
+		bottle
+	</classname>
+	<translation classname="бутылки" language="ru"/>
+	<translation classname="Flasche" language="de"/>
+	<translation classname="瓶" language="zh-CN"/>
+	<translation classname="बोतल" language="hi"/>
+	<translation classname="زجاجة" language="ar"/>
+	<translation classname="ボトル" language="ja"/>
+	<translation classname="botella" language="es"/>
+	<keyword>
+		beer bottle
+	</keyword>
+	<keyword>
+		catsup bottle
+	</keyword>
+	<keyword>
+		ketchup bottle
+	</keyword>
+	<keyword>
+		flask
+	</keyword>
+	<keyword>
+		ink bottle
+	</keyword>
+	<keyword>
+		inkpot
+	</keyword>
+	<keyword>
+		pop bottle
+	</keyword>
+	<keyword>
+		soda bottle
+	</keyword>
+	<keyword>
+		smelling bottle
+	</keyword>
+	<keyword>
+		specimen bottle
+	</keyword>
+	<keyword>
+		water bottle
+	</keyword>
+	<keyword>
+		whiskey bottle
+	</keyword>
+	<keyword>
+		wine bottle
+	</keyword>
+</metainfo>

@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<metainfo>
+	<min_boundingbox dx="10" dy="5" dz="5"/>
+	<max_boundingbox dx="500" dy="500" dz="500"/>
+	<hypernym description=" (elongated crescent-shaped yellow fruit with soft sweet flesh) " wordnet_id="7753592">
+		edible fruit
+	</hypernym>
+	<functional_category>
+		graspable
+	</functional_category>
+	<classname>
+		banana
+	</classname>
+	<translation classname="банан" language="ru"/>
+	<translation classname="Banane" language="de"/>
+	<translation classname="香蕉" language="zh-CN"/>
+	<translation classname="केले" language="hi"/>
+	<translation classname="موز" language="ar"/>
+	<translation classname="バナナ" language="ja"/>
+	<translation classname="banano" language="es"/>
+</metainfo>
