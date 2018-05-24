@@ -9,7 +9,7 @@ Given a point cloud acquired by a scanner device, our CB3R retrieve similar shap
 Interactive Learning algorithms in based on SVM which requires very simple positive-negative annotations from the users.
 We have evaluated our system on several standard 3D datasets (Cat10, Cat31, Cat60, RGB-D, ModelNet10, and our own low-resolution shape dataset made with the manual Occipital Structure Sensor considering 8 state-of-the-art descriptors. 
 
-* **basic\_interactivelearning\_main.py** ==> Main function for running basic Interactive Learning
+* **basic\_interactivelearning\_main.py** ==> Main function for running basic Interactive Learning (no similarity search)
 * **similaritysearch\_interactivelearning\_main.py** —> Main function for running Interactive Learning with Similarity Search
 
 
@@ -17,7 +17,7 @@ We have evaluated our system on several standard 3D datasets (Cat10, Cat31, Cat6
 
 ### 0. Package requirement
 
-* Sklearn-scikit 0.18
+* Sklearn-scikit **0.18** (if updated, need to make some changement inside the code)
 * Matplotlib
 * Numpy
 * Scikit
@@ -30,15 +30,14 @@ Before running the code, you need to perform some steps.
 
 ### 1. Compile "CloudRetrieval_main"
 
-The binary executable is given. If it is not the case, you need to compile it from Tools Package.
+CloudRetrieval_main is a C++ program that allows the user to perform similarity search.
+The binary executable is given inside the **binaries folder** (it has been compiled with OSx). If it is not the case, you need to compile it from Tools Package and then put the generated binary to the binaries folder.
+This code is not necessary for basic Interactive Learning but it is necessary for Interactive Learning using similarity search.
 
 
 ### 2. Create the data 
 
 ### A. Dataset
-
-An example is given. **Dataset\_cat10_normalized.**
-==You need to follow the same structure.==
 
 In our experiment we have done multiple experiments using different datasets :
 
@@ -49,55 +48,76 @@ In our experiment we have done multiple experiments using different datasets :
 * ModelNet10
 * Our own structure sensor Dataset
 
+Let's take an example. We choose to deal with the Cat10 dataset. As an example, it is located inside **../Datasets/Dataset\_cat10_original**.
+
+The structure of the dataset :
+
+```shell
+Dataset_cat10_original
+    |-- apple
+    	|-- apple0.ply
+		|-- apple1.ply
+        ...
+    |-- banana
+    	|-- banana0.ply
+		|-- banana1.ply
+        ...
+        
+ 	...
+```
+From this dataset, we were able to obtain a dataset ready for Interactive Learning. It is given inside **../Datasets/Datasets\_cat10_normalized.**
+
+==If you build your own dataset, you need to have the same dataset structure.==
+
+
+
 Globally, the dataset folder contains the categories of each object and inside each category, you can found the full objects and the partial views of objects along with their descriptors.
 
-For example : 
+The structure of the normalized dataset : 
 
 ```shell
 Dataset_cat10_normalized
-    |-- bottle
+    |-- apple
         |-- full
-            |-- bottle1.ply
+            |-- apple1.ply
             |-- descriptors
             		|-- esf
             		...
         |-- views
-            |-- views_bottle0_0.ply
+            |-- views_apple0_0.ply
             |-- descriptors
             		|-- esf
             		...
-    |-- mug
+    |-- banana
         |-- full
-            |- mug1.ply  
+            |- banana1.ply  
         |-- views
-            |-- views_mug0_0.ply
+            |-- views_banana0_0.ply
             ...
 ```
 
 At this point, you may face up to two cases :
 
-1. You do not have any partial views generated from your data 
-2. You have partial views and full objects in your dataset
+1. You do not have any partial views or full objects generated from your data i.e you just downloaded or created a new dataset (like Dataset\_cat_10\_original)
+2. You have already the partial views and full objects in your dataset i.e like Dataset\_cat10\_normalized
 
-If you are in case 1, you should compute the partial views of descriptors using the package Tools. (Name of the program : **compute\_views_descriptors\_main** ). It will generate views and associated descriptors.
-If you just want to work with full objects but not partial views, just be careful that you have the right structure for your dataset.
+If you are in case 1, you should compute the partial views of each of object of your dataset using the package Tools. (Name of the program : **compute\_views_descriptors\_main** ). It will generate views and associated descriptors. You need also to normalize the dataset. Don't worry, everything will be axplained.
 
 If you are in case 2, just be careful that you have the right structure for your dataset.
 
-#### B. Compute the descriptors
+#### B. Preparing the data
 
-Once you have your dataset set up, you can compute (if it is not done yet) the descriptors.
+Please follow the instructions "Step by step guide for running Interactive Learning" given in the README of the Tool Package for preparing the data.
 
-Compute descriptors of each object of the database. You can use `compute_descriptor_cloud_main`from TOOLS package for computing descriptors.
 
 ### C. Running the Scripts for generating Interactive Learning Data
 
-So far, you have your datasets with the good structure, and inside your dataset you have full, partial views (if you want), and associated descriptors. You can now create the data for Interactive Learning.
+So far, you have your datasets with the good structure, and inside your dataset you have full, partial views (if you want), and associated descriptors. You can now create the data that will be used for Interactive Learning.
 
-* **1. create\_list\_path_desriptors.sh**
+* **1. Generate list of descriptors using create\_list\_path_desriptors.sh**
 
 Given a dataset of descriptors, generate a txt file which contains the path to every descriptor.
-You should run this script for the root of your dataset path. For the parameters, you write the name of the dataset, the descriptor your want (choose a descriptor that you have computed before) and finally if you want to work with full objects or partial views of objects.
+You should run this script from the root of your dataset path. For the parameters, you write the name of the dataset, the descriptor your want (choose a descriptor that you have computed before) and finally if you want to work with full objects or partial views of objects.
 
 		./create_list_path_desriptors.sh dataset_path esf/vfh/cvvfh/ourcvfh/grsd/gshot/gshotPyramid/spin/good/scurv/sc3D/egigshotfull/esffull/grsdfull/pointnet/alldesc[i] full/views
 		
@@ -106,12 +126,29 @@ You should run this script for the root of your dataset path. For the parameters
 		./create_list_path_desriptors.sh Dataset_cat10_normalized esf full
 		./create_list_path_desriptors.sh Dataset_cat10_normalized esf views
 
+You will end up this kind of file : 
 
-* **2. generate\_libsvm\_data\_main**
+```shell
+apple
+/Users/digiArt/Semantics-extractions/Datasets/Dataset_cat10_normalized/apple/views/descriptors/esf/desc_apple0_0.pcd
+/Users/digiArt/Semantics-extractions/Datasets/Dataset_cat10_normalized/apple/views/descriptors/esf/desc_apple0_1.pcd
+/Users/digiArt/Semantics-extractions/Datasets/Dataset_cat10_normalized/apple/views/descriptors/esf/desc_apple0_10.pcd
+...
+bottle
+/Users/lironesamoun/digiArt/Semantics-extractions/Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle0_0.pcd
+/Users/lironesamoun/digiArt/Semantics-extractions/Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle0_1.pcd
+/Users/lironesamoun/digiArt/Semantics-extractions/Datasets/Dataset_cat10_normalized/bottle/views/descriptors/esf/desc_bottle0_10.pcd
+...
 
-Once you have your file with all the descriptors path, you can use this script.
+...
+```
 
-From a list of path of descriptors, it generates a file which contains the descriptors with libsvm format.
+
+* **2. Convert data using generate\_libsvm\_data\_main**
+
+Once you have your file with all the descriptors path, you can use this script generate\_libsvm\_data\_main.
+
+From a list of path of descriptors, it generates a file which contains the descriptors formatted by libsvm format.
 
 		./generate_libsvm_data_main descriptor_file_path (descriptor file which contains the path to every descriptor. One line per data) output (file which will contains the descriptors) type_descriptor (esf/vfh/ourcvfh/cvfh/grsd/gshot/scurv/good/egi/spin/sc3D/pointnet/esffull/gshotfull/grsdfull/all) multiclass (1/0)
 		
@@ -119,6 +156,7 @@ From a list of path of descriptors, it generates a file which contains the descr
 
 		./generate_libsvm_data_main dataset_descriptor_esf.txt descriptors_esf.txt esf 1
 
+--
 
 Once generated, those two files need to be added in the `Data`folder of Interactive Learning folder.
 
@@ -213,6 +251,10 @@ Per defaut, it works with ESF descriptor, wut you can change it by using the par
 You need as well to choose the dataset you want to process :
 
 		NAME_DATASET = 'pottery_views'
+		
+		
+![First step of Interative Learning](https://s9.postimg.cc/yn2n9bc9r/example-basic-interactive.jpg)
+![First step of Interative Learning inside the terminal](https://s9.postimg.cc/3svebnbsv/example-basic-interactive-terminal.jpg)
 
 ### 2. **Interactive Learning with Similarity Search - Manual version**
 
@@ -264,19 +306,21 @@ You need to change the following parameters depending of your dataset
 		                        defaut : 10
 	
 	
-	
-	
+
 ==_Exemple_== :
 	
-			python3 similaritysearch_interactivelearning_main.py -query ./chair_view1.ply -trained ../Datasets/Dataset_cat10_normalized/
+			python3 similaritysearch_interactivelearning_main.py -query ./mug_view1.ply -trained ../Datasets/Dataset_cat10_normalized/
 			
 Per defaut, it works with ESF descriptor, wut you can change it by using the parameter `-descriptorInteractive`. Same with similarity search.
+
+![First step of Interative Learning inside the terminal](https://s9.postimg.cc/gyawhfdan/result_beginning_similarity.png)
+	
 
 ### 3.  **Interactive Learning with Similarity Search - Automatic version**
 
 Option **similaritySearch\_automatic\_oneobject**
 
-Description: Given a point cloud query, similarity search is performed and then Interactive Learning is performed automatically without any help from the user (the computer selects automatically positives and negatives samples until the number max of iteration is attained)
+_Description_: Given a point cloud query, similarity search is performed and then Interactive Learning is performed automatically without any help from the user (the computer selects automatically positives and negatives samples until the number max of iteration is attained)
 
 Visual display possible if you comment `matplotlib.use('Agg')`.Images of the results are save automatically if you activate the option.
 
