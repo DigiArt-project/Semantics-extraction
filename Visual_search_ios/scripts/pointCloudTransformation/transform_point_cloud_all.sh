@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-#Take a dataset as an input and for every point cloud inside it (pcd,obj,ply) do a translation/rotation according what the user chose
+#Take a dataset as an input and for every point cloud inside it (pcd, obj, ply) make a translation/rotation according to what the user chose
 # $0 dataset type_cloud(pcd, obj, ply) tx ty tz rx ry rz\n"
 #
 

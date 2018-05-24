@@ -1800,7 +1800,7 @@ def automatic_interactiveLearning_objectlist(params, name_descriptor):
                 trained_dataset += os.path.sep
 
             #Run similarity search
-            cmd = './cloudRetrieval_main -query ' + obj + ' -trained ' + trained_dataset + ' -descriptor ' + DESCRIPTOR_SIMILARITYSEARCH + ' -k ' + str(K) + ' -leaf_resolution ' + str(LEAF_RESOLUTION) + ' -output ' + output_json_result + ' -compute_full ' + COMPUTE_FULL 
+            cmd = './binaries/cloudRetrieval_main -query ' + obj + ' -trained ' + trained_dataset + ' -descriptor ' + DESCRIPTOR_SIMILARITYSEARCH + ' -k ' + str(K) + ' -leaf_resolution ' + str(LEAF_RESOLUTION) + ' -output ' + output_json_result + ' -compute_full ' + COMPUTE_FULL 
             os.system(cmd) # returns the exit status
 
             print("\n [INFO] Please wait...")
@@ -2299,7 +2299,7 @@ def main():
     #Choose here the option you want
     current_option = option_interactiveLearning.similaritySearch_automatic_oneobject
 
-    if not os.path.isfile("cloudRetrieval_main"):
+    if not os.path.isfile("./binaries/cloudRetrieval_main"):
         print("\n [ERROR] Cloud Retrieval main binary does not exist - Please check the path")
         logging.error("Cloud Retrieval main binary does not exist - Please check the path")
         exit(1)
@@ -2352,7 +2352,7 @@ def main():
     #Run interactive learning with similarity search
     if current_option == option_interactiveLearning.similaritySearch_manuel:
        
-        cmd = './cloudRetrieval_main -query ' + query_cloud + ' -trained ' + trained_dataset + ' -descriptor ' + descriptor_similaritySearch + ' -k ' + str(k) + ' -leaf_resolution ' + str(leaf_resolution) + ' -output ' + output_json_result_similaritysearch + ' -compute_full ' + COMPUTE_FULL 
+        cmd = './binaries/cloudRetrieval_main -query ' + query_cloud + ' -trained ' + trained_dataset + ' -descriptor ' + descriptor_similaritySearch + ' -k ' + str(k) + ' -leaf_resolution ' + str(leaf_resolution) + ' -output ' + output_json_result_similaritysearch + ' -compute_full ' + COMPUTE_FULL 
         os.system(cmd) # returns the exit status
 
         save_figure = False

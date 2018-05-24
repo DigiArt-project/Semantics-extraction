@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-#Take a dataset as an input and for every obj point cloud convert to ply\n"
+#Take a dataset as an input and for every obj point cloud found, convert to it ply\n"
 #
 
 let "total_file_process = 0"

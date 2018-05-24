@@ -6,6 +6,8 @@ import random
 import argparse
 from sklearn.preprocessing import StandardScaler,MinMaxScaler,Normalizer
 
+# Scale descriptors inside a folder. The scale is given by the user
+
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 with warnings.catch_warnings():

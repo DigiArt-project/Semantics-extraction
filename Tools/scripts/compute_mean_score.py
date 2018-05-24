@@ -3,6 +3,7 @@ import os
 import argparse
 import numpy as np
 
+## Given a txt file wich contain an array of score, compute the mean score
 
 def main(file):
     print("Main")

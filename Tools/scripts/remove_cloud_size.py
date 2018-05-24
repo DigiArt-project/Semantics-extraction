@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+#Remove cloud inside a folder where its size in inferior to a certain threshold
 
 
 def load_pcd(path):

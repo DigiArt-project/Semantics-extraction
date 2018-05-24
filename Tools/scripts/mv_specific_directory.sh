@@ -6,6 +6,8 @@ let "name_category"
 let "count = 0"
 let "count_category = 0"
 
+#This script allows to move specifc subfolder with a specific parent directory to another same parent directory. For example you have a folder named descriptor which contain desc1 and desc2. It will move desc1 or desc2 to the folder descriptor of the other directory"
+
 # contains(string, substring)
 #
 # Returns 0 if the specified string contains the specified substring,

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-#Take a dataset as an input and for every ply point cloud convert to pcd \n"
+#Take a dataset as an input and for every ply point cloud found convert it to pcd \n"
 #
 
 let "total_file_process = 0"
@@ -47,7 +47,7 @@ print_folder_recurse() {
 }
 
 #### MAIN ######
-printf "====> From a dataset, convert all obj file to ply file"
+printf "====> From a dataset, convert all ply file to pcd file"
 
 # Display name of the script
 echo "Name of the script is : $0"

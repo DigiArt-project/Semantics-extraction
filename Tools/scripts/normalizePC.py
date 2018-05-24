@@ -5,6 +5,8 @@ import argparse
 #import pymesh
 #import ShapeStatistics as shp
 
+# Normliaze point cloud
+
 #def normalize_points(pts):
 #    N = pts.shape[1]
 #    centroid = shp.getCentroid(pts)
@@ -43,9 +45,6 @@ def normalizeFolder(folder_path, new_folder_path):
                 cmd = './normalize_pointcloud_main ' + current_path + ' ' + new_path
                 os.system(cmd) # returns the exit status
 
-				
-				
-				
 				#mesh = pymesh.load_mesh( current_path)
                 #pts = mesh.vertices[:, 0:3]
                 #pts = normalize_points(pts)

@@ -2,6 +2,7 @@
 
 #
 # A format checker for LIBSVM
+# Check if the data is well formatted in order to use it with LIBSVM
 #
 
 #

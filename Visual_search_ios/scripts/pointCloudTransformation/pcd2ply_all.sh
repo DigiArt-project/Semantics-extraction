@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-#Take a dataset as an input and for every pcd point cloud convert to ply\n"
+#Take a dataset as an input and for every pcd point cloud found convert it to ply\n"
 #
 
 let "total_file_process = 0"
